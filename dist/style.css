@@ -5799,7 +5799,7 @@ button:not(:disabled):active {
   }
 
   /* --- floating sheet (iOS 26) --- */
-  #menu-dialog.ios-sheet:modal {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) {
     width: calc(100% - 16px);
     margin: auto 8px calc(8px + env(safe-area-inset-bottom));
     padding: 8px 16px 22px;
@@ -5813,28 +5813,28 @@ button:not(:disabled):active {
       0 20px 60px #142d2340;
     animation: ios-sheet-up 0.46s var(--ios-ease);
   }
-  #menu-dialog.ios-sheet:modal::before {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog)::before {
     width: 36px;
     height: 5px;
     margin: 0 auto 6px;
     background: #3c4a4140;
   }
-  #menu-dialog.ios-sheet::backdrop {
+  dialog:not(.wish-stage)::backdrop {
     background: #142d2338;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
-  #menu-dialog .dialog-heading {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .dialog-heading {
     position: relative;
     justify-content: center;
     min-height: 44px;
     margin: 0 0 2px;
   }
-  #menu-dialog .dialog-heading h2 {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .dialog-heading h2 {
     font-size: 17px;
     font-weight: 600;
   }
-  #menu-dialog .dialog-heading .icon-button {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .dialog-heading .icon-button {
     position: absolute;
     top: 50%;
     right: 0;
@@ -5850,20 +5850,20 @@ button:not(:disabled):active {
     box-shadow: 0 1px 3px #142d2314;
     transform: translateY(-50%);
   }
-  #menu-dialog .dialog-heading .icon-button::after {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .dialog-heading .icon-button::after {
     content: '';
     position: absolute;
     inset: -4px;
   }
-  #menu-dialog .dialog-heading .icon-button svg {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .dialog-heading .icon-button svg {
     width: 17px;
     height: 17px;
     stroke-width: 2.4;
   }
-  #menu-dialog .ios-section-label {
+  dialog .ios-section-label {
     margin-top: 14px;
   }
-  #menu-dialog .menu-grid.ios-list button {
+  dialog .menu-grid.ios-list button {
     min-height: 62px;
   }
 }
@@ -5873,7 +5873,459 @@ button:not(:disabled):active {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  #menu-dialog.ios-sheet:modal {
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) {
     animation: none;
+  }
+}
+
+/* =====================================================================
+   iOS 26 rollout: secondary pages, every sheet, build mode (phones)
+   ===================================================================== */
+@media (max-width: 760px) {
+  /* --- secondary pages: grouped background, large sticky title --- */
+  #secondary-dialog.secondary-dialog:not(:modal) {
+    background: var(--ios-bg);
+    color: var(--ios-label);
+  }
+  #secondary-dialog:not(:modal) > .dialog-heading {
+    z-index: 3;
+    padding: 14px 20px 8px;
+    border: 0;
+    background: #f2f3eecc;
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+  #secondary-dialog:not(:modal) > .dialog-heading h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  #secondary-dialog .page-switch {
+    top: calc(58px - env(safe-area-inset-top));
+    margin-top: 2px;
+    padding: 2px;
+    gap: 0;
+    border-radius: 10px;
+    background: #e6e8e2;
+    box-shadow:
+      0 0 0 10px var(--ios-bg),
+      0 -14px 0 10px var(--ios-bg);
+  }
+  #secondary-dialog .page-switch button {
+    min-height: 34px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ios-label);
+  }
+  #secondary-dialog .page-switch button[aria-selected='true'] {
+    background: #fff;
+    font-weight: 600;
+    color: var(--ios-label);
+    box-shadow:
+      0 3px 8px #0000001f,
+      0 3px 1px #0000000a;
+  }
+  #secondary-dialog .page-switch button small {
+    background: var(--ios-fill);
+    color: var(--ios-label-2);
+  }
+  #secondary-dialog .section-heading h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ios-label);
+  }
+  #secondary-dialog .section-heading p,
+  #secondary-dialog .subtle {
+    color: var(--ios-label-2);
+  }
+
+  /* shared card + button language */
+  #secondary-dialog .building-card,
+  #secondary-dialog .white-panel,
+  #secondary-dialog .wish-status,
+  #secondary-dialog .wish-history,
+  #secondary-dialog .collectible {
+    border: 0;
+    background: var(--ios-card);
+    box-shadow:
+      0 1px 2px #142d230a,
+      0 8px 24px #142d230d;
+  }
+  #secondary-dialog .primary-button,
+  #secondary-dialog .secondary-button {
+    min-height: 40px;
+    border: 0;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  #secondary-dialog .primary-button {
+    background: linear-gradient(#e2f0bb, #d2e69c);
+    color: #1f4630;
+    box-shadow: inset 0 1px 0 #ffffffb3;
+  }
+  #secondary-dialog .secondary-button {
+    background: var(--ios-fill);
+    color: var(--ios-label);
+  }
+  #secondary-dialog .primary-button:disabled,
+  #secondary-dialog .secondary-button:disabled {
+    background: #7676801a;
+    color: #3c4a4166;
+    box-shadow: none;
+    opacity: 1;
+  }
+
+  /* 建筑管理 */
+  #secondary-dialog .building-card {
+    padding: 14px;
+    border-radius: 22px;
+  }
+  #secondary-dialog .building-icon {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 11px;
+    background: #f1f3ec;
+  }
+  #secondary-dialog .level-badge {
+    padding: 3px 9px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ios-fill);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ios-label-2);
+  }
+  #secondary-dialog .building-card h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ios-label);
+  }
+  #secondary-dialog .building-card .production,
+  #secondary-dialog .building-card .cost {
+    color: var(--ios-label-2);
+  }
+  #secondary-dialog .building-card.flash {
+    box-shadow:
+      0 0 0 3px #b9d77f,
+      0 8px 24px #142d231a;
+  }
+
+  /* 学习手记 */
+  #secondary-dialog .journal-summary {
+    border: 0;
+    border-radius: 24px;
+    box-shadow: 0 10px 28px #153f3530;
+  }
+  #secondary-dialog .white-panel {
+    padding: 16px 16px 8px;
+    border-radius: 22px;
+  }
+  #secondary-dialog .chart-bar {
+    border-radius: 8px;
+  }
+  #secondary-dialog .session-row {
+    position: relative;
+    gap: 12px;
+    padding: 11px 0;
+    border: 0;
+  }
+  #secondary-dialog .session-row + .session-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 48px;
+    right: 0;
+    height: 1px;
+    background: var(--ios-sep);
+  }
+  #secondary-dialog .session-icon {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(#5cae76, #3f9160);
+    color: #fff;
+  }
+  #secondary-dialog .session-icon svg {
+    color: #fff;
+  }
+  #secondary-dialog .session-topic {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ios-label);
+  }
+  #secondary-dialog .session-meta {
+    color: var(--ios-label-2);
+  }
+  #secondary-dialog .session-duration {
+    font-family: var(--ios-rounded);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ios-label-2);
+  }
+  #journal-manual {
+    padding: 0 14px;
+  }
+
+  /* 星砂寻宝 */
+  #secondary-dialog .wish-banner {
+    border-radius: 28px;
+  }
+  #secondary-dialog .wish-status,
+  #secondary-dialog .wish-history {
+    border-radius: 22px;
+  }
+  #secondary-dialog .wish-btn {
+    border: 0;
+    border-radius: 22px;
+    background: var(--ios-card);
+    color: var(--ios-label);
+    box-shadow:
+      0 1px 2px #142d230a,
+      0 8px 24px #142d230d;
+  }
+  #secondary-dialog .wish-btn.gold {
+    background: linear-gradient(#e2f0bb, #d2e69c);
+    color: #1f4630;
+    box-shadow:
+      inset 0 1px 0 #ffffffb3,
+      0 6px 18px #7fa04a33;
+  }
+  #secondary-dialog .wish-btn:disabled {
+    background: #7676801a;
+    box-shadow: none;
+  }
+
+  /* 奇物柜 */
+  #secondary-dialog .cab-filter {
+    border: 0;
+    border-radius: 999px;
+    background: var(--ios-card);
+    color: var(--ios-label);
+    box-shadow: 0 1px 2px #142d230f;
+  }
+  #secondary-dialog .cab-filter[aria-selected='true'] {
+    background: var(--forest);
+    color: #fff;
+  }
+  #secondary-dialog .collectible {
+    overflow: hidden;
+    border-radius: 20px;
+  }
+  #secondary-dialog .collectible.unowned {
+    background: #e9ebe5;
+    box-shadow: none;
+  }
+
+  /* --- every sheet: grouped background, inset fields, capsule buttons --- */
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .dialog-heading h2 {
+    padding: 0 44px;
+    text-align: center;
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) h3 {
+    margin: 20px 4px 8px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ios-label-2);
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) > .subtle,
+  #manual-form > .subtle {
+    margin: 4px 4px 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ios-label-2);
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) label {
+    margin: 14px 4px 0;
+    font-size: 13px;
+    color: var(--ios-label-2);
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) input:not([type='file']),
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) select {
+    min-height: 48px;
+    margin: 6px -4px 0;
+    width: calc(100% + 8px);
+    padding: 0 14px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--ios-card);
+    font-size: 17px;
+    color: var(--ios-label);
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .primary-button,
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .secondary-button {
+    min-height: 52px;
+    border: 0;
+    border-radius: 999px;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .primary-button {
+    background: linear-gradient(#e2f0bb, #d2e69c);
+    color: #1f4630;
+    box-shadow:
+      inset 0 1px 0 #ffffffb3,
+      0 6px 18px #7fa04a33;
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .secondary-button {
+    background: var(--ios-card);
+    color: var(--ios-label);
+  }
+  #manual-form .primary-button {
+    margin-top: 18px;
+  }
+  dialog:modal .rules-list {
+    padding: 0 16px;
+    border-radius: 18px;
+    background: var(--ios-card);
+  }
+  dialog:modal .rules-list p {
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 0;
+    border-color: var(--ios-sep);
+    line-height: 1.55;
+  }
+  dialog:modal .rules-list p:last-child {
+    border: 0;
+  }
+  dialog:modal .rules-list strong {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ios-label);
+  }
+  dialog:modal .rules-list span {
+    font-size: 13px;
+    color: var(--ios-label-2);
+  }
+  #settings-dialog .backup-pref {
+    margin-top: 12px;
+    padding: 4px 4px 4px 16px;
+    border: 0;
+    border-radius: 18px;
+    background: var(--ios-card);
+  }
+  #settings-dialog .backup-pref label {
+    margin: 0;
+    color: var(--ios-label);
+  }
+  #settings-dialog .backup-pref select {
+    width: auto;
+    min-height: 40px;
+    margin: 0 0 0 8px;
+    background: var(--ios-fill);
+    font-size: 15px;
+  }
+  #item-dialog .item-viewer {
+    border: 0;
+    border-radius: 24px;
+  }
+  #item-dialog .item-meta {
+    font-weight: 600;
+    color: var(--ios-label);
+  }
+  #result-dialog .draw-result {
+    border: 0;
+    border-radius: 18px;
+    background: var(--ios-card);
+  }
+
+  /* --- build mode: glass chrome over the island --- */
+  #build-hud .bh-top,
+  #build-hud .bh-sheet {
+    border: 1px solid var(--ios-glass-edge);
+    background: #ffffffb8;
+    color: var(--ios-label);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    backdrop-filter: blur(28px) saturate(190%);
+    box-shadow: var(--ios-glass-shadow);
+  }
+  #build-hud .bh-top {
+    border-radius: 24px;
+  }
+  #build-hud .bh-res span {
+    background: var(--ios-fill);
+    color: var(--ios-label);
+  }
+  #build-hud .bh-res svg {
+    color: #4f8a3c;
+  }
+  #build-hud .bh-hint {
+    color: var(--ios-label-2);
+  }
+  #build-hud #bh-done {
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(#e2f0bb, #d2e69c);
+    color: #1f4630;
+    box-shadow: inset 0 1px 0 #ffffffb3;
+  }
+  #build-hud .bh-sheet {
+    padding: 8px 8px 6px;
+    border-radius: 28px;
+  }
+  #build-hud .bh-tabs {
+    gap: 6px;
+  }
+  #build-hud .bh-tabs button[data-tab] {
+    min-height: 38px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ios-label);
+  }
+  #build-hud .bh-tabs button[data-tab].selected {
+    background: var(--forest);
+    color: #fff;
+    font-weight: 600;
+  }
+  #build-hud .bh-fold {
+    flex-basis: 38px;
+    width: 38px;
+    min-height: 38px;
+    border-radius: 50%;
+    background: var(--ios-fill);
+    color: var(--ios-label);
+  }
+  #build-hud .bh-card {
+    border: 2px solid transparent;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 1px 2px #142d230f;
+  }
+  #build-hud .bh-card.sel {
+    border-color: var(--forest);
+  }
+  #build-hud .bh-card p {
+    color: var(--ios-label-2);
+  }
+  #build-hud .bh-action {
+    border: 1px solid var(--ios-glass-edge);
+    border-radius: 22px;
+    background: #ffffffc7;
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: var(--ios-glass-shadow);
+  }
+
+  /* --- small things --- */
+  .village-screen .resource-bar {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 20px;
+    background: var(--ios-card);
+    box-shadow: 0 1px 2px #142d230a;
+  }
+  #toast {
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 20px;
+    background: #1f2a24e6;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    color: #fff;
+    box-shadow: 0 10px 30px #142d2333;
   }
 }
