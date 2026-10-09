@@ -43,11 +43,8 @@ window.addEventListener('focus', () => {
     }
   } catch {}
 });
-$('#date-label').textContent = new Date().toLocaleDateString('zh-CN', {
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long'
-});
+const today = new Date().toLocaleDateString('zh-CN', {month: 'long', day: 'numeric', weekday: 'long'});
+for (const el of [$('#date-label'), ...document.querySelectorAll('[data-date]')]) el.textContent = today;
 render();
 setPage(location.hash.slice(1) || 'village');
 setInterval(() => {

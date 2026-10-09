@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=11" />
-    <script src="./vendor/lucide-icons.js?v=2" defer></script>
-    <script type="module" src="./app.js?v=10"></script>
+    <link rel="stylesheet" href="./style.css?v=13" />
+    <script src="./vendor/lucide-icons.js?v=3" defer></script>
+    <script type="module" src="./app.js?v=11"></script>
   </head>
   <body>
     <main>
@@ -37,6 +37,7 @@
           <div class="screen-heading">
             <div>
               <span class="eyebrow">YOUR LITTLE WORLD</span>
+              <span class="date-line" data-date></span>
               <h1>我的村庄</h1>
             </div>
             <div class="village-badge">
@@ -123,6 +124,10 @@
         </div>
         <section id="page-focus" hidden class="home-screen focus-screen" aria-label="计时">
           <button class="screen-jump text-button" data-page="village"><i data-lucide="chevron-up"></i>回到村庄</button>
+          <div class="ios-large-title">
+            <span class="date-line" data-date></span>
+            <h1>计时</h1>
+          </div>
           <section class="focus-panel">
             <div class="focus-heading">
               <h2><i data-lucide="timer"></i>留一段时间给自己</h2>
@@ -149,8 +154,13 @@
             </div>
             <div class="focus-reward" id="focus-reward"></div>
             <div class="alert-toggles" role="group" aria-label="到点提醒">
-              <button id="alert-sound" class="alert-chip" aria-pressed="true"><i data-lucide="volume-2"></i>提示音与震动</button
-              ><button id="alert-notify" class="alert-chip" aria-pressed="false"><i data-lucide="bell"></i>系统通知</button>
+              <button id="alert-sound" class="alert-chip" aria-pressed="true">
+                <span class="ios-tile tile-pink"><i data-lucide="volume-2"></i></span><span class="alert-label">提示音与震动</span
+                ><span class="ios-switch" aria-hidden="true"></span></button
+              ><button id="alert-notify" class="alert-chip" aria-pressed="false">
+                <span class="ios-tile tile-red"><i data-lucide="bell"></i></span><span class="alert-label">系统通知</span
+                ><span class="ios-switch" aria-hidden="true"></span>
+              </button>
             </div>
             <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button
             ><button id="cancel-timer" class="text-button" hidden>放弃本次计时</button>
@@ -352,17 +362,29 @@
       </div>
       <div hidden id="recent-sessions"></div>
     </dialog>
-    <dialog id="menu-dialog">
+    <dialog id="menu-dialog" class="ios-sheet">
       <div class="dialog-heading">
-        <h2>村庄菜单</h2>
+        <h2>更多</h2>
         <button data-close="menu-dialog" class="icon-button" aria-label="关闭菜单"><i data-lucide="x"></i></button>
       </div>
-      <div class="menu-grid">
-        <button id="free-build-button" class="menu-wide" disabled>
-          <i data-lucide="blocks"></i><strong>自由建造</strong><span>摆放建筑与装饰，塑造岛屿地貌</span></button
-        ><button data-page="buildings"><i data-lucide="hammer"></i><strong>建筑管理</strong><span>建造、升级与产出</span></button
-        ><button id="settings-button">
-          <i data-lucide="hard-drive-download"></i><strong>存档与规则</strong><span>导入、导出与玩法说明</span>
+      <p class="ios-section-label">村庄</p>
+      <div class="menu-grid ios-list">
+        <button id="free-build-button" class="menu-wide ios-row" disabled>
+          <span class="ios-tile tile-green"><i data-lucide="blocks"></i></span
+          ><span class="ios-row-text"><strong>自由建造</strong><span>摆放建筑与装饰，塑造岛屿地貌</span></span
+          ><i data-lucide="chevron-right" class="ios-chevron"></i></button
+        ><button data-page="buildings" class="ios-row">
+          <span class="ios-tile tile-amber"><i data-lucide="hammer"></i></span
+          ><span class="ios-row-text"><strong>建筑管理</strong><span>建造、升级与产出</span></span
+          ><i data-lucide="chevron-right" class="ios-chevron"></i>
+        </button>
+      </div>
+      <p class="ios-section-label">数据</p>
+      <div class="menu-grid ios-list">
+        <button id="settings-button" class="ios-row">
+          <span class="ios-tile tile-blue"><i data-lucide="hard-drive-download"></i></span
+          ><span class="ios-row-text"><strong>存档与规则</strong><span>导入、导出与玩法说明</span></span
+          ><i data-lucide="chevron-right" class="ios-chevron"></i>
         </button>
       </div>
       <p id="save-state" class="save-caption">进度自动保存在此设备</p>
