@@ -3992,267 +3992,6 @@ body.build-mode .build-entry {
   text-align: center;
 }
 
-/* ======================= wish page (星砂寻宝) ======================= */
-.wish-banner {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  align-items: center;
-  gap: 12px;
-  min-height: 250px;
-  padding: 30px 32px;
-  border-radius: 22px;
-  overflow: hidden;
-  color: #f4f1ff;
-  background: radial-gradient(circle at 78% 55%, #ffcb5c33, transparent 40%),
-    radial-gradient(circle at 20% 110%, #8a58d255, transparent 55%),
-    linear-gradient(160deg, #0b1233, #1d1b4d 60%, #35255e);
-}
-.wish-banner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(1.4px 1.4px at 12% 22%, #fff, transparent),
-    radial-gradient(1px 1px at 32% 70%, #fff, transparent),
-    radial-gradient(1.2px 1.2px at 48% 18%, #fff, transparent),
-    radial-gradient(1px 1px at 62% 82%, #fff, transparent),
-    radial-gradient(1.6px 1.6px at 84% 14%, #fff, transparent),
-    radial-gradient(1px 1px at 92% 64%, #fff, transparent),
-    radial-gradient(1.2px 1.2px at 6% 84%, #fff, transparent),
-    radial-gradient(1px 1px at 72% 40%, #fff, transparent);
-  opacity: 0.8;
-  animation: wish-twinkle 4s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-@keyframes wish-twinkle {
-  to {
-    opacity: 0.35;
-  }
-}
-.wish-copy {
-  position: relative;
-}
-.wish-copy .eyebrow {
-  color: #c9b8ff;
-}
-.wish-copy h2 {
-  margin: 8px 0 8px;
-  font-size: 32px;
-  letter-spacing: 2px;
-  color: #fff;
-  text-shadow: 0 0 24px #b99cff66;
-}
-.wish-copy p {
-  color: #cfc9ef;
-  font-size: 14px;
-  line-height: 1.7;
-}
-.wish-rates {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 16px;
-}
-.wish-rates span {
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  color: #fff;
-  background: color-mix(in srgb, var(--rc) 55%, transparent);
-  border: 1px solid color-mix(in srgb, var(--rc2) 60%, transparent);
-}
-.wish-showcase {
-  position: relative;
-  height: 200px;
-}
-.wish-float {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  filter: drop-shadow(0 0 18px #ffcb5c88);
-  animation: wish-float 5s ease-in-out infinite;
-}
-.wish-float img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.wish-float.f1 {
-  width: 150px;
-  height: 150px;
-  left: 50%;
-  top: 50%;
-  margin: -85px 0 0 -75px;
-}
-.wish-float.f2 {
-  width: 92px;
-  height: 92px;
-  left: 2%;
-  top: 8%;
-  animation-delay: -1.6s;
-  opacity: 0.85;
-}
-.wish-float.f3 {
-  width: 96px;
-  height: 96px;
-  right: 0;
-  bottom: 0;
-  animation-delay: -3.1s;
-  opacity: 0.85;
-}
-@keyframes wish-float {
-  50% {
-    transform: translateY(-10px);
-  }
-}
-.wish-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 18px 0 14px;
-}
-.wish-balance {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 20px;
-  background: #f1edfd;
-  color: #5b4b9a;
-  font-size: 13px;
-  white-space: nowrap;
-}
-.wish-balance b {
-  font-size: 16px;
-}
-.wish-balance svg {
-  width: 16px;
-  height: 16px;
-}
-.wish-pity {
-  flex: 1;
-  min-width: 0;
-  font-size: 12px;
-  color: #6f7d68;
-}
-.pity-track {
-  height: 6px;
-  margin-top: 6px;
-  border-radius: 3px;
-  background: #eceee6;
-  overflow: hidden;
-}
-.pity-track i {
-  display: block;
-  height: 100%;
-  width: 0;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--r-epic), var(--r-legendary-2));
-  transition: width 0.5s;
-}
-.wish-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.wish-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-height: 62px;
-  border-radius: 31px;
-  border: 1px solid #e3dcc6;
-  background: linear-gradient(180deg, #fffdf6, #f2ecdb);
-  color: #4a4234;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow:
-    0 4px 0 #e2d7b9,
-    0 8px 18px #6b5a2a1a;
-}
-.wish-btn small {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #8a7a5a;
-}
-.wish-btn small svg {
-  width: 13px;
-  height: 13px;
-}
-.wish-btn.gold {
-  border-color: #e7c06a;
-  background: linear-gradient(180deg, #fff3cf, #f5d27f);
-  color: #5e4310;
-  box-shadow:
-    0 4px 0 #d9ad4f,
-    0 8px 18px #a8771a33;
-}
-.wish-btn.gold small {
-  color: #7d5b17;
-}
-.wish-btn:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #e2d7b9;
-}
-.wish-page-note,
-.draw-balance {
-  display: block;
-  margin: 10px 0 18px;
-  text-align: center;
-  font-size: 12px;
-  color: #8a957e;
-}
-.wish-log {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.wish-log-row {
-  display: grid;
-  grid-template-columns: 40px 1fr auto auto;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px 6px 6px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--rc2) 28%, #fff), #fff 60%);
-  font-size: 13px;
-}
-.wish-log-row b {
-  color: color-mix(in srgb, var(--rc) 75%, #243e36);
-  font-weight: 600;
-}
-.wl-art {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  background: linear-gradient(160deg, var(--rc2), var(--rc));
-  color: #fff;
-}
-.wl-art img {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-}
-.wl-art svg {
-  width: 20px;
-  height: 20px;
-}
-.wl-stars {
-  color: #e2b13e;
-  font-size: 11px;
-  letter-spacing: 1px;
-}
-.wish-log-row time {
-  font-size: 11px;
-  color: #9aa592;
-}
-
 /* ======================= wish stage (full-screen animation) ======================= */
 .wish-stage {
   position: fixed;
@@ -4612,41 +4351,6 @@ body.build-mode .build-entry {
   .cabinet-grid .collectible p {
     display: none;
   }
-  .wish-banner {
-    grid-template-columns: 1fr;
-    padding: 22px 20px 0;
-    min-height: 0;
-  }
-  .wish-showcase {
-    height: 150px;
-  }
-  .wish-float.f1 {
-    width: 120px;
-    height: 120px;
-    margin: -70px 0 0 -60px;
-  }
-  .wish-float.f2,
-  .wish-float.f3 {
-    width: 70px;
-    height: 70px;
-  }
-  .wish-copy h2 {
-    font-size: 26px;
-  }
-  .wish-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  .wish-balance {
-    align-self: flex-start;
-  }
-  .wish-log-row time {
-    display: none;
-  }
-  .wish-log-row {
-    grid-template-columns: 40px 1fr auto;
-  }
   .ws-info {
     left: 22px;
     right: 22px;
@@ -4668,7 +4372,8 @@ body.build-mode .build-entry {
   .ws-rays,
   .wish-float,
   .wish-banner::before,
-  .ws-tap {
+  .ws-tap,
+  .wish-halo {
     animation: none !important;
   }
 }
@@ -4692,4 +4397,434 @@ body.build-mode .build-entry {
 .menu-grid .menu-span span {
   flex-basis: 100%;
   padding-left: 37px;
+}
+
+/* ======================= wish page (星砂寻宝): immersive night theme ======================= */
+.secondary-dialog.wish-mode {
+  background: radial-gradient(120% 60% at 50% 0%, #2b2a6b 0%, transparent 60%),
+    linear-gradient(180deg, #0c1233 0%, #161a45 45%, #251c4c 100%);
+  color: #eef0ff;
+}
+.secondary-dialog.wish-mode > .dialog-heading {
+  background: #0c1233e6;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom-color: #ffffff14;
+}
+.secondary-dialog.wish-mode > .dialog-heading h2 {
+  color: #f1efff;
+}
+.secondary-dialog.wish-mode > .dialog-heading .icon-button {
+  background: #ffffff12;
+  color: #c9c6ef;
+}
+.secondary-dialog.wish-mode .secondary-heading {
+  display: none;
+}
+.wish-banner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  grid-template-areas: 'copy show';
+  align-items: center;
+  gap: 8px 24px;
+  margin-top: 20px;
+  padding: 28px 32px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid #ffffff14;
+  background: radial-gradient(circle at 72% 50%, #ffcb5c26, transparent 45%),
+    radial-gradient(circle at 10% 110%, #8a58d240, transparent 55%),
+    linear-gradient(160deg, #111a46, #231f58 60%, #3a2866);
+  box-shadow:
+    inset 0 1px 0 #ffffff1a,
+    0 20px 40px #0006;
+}
+.wish-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(1.4px 1.4px at 12% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 32% 70%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 48% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 62% 86%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 88% 14%, #fff, transparent),
+    radial-gradient(1px 1px at 94% 64%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 6% 84%, #fff, transparent),
+    radial-gradient(1px 1px at 76% 40%, #fff, transparent),
+    radial-gradient(1px 1px at 22% 48%, #fff, transparent);
+  opacity: 0.8;
+  animation: wish-twinkle 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes wish-twinkle {
+  to {
+    opacity: 0.35;
+  }
+}
+.wish-copy {
+  grid-area: copy;
+  position: relative;
+}
+.wish-copy .eyebrow {
+  color: #b9a8ff;
+  letter-spacing: 2.5px;
+}
+.wish-copy h2 {
+  margin: 10px 0;
+  font-size: 34px;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 28px #b99cff80;
+}
+.wish-copy p {
+  color: #cdc8f0;
+  font-size: 14px;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+.wish-rates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+.wish-rates span {
+  padding: 4px 11px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fff;
+  background: color-mix(in srgb, var(--rc) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rc2) 55%, transparent);
+}
+.wish-showcase {
+  grid-area: show;
+  position: relative;
+  height: 230px;
+}
+.wish-halo {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd77a55 0%, #ffcb5c22 35%, transparent 65%),
+    repeating-conic-gradient(from 0deg, #ffe2a024 0deg 6deg, transparent 6deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%);
+  mask: radial-gradient(circle, #000 30%, transparent 70%);
+  animation: ws-spin 30s linear infinite;
+}
+.wish-float {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  animation: wish-float 5s ease-in-out infinite;
+}
+.wish-float img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.wish-float.f1 {
+  width: 170px;
+  height: 170px;
+  left: 50%;
+  top: 46%;
+  margin: -92px 0 0 -85px;
+  filter: drop-shadow(0 0 22px #ffcb5c99) drop-shadow(0 14px 18px #0007);
+}
+.wish-float.f2,
+.wish-float.f3 {
+  width: 92px;
+  height: 92px;
+  top: 52%;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 14px #ff9a5c66) drop-shadow(0 10px 12px #0006);
+}
+.wish-float.f2 {
+  left: 4%;
+  animation-delay: -1.6s;
+}
+.wish-float.f3 {
+  right: 4%;
+  animation-delay: -3.1s;
+  filter: drop-shadow(0 0 14px #9be0a066) drop-shadow(0 10px 12px #0006);
+}
+@keyframes wish-float {
+  50% {
+    transform: translateY(-9px);
+  }
+}
+.wish-status {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+  margin: 16px 0 14px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: #ffffff0d;
+  border: 1px solid #ffffff17;
+}
+.wish-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 18px;
+  border-right: 1px solid #ffffff17;
+}
+.wish-balance > span,
+.wish-pity-head span {
+  font-size: 12px;
+  color: #a9a6d4;
+}
+.wish-balance b {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 24px;
+  font-weight: 650;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.wish-balance b svg {
+  width: 20px;
+  height: 20px;
+  color: #ffd56a;
+}
+.wish-pity {
+  min-width: 0;
+}
+.wish-pity-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.wish-pity-head b {
+  font-size: 14px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.pity-segs {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 3px;
+  margin: 8px 0 6px;
+}
+.pity-segs i {
+  height: 6px;
+  border-radius: 3px;
+  background: #ffffff1c;
+}
+.pity-segs i.on {
+  background: linear-gradient(90deg, var(--r-epic-2), var(--r-legendary-2));
+  box-shadow: 0 0 6px #c9a2f580;
+}
+.wish-pity p {
+  font-size: 12px;
+  color: #a9a6d4;
+}
+.wish-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.wish-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 66px;
+  border-radius: 33px;
+  border: 1px solid #fff6dd;
+  background: linear-gradient(180deg, #fffdf6, #ece4cf);
+  color: #3d3528;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 1px;
+  box-shadow:
+    0 0 0 4px #ffffff10,
+    0 10px 24px #0007;
+}
+.wish-btn small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: #7f735b;
+}
+.wish-btn small svg {
+  width: 13px;
+  height: 13px;
+}
+.wish-btn.gold {
+  border-color: #ffe7a6;
+  background: linear-gradient(180deg, #fff1c6, #f1c260);
+  color: #4d3508;
+  box-shadow:
+    0 0 0 4px #ffcb5c22,
+    0 0 28px #ffcb5c55,
+    0 10px 24px #0007;
+}
+.wish-btn.gold small {
+  color: #765212;
+}
+.wish-btn:hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+.wish-btn:active:not(:disabled) {
+  transform: translateY(2px);
+}
+.wish-btn:disabled {
+  opacity: 1;
+  border-color: #ffffff1f;
+  background: #ffffff10;
+  color: #b8b5dc;
+  box-shadow: none;
+}
+.wish-btn:disabled small {
+  color: #8f8cbc;
+}
+.wish-mode .draw-balance {
+  display: block;
+  min-height: 18px;
+  margin: 12px 0 18px;
+  text-align: center;
+  font-size: 12px;
+  color: #8f8cbc;
+}
+.wish-history {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #ffffff0a;
+  border: 1px solid #ffffff12;
+}
+.wish-history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.wish-history-head h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #f1efff;
+}
+.wish-history-head span {
+  font-size: 11px;
+  color: #8f8cbc;
+}
+.wish-log {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wish-log-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rc) 30%, transparent), #ffffff06 70%);
+  font-size: 13px;
+}
+.wish-log-row b {
+  color: color-mix(in srgb, var(--rc2) 80%, #fff);
+  font-weight: 600;
+}
+.wl-art {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(160deg, var(--rc2), var(--rc));
+  color: #fff;
+}
+.wl-art img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+.wl-art svg {
+  width: 20px;
+  height: 20px;
+}
+.wl-stars {
+  color: #ffd56a;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.wish-log-row time {
+  font-size: 11px;
+  color: #8f8cbc;
+}
+.wish-mode .empty-state {
+  color: #a9a6d4;
+  background: transparent;
+  border: 1px dashed #ffffff1f;
+}
+@media (max-width: 760px) {
+  .wish-banner {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'show' 'copy';
+    margin-top: 14px;
+    padding: 6px 20px 22px;
+    text-align: center;
+  }
+  .wish-showcase {
+    height: 200px;
+  }
+  .wish-float.f1 {
+    width: 150px;
+    height: 150px;
+    margin: -82px 0 0 -75px;
+  }
+  .wish-float.f2,
+  .wish-float.f3 {
+    width: 74px;
+    height: 74px;
+  }
+  .wish-copy h2 {
+    font-size: 28px;
+  }
+  .wish-rates {
+    justify-content: center;
+  }
+  .wish-status {
+    gap: 14px;
+    padding: 14px 16px;
+  }
+  .wish-balance {
+    padding-right: 14px;
+  }
+  .wish-btn {
+    min-height: 62px;
+  }
+  .wish-log-row {
+    grid-template-columns: 40px 1fr auto;
+  }
+  .wish-log-row time {
+    display: none;
+  }
+}
+.wish-copy .nowrap {
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .wish-rates {
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+  .wish-rates span {
+    padding: 3px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
 }

@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=8" />
+    <link rel="stylesheet" href="./style.css?v=9" />
     <script src="./vendor/lucide.min.js" defer></script>
-    <script type="module" src="./app.js?v=6"></script>
+    <script type="module" src="./app.js?v=7"></script>
   </head>
   <body>
     <main>
@@ -294,39 +294,40 @@
       </div>
       <div id="page-wish" class="page" hidden>
         <section class="wish-banner">
+          <div class="wish-showcase" aria-hidden="true">
+            <span class="wish-halo"></span><span class="wish-float f2" data-thumb="phoenix"></span
+            ><span class="wish-float f3" data-thumb="bonsai"></span><span class="wish-float f1" data-thumb="crown"></span>
+          </div>
           <div class="wish-copy">
             <span class="eyebrow">STARDUST WISH · 常驻寻宝</span>
             <h2>星海寻宝</h2>
-            <p>把专注攒下的星砂撒向夜空，看看今晚会落下什么。</p>
+            <p>把专注攒下的星砂撒向夜空，<span class="nowrap">看看今晚会落下什么。</span></p>
             <div class="wish-rates">
               <span class="r-legendary">传说 2%</span><span class="r-epic">史诗 10%</span><span class="r-rare">稀有 28%</span
               ><span class="r-common">寻常 60%</span>
             </div>
           </div>
-          <div class="wish-showcase" aria-hidden="true">
-            <span class="wish-float f1" data-thumb="crown"></span><span class="wish-float f2" data-thumb="phoenix"></span
-            ><span class="wish-float f3" data-thumb="bonsai"></span>
+        </section>
+        <section class="wish-status">
+          <div class="wish-balance">
+            <span>星砂</span>
+            <b><i data-lucide="sparkles"></i><span id="wish-balance">0</span></b>
+          </div>
+          <div class="wish-pity">
+            <div class="wish-pity-head"><span>保底进度</span><b id="pity-count">0 / 20</b></div>
+            <div class="pity-segs" id="pity-segs" aria-hidden="true"></div>
+            <p id="pity-label">20 次内必得史诗或传说</p>
           </div>
         </section>
-        <div class="wish-bar">
-          <span class="wish-balance"><i data-lucide="sparkles"></i><b id="wish-balance">0</b> 星砂</span>
-          <div class="wish-pity">
-            <span id="pity-label">连续 20 次必得史诗或传说</span>
-            <div class="pity-track"><i id="pity-fill"></i></div>
-          </div>
-        </div>
         <div class="wish-actions">
-          <button id="draw-one" class="wish-btn">
-            <span>寻找一次</span><small><i data-lucide="sparkles"></i>30</small></button
-          ><button id="draw-five" class="wish-btn gold">
-            <span>寻找五次</span><small><i data-lucide="sparkles"></i>150</small>
-          </button>
+          <button id="draw-one" class="wish-btn"><span>寻找一次</span><small id="draw-one-cost"></small></button
+          ><button id="draw-five" class="wish-btn gold"><span>寻找五次</span><small id="draw-five-cost"></small></button>
         </div>
         <p id="draw-balance" class="draw-balance"></p>
-        <section class="white-panel">
-          <div class="section-heading">
-            <h2>最近寻宝</h2>
-            <span class="subtle">仅保存在本设备</span>
+        <section class="wish-history">
+          <div class="wish-history-head">
+            <h3>最近寻宝</h3>
+            <span>仅保存在本设备</span>
           </div>
           <div id="wish-log" class="wish-log"></div>
         </section>

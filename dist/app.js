@@ -151,6 +151,7 @@ function setPage(p) {
   $('#page-label').textContent = titles[p][0];
   $('#page-title').textContent = titles[p][1];
   $('#page-subtitle').textContent = titles[p][2];
+  $('#secondary-dialog').classList.toggle('wish-mode', p === 'wish');
   if (!$('#secondary-dialog').open) $('#secondary-dialog').showModal();
   $('#secondary-dialog').scrollTop = 0;
   render();
@@ -497,12 +498,22 @@ function renderCollections() {
     })
     .join('');
   // wish page
-  $('#wish-balance').textContent = fmt(state.resources.stars);
-  $('#pity-label').textContent = `保底进度 ${state.pity} / 20 · 再 ${20 - state.pity} 次内必得史诗或传说`;
-  $('#pity-fill').style.width = `${(state.pity / 20) * 100}%`;
-  $('#draw-balance').textContent = `已寻宝 ${state.draws} 次`;
-  $('#draw-one').disabled = state.resources.stars < 30 || drawBusy || broken;
-  $('#draw-five').disabled = state.resources.stars < 150 || drawBusy || broken;
+  const stars = state.resources.stars,
+    costLabel = need =>
+      stars >= need ? `${icon('sparkles')}${need}` : `还差 ${fmt(Math.ceil(need - stars))} 星砂`;
+  $('#wish-balance').textContent = fmt(stars);
+  $('#pity-count').textContent = `${state.pity} / 20`;
+  $('#pity-segs').innerHTML = Array.from(
+    {length: 20},
+    (_, i) => `<i class="${i < state.pity ? 'on' : ''}"></i>`
+  ).join('');
+  $('#pity-label').textContent =
+    state.pity >= 19 ? '下一次必得史诗或传说' : `再 ${20 - state.pity} 次内必得史诗或传说`;
+  $('#draw-balance').textContent = state.draws ? `已寻宝 ${state.draws} 次` : '';
+  $('#draw-one-cost').innerHTML = costLabel(30);
+  $('#draw-five-cost').innerHTML = costLabel(150);
+  $('#draw-one').disabled = stars < 30 || drawBusy || broken;
+  $('#draw-five').disabled = stars < 150 || drawBusy || broken;
   const log = wishLog().slice(0, 20);
   $('#wish-log').innerHTML = log.length
     ? log
