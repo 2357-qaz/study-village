@@ -1,6 +1,6 @@
 // Study journal: totals, weekly chart and session history.
 import * as C from '../core.js?v=4';
-import {$, icon, esc, duration, weekData, icons, onRender, state} from './store.js?v=8';
+import {$, icon, esc, duration, weekData, icons, onRender, state} from './store.js?v=9';
 let historyLimit = 30;
 function sessionHTML(x) {
   return `<div class="session-row"><span class="session-icon">${icon(x.kind === 'study' ? 'book-open' : 'coffee')}</span><div><div class="session-topic">${esc(x.kind === 'study' ? x.topic : '好好休息')}</div><div class="session-meta">${new Date(x.endedAt).toLocaleString('zh-CN', {month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'})} · ${x.manual ? '补记学习' : x.kind === 'study' ? '专注打卡' : '休息打卡'}</div></div><span class="session-duration">${duration(x.seconds)}</span></div>`;

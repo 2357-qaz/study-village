@@ -186,9 +186,9 @@ export function playWish(host, results, opts) {
         dt = 1 / 60;
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       const sky = g.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, '#060a1f');
-      sky.addColorStop(0.55, '#141a43');
-      sky.addColorStop(1, '#2a1f4f');
+      sky.addColorStop(0, '#081329');
+      sky.addColorStop(0.55, '#13284a');
+      sky.addColorStop(1, '#22405a');
       g.globalCompositeOperation = 'source-over';
       g.fillStyle = sky;
       g.fillRect(0, 0, W, H);

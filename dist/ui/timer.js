@@ -12,7 +12,7 @@ import {
   onRender,
   state,
   broken
-} from './store.js?v=8';
+} from './store.js?v=9';
 let mode = 'study',
   minutes = 25,
   readyNotified = false;

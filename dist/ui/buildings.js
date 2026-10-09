@@ -1,7 +1,7 @@
 // Building management list (建筑管理).
 import * as C from '../core.js?v=4';
-import {$, icon, transact, toast, safe, onRender, buildOK, state, broken} from './store.js?v=8';
-import {enterBuild} from './build.js?v=8';
+import {$, icon, transact, toast, safe, onRender, buildOK, state, broken} from './store.js?v=9';
+import {enterBuild} from './build.js?v=9';
 export function renderBuildings() {
   const pop = C.population(state);
   $('#buildings').innerHTML = C.BUILDINGS.map(b => {
