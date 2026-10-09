@@ -1,5 +1,5 @@
 // Collectible 3D thumbnails: icons render first, then swap to cached PNGs; any failure silently keeps the icon.
-import {icon, items3d} from './store.js?v=8';
+import {icon, items3d} from './store.js?v=9';
 const thumbCache = new Map(),
   thumbPending = new Map(),
   thumbFail = new Set();

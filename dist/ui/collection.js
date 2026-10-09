@@ -14,8 +14,8 @@ import {
   broken,
   items3d,
   page
-} from './store.js?v=8';
-import {thumbInner, wantThumb, hydrateThumbs} from './thumbs.js?v=8';
+} from './store.js?v=9';
+import {thumbInner, wantThumb, hydrateThumbs} from './thumbs.js?v=9';
 let drawBusy = false,
   viewer = null,
   viewToken = 0;
@@ -175,7 +175,7 @@ async function search(count) {
     addWishLog(result);
     renderCollections();
     try {
-      wishModule ??= await import('../wish.js?v=6');
+      wishModule ??= await import('../wish.js?v=7');
       await playWishStage(result);
     } catch {
       showResultDialog(result);

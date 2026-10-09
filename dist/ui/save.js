@@ -15,7 +15,7 @@ import {
   setBroken,
   state,
   broken
-} from './store.js?v=8';
+} from './store.js?v=9';
 export function renderBackup() {
   const prefs = A.loadPrefs(),
     due = broken

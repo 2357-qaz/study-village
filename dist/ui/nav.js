@@ -1,5 +1,5 @@
 // Page navigation: the two swipeable home screens and the secondary pages in a dialog.
-import {$, $$, render, safe, setCurrentPage} from './store.js?v=8';
+import {$, $$, render, safe, setCurrentPage} from './store.js?v=9';
 // Bottom navigation: which dock item represents each page.
 const DOCK = {
   village: 'village',
@@ -56,7 +56,6 @@ export function setPage(p) {
   $('#page-label').textContent = titles[p][0];
   $('#page-title').textContent = titles[p][1];
   $('#page-subtitle').textContent = titles[p][2];
-  sheet.classList.toggle('wish-mode', p === 'wish');
   // 寻宝 and 奇物柜 share one dock item; a segmented switch moves between them.
   $('#wonder-switch').hidden = !(p === 'wish' || p === 'collection');
   $$('#wonder-switch [data-page]').forEach(b =>

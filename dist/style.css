@@ -4005,7 +4005,7 @@ body.build-mode .build-entry {
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: #060a1f;
+  background: #081329;
   color: #fff;
   overflow: hidden;
   user-select: none;
@@ -4014,7 +4014,7 @@ body.build-mode .build-entry {
   --fx-rgb: 255, 255, 255;
 }
 .wish-stage::backdrop {
-  background: #060a1f;
+  background: #081329;
 }
 .ws-sky {
   position: absolute;
@@ -4049,7 +4049,7 @@ body.build-mode .build-entry {
   border: 1px solid #ffffff40;
   border-radius: 19px;
   background: #ffffff14;
-  color: #e9ecff;
+  color: #e6eef7;
   font-size: 13px;
   letter-spacing: 1px;
   backdrop-filter: blur(6px);
@@ -4190,7 +4190,7 @@ body.build-mode .build-entry {
   margin-top: 10px;
   font-size: 14px;
   line-height: 1.7;
-  color: #d9dcf5;
+  color: #d4deea;
 }
 .ws-new {
   position: absolute;
@@ -4216,7 +4216,7 @@ body.build-mode .build-entry {
   bottom: calc(34px + env(safe-area-inset-bottom));
   text-align: center;
   font-size: 13px;
-  color: #c7cbea;
+  color: #c2cfdd;
   letter-spacing: 2px;
   animation: ws-breathe 1.8s ease-in-out infinite;
 }
@@ -4239,7 +4239,7 @@ body.build-mode .build-entry {
 .ws-summary-title {
   font-size: 15px;
   letter-spacing: 6px;
-  color: #d9d4ff;
+  color: #d6e2ef;
 }
 .ws-cards {
   display: flex;
@@ -4328,10 +4328,10 @@ body.build-mode .build-entry {
 .ws-done {
   min-height: 48px;
   padding: 0 34px;
-  border: 1px solid #f0d790;
-  border-radius: 24px;
-  background: linear-gradient(180deg, #fff3cf, #f5d27f);
-  color: #5e4310;
+  border: 1px solid #cedf9c;
+  border-radius: 14px;
+  background: #d8eaaa;
+  color: #294735;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -4399,28 +4399,9 @@ body.build-mode .build-entry {
   padding-left: 37px;
 }
 
-/* ======================= wish page (星砂寻宝): immersive night theme ======================= */
-.secondary-dialog.wish-mode {
-  background: radial-gradient(120% 60% at 50% 0%, #2b2a6b 0%, transparent 60%),
-    linear-gradient(180deg, #0c1233 0%, #161a45 45%, #251c4c 100%);
-  color: #eef0ff;
-}
-.secondary-dialog.wish-mode > .dialog-heading {
-  background: #0c1233e6;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-bottom-color: #ffffff14;
-}
-.secondary-dialog.wish-mode > .dialog-heading h2 {
-  color: #f1efff;
-}
-.secondary-dialog.wish-mode > .dialog-heading .icon-button {
-  background: #ffffff12;
-  color: #c9c6ef;
-}
-.secondary-dialog.wish-mode .secondary-heading {
-  display: none;
-}
+/* ======================= wish page (星砂寻宝) =======================
+   Same language as the rest of the app: cream page, white cards, lime primary action.
+   Only the banner is a night scene, in the brand's forest green; gold is reserved for legendary. */
 .wish-banner {
   position: relative;
   display: grid;
@@ -4428,17 +4409,14 @@ body.build-mode .build-entry {
   grid-template-areas: 'copy show';
   align-items: center;
   gap: 8px 24px;
-  margin-top: 20px;
+  margin-top: 12px;
   padding: 28px 32px;
-  border-radius: 24px;
+  border-radius: 22px;
   overflow: hidden;
-  border: 1px solid #ffffff14;
-  background: radial-gradient(circle at 72% 50%, #ffcb5c26, transparent 45%),
-    radial-gradient(circle at 10% 110%, #8a58d240, transparent 55%),
-    linear-gradient(160deg, #111a46, #231f58 60%, #3a2866);
-  box-shadow:
-    inset 0 1px 0 #ffffff1a,
-    0 20px 40px #0006;
+  color: #eef5e6;
+  background: radial-gradient(circle at 74% 48%, #f7d27a2e, transparent 42%),
+    radial-gradient(circle at 10% 115%, #5fae8840, transparent 55%),
+    linear-gradient(160deg, #0f3029, #153f35 55%, #1e5142);
 }
 .wish-banner::before {
   content: '';
@@ -4453,13 +4431,13 @@ body.build-mode .build-entry {
     radial-gradient(1.2px 1.2px at 6% 84%, #fff, transparent),
     radial-gradient(1px 1px at 76% 40%, #fff, transparent),
     radial-gradient(1px 1px at 22% 48%, #fff, transparent);
-  opacity: 0.8;
+  opacity: 0.7;
   animation: wish-twinkle 4s ease-in-out infinite alternate;
   pointer-events: none;
 }
 @keyframes wish-twinkle {
   to {
-    opacity: 0.35;
+    opacity: 0.3;
   }
 }
 .wish-copy {
@@ -4467,21 +4445,23 @@ body.build-mode .build-entry {
   position: relative;
 }
 .wish-copy .eyebrow {
-  color: #b9a8ff;
+  color: #b7d49c;
   letter-spacing: 2.5px;
 }
 .wish-copy h2 {
   margin: 10px 0;
-  font-size: 34px;
+  font-size: 32px;
   letter-spacing: 4px;
   color: #fff;
-  text-shadow: 0 0 28px #b99cff80;
 }
 .wish-copy p {
-  color: #cdc8f0;
+  color: #cadbc8;
   font-size: 14px;
   line-height: 1.75;
   text-wrap: pretty;
+}
+.wish-copy .nowrap {
+  white-space: nowrap;
 }
 .wish-rates {
   display: flex;
@@ -4490,12 +4470,22 @@ body.build-mode .build-entry {
   margin-top: 18px;
 }
 .wish-rates span {
-  padding: 4px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
-  color: #fff;
-  background: color-mix(in srgb, var(--rc) 45%, transparent);
-  border: 1px solid color-mix(in srgb, var(--rc2) 55%, transparent);
+  color: #e6efdd;
+  background: #ffffff12;
+  border: 1px solid #ffffff1f;
+}
+.wish-rates span::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rc2);
 }
 .wish-showcase {
   grid-area: show;
@@ -4506,12 +4496,12 @@ body.build-mode .build-entry {
   position: absolute;
   left: 50%;
   top: 46%;
-  width: 260px;
-  height: 260px;
-  margin: -130px 0 0 -130px;
+  width: 250px;
+  height: 250px;
+  margin: -125px 0 0 -125px;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffd77a55 0%, #ffcb5c22 35%, transparent 65%),
-    repeating-conic-gradient(from 0deg, #ffe2a024 0deg 6deg, transparent 6deg 18deg);
+  background: radial-gradient(circle, #f7d27a4d 0%, #f7d27a1a 38%, transparent 65%),
+    repeating-conic-gradient(from 0deg, #fff3cc1c 0deg 6deg, transparent 6deg 18deg);
   -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%);
   mask: radial-gradient(circle, #000 30%, transparent 70%);
   animation: ws-spin 30s linear infinite;
@@ -4533,15 +4523,15 @@ body.build-mode .build-entry {
   left: 50%;
   top: 46%;
   margin: -92px 0 0 -85px;
-  filter: drop-shadow(0 0 22px #ffcb5c99) drop-shadow(0 14px 18px #0007);
+  filter: drop-shadow(0 0 18px #f7d27a80) drop-shadow(0 14px 16px #0006);
 }
 .wish-float.f2,
 .wish-float.f3 {
   width: 92px;
   height: 92px;
   top: 52%;
-  opacity: 0.9;
-  filter: drop-shadow(0 0 14px #ff9a5c66) drop-shadow(0 10px 12px #0006);
+  opacity: 0.92;
+  filter: drop-shadow(0 10px 12px #0005);
 }
 .wish-float.f2 {
   left: 4%;
@@ -4550,7 +4540,6 @@ body.build-mode .build-entry {
 .wish-float.f3 {
   right: 4%;
   animation-delay: -3.1s;
-  filter: drop-shadow(0 0 14px #9be0a066) drop-shadow(0 10px 12px #0006);
 }
 @keyframes wish-float {
   50% {
@@ -4562,23 +4551,23 @@ body.build-mode .build-entry {
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 18px;
-  margin: 16px 0 14px;
+  margin: 14px 0 12px;
   padding: 16px 20px;
   border-radius: 18px;
-  background: #ffffff0d;
-  border: 1px solid #ffffff17;
+  background: #fff;
+  border: 1px solid #e3e9dc;
 }
 .wish-balance {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding-right: 18px;
-  border-right: 1px solid #ffffff17;
+  border-right: 1px solid #e7ecdf;
 }
 .wish-balance > span,
 .wish-pity-head span {
   font-size: 12px;
-  color: #a9a6d4;
+  color: #7c8982;
 }
 .wish-balance b {
   display: inline-flex;
@@ -4586,13 +4575,13 @@ body.build-mode .build-entry {
   gap: 6px;
   font-size: 24px;
   font-weight: 650;
-  color: #fff;
+  color: #243e36;
   font-variant-numeric: tabular-nums;
 }
 .wish-balance b svg {
   width: 20px;
   height: 20px;
-  color: #ffd56a;
+  color: #8f7ad0;
 }
 .wish-pity {
   min-width: 0;
@@ -4604,7 +4593,7 @@ body.build-mode .build-entry {
 }
 .wish-pity-head b {
   font-size: 14px;
-  color: #fff;
+  color: #243e36;
   font-variant-numeric: tabular-nums;
 }
 .pity-segs {
@@ -4616,15 +4605,14 @@ body.build-mode .build-entry {
 .pity-segs i {
   height: 6px;
   border-radius: 3px;
-  background: #ffffff1c;
+  background: #eceee6;
 }
 .pity-segs i.on {
-  background: linear-gradient(90deg, var(--r-epic-2), var(--r-legendary-2));
-  box-shadow: 0 0 6px #c9a2f580;
+  background: #6f9b5f;
 }
 .wish-pity p {
   font-size: 12px;
-  color: #a9a6d4;
+  color: #7c8982;
 }
 .wish-actions {
   display: grid;
@@ -4636,18 +4624,15 @@ body.build-mode .build-entry {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  min-height: 66px;
-  border-radius: 33px;
-  border: 1px solid #fff6dd;
-  background: linear-gradient(180deg, #fffdf6, #ece4cf);
-  color: #3d3528;
+  gap: 2px;
+  min-height: 60px;
+  border-radius: 14px;
+  border: 1px solid #e2e8d9;
+  background: #f9faf5;
+  color: #3d5038;
   font-size: 16px;
   font-weight: 650;
   letter-spacing: 1px;
-  box-shadow:
-    0 0 0 4px #ffffff10,
-    0 10px 24px #0007;
 }
 .wish-btn small {
   display: inline-flex;
@@ -4656,53 +4641,52 @@ body.build-mode .build-entry {
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0;
-  color: #7f735b;
+  color: #74826b;
 }
 .wish-btn small svg {
   width: 13px;
   height: 13px;
+  color: #8f7ad0;
 }
 .wish-btn.gold {
-  border-color: #ffe7a6;
-  background: linear-gradient(180deg, #fff1c6, #f1c260);
-  color: #4d3508;
-  box-shadow:
-    0 0 0 4px #ffcb5c22,
-    0 0 28px #ffcb5c55,
-    0 10px 24px #0007;
+  border-color: #cedf9c;
+  background: #d8eaaa;
+  color: #294735;
 }
 .wish-btn.gold small {
-  color: #765212;
+  color: #4f6b3f;
 }
 .wish-btn:hover:not(:disabled) {
-  filter: brightness(1.04);
+  filter: brightness(0.98);
 }
 .wish-btn:active:not(:disabled) {
-  transform: translateY(2px);
+  transform: translateY(1px);
 }
 .wish-btn:disabled {
   opacity: 1;
-  border-color: #ffffff1f;
-  background: #ffffff10;
-  color: #b8b5dc;
-  box-shadow: none;
+  border-color: #e7ebe2;
+  background: #f3f5ef;
+  color: #a3ad9b;
 }
 .wish-btn:disabled small {
-  color: #8f8cbc;
+  color: #a3ad9b;
 }
-.wish-mode .draw-balance {
+.wish-btn:disabled small svg {
+  color: inherit;
+}
+#page-wish .draw-balance {
   display: block;
   min-height: 18px;
-  margin: 12px 0 18px;
+  margin: 10px 0 16px;
   text-align: center;
   font-size: 12px;
-  color: #8f8cbc;
+  color: #8a957e;
 }
 .wish-history {
   padding: 16px 18px;
   border-radius: 18px;
-  background: #ffffff0a;
-  border: 1px solid #ffffff12;
+  background: #fff;
+  border: 1px solid #e3e9dc;
 }
 .wish-history-head {
   display: flex;
@@ -4713,11 +4697,11 @@ body.build-mode .build-entry {
 .wish-history-head h3 {
   margin: 0;
   font-size: 15px;
-  color: #f1efff;
+  color: #243e36;
 }
 .wish-history-head span {
-  font-size: 11px;
-  color: #8f8cbc;
+  font-size: 12px;
+  color: #8a957e;
 }
 .wish-log {
   display: flex;
@@ -4731,11 +4715,11 @@ body.build-mode .build-entry {
   gap: 10px;
   padding: 6px 12px 6px 6px;
   border-radius: 12px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--rc) 30%, transparent), #ffffff06 70%);
+  background: #f6f8f2;
   font-size: 13px;
 }
 .wish-log-row b {
-  color: color-mix(in srgb, var(--rc2) 80%, #fff);
+  color: #2f4436;
   font-weight: 600;
 }
 .wl-art {
@@ -4757,45 +4741,47 @@ body.build-mode .build-entry {
   height: 20px;
 }
 .wl-stars {
-  color: #ffd56a;
+  color: var(--rc);
   font-size: 11px;
   letter-spacing: 1px;
 }
 .wish-log-row time {
-  font-size: 11px;
-  color: #8f8cbc;
-}
-.wish-mode .empty-state {
-  color: #a9a6d4;
-  background: transparent;
-  border: 1px dashed #ffffff1f;
+  font-size: 12px;
+  color: #8a957e;
 }
 @media (max-width: 760px) {
   .wish-banner {
     grid-template-columns: 1fr;
     grid-template-areas: 'show' 'copy';
-    margin-top: 14px;
-    padding: 6px 20px 22px;
+    margin-top: 8px;
+    padding: 6px 18px 20px;
     text-align: center;
   }
   .wish-showcase {
-    height: 200px;
+    height: 190px;
   }
   .wish-float.f1 {
-    width: 150px;
-    height: 150px;
-    margin: -82px 0 0 -75px;
+    width: 146px;
+    height: 146px;
+    margin: -80px 0 0 -73px;
   }
   .wish-float.f2,
   .wish-float.f3 {
-    width: 74px;
-    height: 74px;
+    width: 72px;
+    height: 72px;
   }
   .wish-copy h2 {
-    font-size: 28px;
+    font-size: 26px;
   }
   .wish-rates {
     justify-content: center;
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+  .wish-rates span {
+    padding: 3px 8px;
+    font-size: 11px;
+    white-space: nowrap;
   }
   .wish-status {
     gap: 14px;
@@ -4804,28 +4790,11 @@ body.build-mode .build-entry {
   .wish-balance {
     padding-right: 14px;
   }
-  .wish-btn {
-    min-height: 62px;
-  }
   .wish-log-row {
     grid-template-columns: 40px 1fr auto;
   }
   .wish-log-row time {
     display: none;
-  }
-}
-.wish-copy .nowrap {
-  white-space: nowrap;
-}
-@media (max-width: 760px) {
-  .wish-rates {
-    flex-wrap: nowrap;
-    gap: 5px;
-  }
-  .wish-rates span {
-    padding: 3px 8px;
-    font-size: 11px;
-    white-space: nowrap;
   }
 }
 
@@ -4884,20 +4853,6 @@ body.build-mode .build-entry {
   background: #fff;
   color: var(--forest);
   box-shadow: 0 1px 3px #2a3f2f1f;
-}
-.wish-mode .page-switch {
-  background: #ffffff12;
-}
-.wish-mode .page-switch button {
-  color: #b9b6e2;
-}
-.wish-mode .page-switch button[aria-selected='true'] {
-  background: #ffffff1f;
-  color: #fff;
-  box-shadow: none;
-}
-.wish-mode .page-switch button small {
-  background: #ffffff1a;
 }
 .harvest-strip .primary-button,
 .backup-nudge-actions .primary-button {
@@ -4987,7 +4942,7 @@ body.build-mode .build-entry {
     z-index: 2;
     margin-top: 8px;
   }
-  .secondary-dialog:not(.wish-mode) .page-switch {
+  .secondary-dialog .page-switch {
     box-shadow: 0 0 0 6px #fff;
   }
   .secondary-dialog .page {

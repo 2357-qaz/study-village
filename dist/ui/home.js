@@ -13,7 +13,7 @@ import {
   onRender,
   state,
   broken
-} from './store.js?v=8';
+} from './store.js?v=9';
 export function renderStats() {
   const days = weekData(),
     week = days.reduce((n, d) => n + d.seconds, 0),
