@@ -63,7 +63,8 @@ python3 -m http.server 4173 --directory dist
 
 - `dist/index.html`、`dist/style.css`：响应式界面。
 - `dist/core.js`：纯函数规则、统计、计时、存档验证。
-- `dist/app.js`：交互、事务、本机存档和可选只读 WebMCP 状态工具。
+- `dist/app.js`：入口，组装各功能模块、启动定时刷新、加载 3D 村庄与可选只读 WebMCP 状态工具。
+- `dist/ui/`：界面按功能拆分的模块。`store.js` 负责存档读写、事务（Web Locks）、共享状态与通用工具，其余模块通过 `onRender()` 注册各自的渲染：`nav.js` 页面切换、`home.js` 村庄概览、`timer.js` 计时与补记、`buildings.js` 建筑管理、`journal.js` 学习手记、`collection.js` 奇物柜与寻宝、`thumbs.js` 收藏品缩略图、`save.js` 存档导入导出与备份提醒、`build.js` 建造模式。
 - `dist/scene.js`：3D 场景：地形网格烘焙、海洋、昼夜光照（按本机时间）、居民寻路、建造模式手势与拾取。
 - `dist/models.js`：程序化低多边形模型（13 座建筑×5 级细节、20 种装饰、居民、18 件收藏品），静态部分合并为少量网格绘制。
 - `dist/wish.js`：寻宝全屏动画（Canvas 星空与流星、揭晓、汇总、合成音效）。

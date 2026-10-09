@@ -17,12 +17,20 @@ export function loadLucide() {
   return ctx.lucide;
 }
 
+// App sources (dist/*.js|html and dist/ui/*.js), excluding vendored libraries.
+const sourceFiles = () =>
+  ['', 'ui/'].flatMap(dir =>
+    readdirSync(`${root}dist/${dir}`)
+      .filter(f => /\.(js|html)$/.test(f))
+      .map(f => dir + f)
+  );
+
 const pascal = name => name.replace(/(^|-)([a-z0-9])/g, (_, __, c) => c.toUpperCase());
 
 // Every quoted kebab-case string in the app sources that names a Lucide icon. Over-matching is
 // harmless (a few extra icons); this way icons chosen in data or ternaries are never missed.
 export function usedIcons(lucide = loadLucide()) {
-  const files = readdirSync(`${root}dist`).filter(f => /\.(js|html)$/.test(f));
+  const files = sourceFiles();
   const names = new Set();
   for (const f of files) {
     const src = readFileSync(`${root}dist/${f}`, 'utf8');
@@ -34,7 +42,7 @@ export function usedIcons(lucide = loadLucide()) {
 
 // Literal references that must exist (data-lucide="x", icon('x'), icon:'x').
 export function referencedIcons() {
-  const files = readdirSync(`${root}dist`).filter(f => /\.(js|html)$/.test(f));
+  const files = sourceFiles();
   const names = new Set();
   for (const f of files) {
     const src = readFileSync(`${root}dist/${f}`, 'utf8');
