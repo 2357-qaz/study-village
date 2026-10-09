@@ -1,30 +1,624 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as C from '../dist/core.js';
-const now=Date.UTC(2026,8,28,12),state=()=>C.initialState(now);
-test('学习奖励、人口增长和休息预算',()=>{const s=state();C.manualStudy(s,60,now,'数学',now);assert.equal(C.population(s),4);assert.equal(s.resources.wood,240);assert.equal(s.resources.stone,140);assert.equal(C.restCredit(s),720);C.startTimer(s,'rest',15,'',now);assert.equal(s.timer.goal,720);C.finishTimer(s,now+720000);assert.equal(C.restCredit(s),0);assert.equal(s.resources.food,54);});
-test('计时刷新恢复、暂停扣除、到点截断',()=>{let s=state();C.startTimer(s,'study',25,'物理',now);C.pauseTimer(s,now+600000);s=C.validateState(JSON.parse(JSON.stringify(s)));C.resumeTimer(s,now+1200000);assert.equal(C.timerElapsed(s.timer,now+1500000),900);C.finishTimer(s,now+10*C.HOUR);assert.equal(C.studySeconds(s),1500);assert.equal(s.sessions[0].segments.length,2);assert.equal(s.sessions[0].endedAt,now+2100000);assert.equal(s.timer,null);});
-test('未满一分钟不发奖、完成后不能重复领取',()=>{const s=state();C.startTimer(s,'study',25,'',now);assert.throws(()=>C.finishTimer(s,now+30000));assert.equal(s.resources.wood,120);C.finishTimer(s,now+60000);assert.throws(()=>C.finishTimer(s,now+120000));assert.equal(s.sessions.length,1);});
-test('跨周按实际学习区间分配，暂停不计入',()=>{const monday=C.weekStart(now),s=state();C.addSession(s,'study',[{start:monday-1800000,end:monday+1800000}],'跨周学习',now);assert.equal(C.secondsBetween(s,monday,monday+24*C.HOUR),1800);assert.equal(C.studySeconds(s),3600);});
-test('补记拒绝未来、重叠、负数与非数字',()=>{const s=state();C.manualStudy(s,25,now,'英语',now);assert.throws(()=>C.manualStudy(s,20,now,'英语',now));assert.throws(()=>C.manualStudy(s,10,now+60000,'',now));assert.throws(()=>C.manualStudy(s,-5,now,'',now));assert.throws(()=>C.manualStudy(s,NaN,now,'',now));assert.throws(()=>C.manualStudy(s,10,NaN,'',now));assert.equal(s.sessions.length,1);});
-test('离线产出上限为24小时，领取不可重复，时钟回拨不生产',()=>{const s=state();C.accrue(s,now+100*C.HOUR);assert.equal(s.pending.wood,432);assert.equal(s.pending.stars,48);C.collect(s,now+100*C.HOUR);const wood=s.resources.wood;C.collect(s,now+100*C.HOUR);assert.equal(s.resources.wood,wood);C.accrue(s,now);assert.equal(s.pending.wood,0);C.accrue(s,now+101*C.HOUR);assert.equal(s.pending.wood,18);});
-test('升级先按旧产速结算，随后使用新产速',()=>{const s=state();C.upgrade(s,'sawmill',now+C.HOUR);assert.equal(s.pending.wood,18);assert.equal(C.rates(s).wood,36);C.accrue(s,now+2*C.HOUR);assert.equal(s.pending.wood,54);assert.throws(()=>C.upgrade(s,'observatory'));});
-test('抽奖扣费、重复收藏、20抽保底和重置',()=>{const s=state();s.resources.stars=600;for(let i=0;i<19;i++)C.draw(s,1,()=>.5);assert.equal(s.pity,19);const result=C.draw(s,1,()=>.5);assert.equal(result[0].rarity,'epic');assert.equal(s.pity,0);assert.equal(s.draws,20);assert.equal(s.resources.stars,0);assert.throws(()=>C.draw(s,1));assert.equal(Object.values(s.collection).reduce((a,b)=>a+b),20);});
-test('无效存档拒绝、不修改原存档',()=>{const s=state();assert.deepEqual(C.validateState(s),s);const invalid=structuredClone(s);invalid.resources.wood=-2;assert.throws(()=>C.validateState(invalid));invalid.resources.wood=1;invalid.timer={};assert.throws(()=>C.validateState(invalid));invalid.timer=null;invalid.collection={'<script>':1};assert.throws(()=>C.validateState(invalid));assert.equal(s.resources.wood,120);});
-test('五连抽失败不扣资源',()=>{const s=state();assert.throws(()=>C.draw(s,5));assert.equal(s.resources.stars,30);assert.equal(s.draws,0);});
-const rich=()=>{const s=state();s.resources={wood:99999,stone:99999,food:99999,stars:99999};s.sessions.push({id:'a',kind:'study',topic:'x',segments:[{start:now-20*C.HOUR,end:now-10*C.HOUR}],seconds:36000,endedAt:now-10*C.HOUR,recordedAt:now});return s;};
-const find=(s,f)=>{for(let z=0;z<28;z++)for(let x=0;x<28;x++){const q=C.tileAt(s,x,z);if(f(q,x,z))return {x,z};}return null;};
-const free=s=>{const o=C.occupancy(s);return find(s,(q,x,z)=>q.t==='g'&&!o.has(C.tileIndex(x,z)));};
-const v1=()=>({version:1,createdAt:now,lastAccrual:now,resources:{wood:11,stone:22,food:33,stars:44},pending:{wood:1,stone:2,food:3,stars:4},buildings:{cottage:1,sawmill:1,quarry:2,farm:0,observatory:3},sessions:[{id:'s1',kind:'study',topic:'数学',segments:[{start:now-7200000,end:now-3600000}],seconds:3600,endedAt:now-3600000,recordedAt:now}],collection:{leaf:2,crown:1},draws:3,pity:2,timer:null});
-test('v1 存档迁移为 v2 且保留进度',()=>{const old=v1(),snap=structuredClone(old),m=C.validateState(old);assert.deepEqual(old,snap);assert.equal(m.version,2);assert.equal(m.buildings.quarry,2);assert.equal(m.buildings.farm,0);assert.equal(m.buildings.observatory,3);assert.equal(m.buildings.dock,0);assert.equal(Object.keys(m.buildings).length,13);assert.deepEqual(m.resources,old.resources);assert.deepEqual(m.sessions,old.sessions);assert.deepEqual(m.collection,old.collection);assert.equal(m.draws,3);assert.equal(m.pity,2);assert.deepEqual(Object.keys(m.layout).sort(),['cottage','observatory','quarry','sawmill']);assert.deepEqual(m.layout.quarry,C.defaultLayout().quarry);assert.deepEqual(m.island,C.defaultIsland());assert.deepEqual(m.decor,C.defaultDecor());assert.deepEqual(C.validateState(m),m);const bad=v1();bad.resources.wood=-1;assert.throws(()=>C.validateState(bad),/存档格式无效或版本不兼容，原有进度未改动/);assert.throws(()=>C.validateState({...v1(),version:3}),/存档格式无效/);assert.throws(()=>C.validateState({...v1(),version:0}),/存档格式无效/);});
-test('默认布局与默认装饰全部合法',()=>{const s=state(),lay=C.defaultLayout();for(const k of Object.keys(lay)){s.layout[k]=lay[k];s.buildings[k]=1;}for(const [id,p]of Object.entries(lay)){assert.ok(C.canPlace(s,'building',id,p.x,p.z,'b:'+id).ok,id);for(let a=0;a<2;a++)for(let b=0;b<2;b++)assert.deepEqual(C.tileAt(s,p.x+a,p.z+b).h,1);}const d=C.defaultDecor();assert.ok(d.length>=20);assert.equal(new Set(d.map(o=>o.id)).size,d.length);assert.equal(new Set(d.map(o=>o.x+','+o.z)).size,d.length);s.decor=d;for(const o of d)assert.ok(C.canPlace(s,'decor',o.type,o.x,o.z,'d:'+o.id).ok,o.id);assert.deepEqual(C.validateState(s).decor,d);const t=C.initialState(now);assert.deepEqual(Object.keys(t.layout),['cottage','sawmill']);assert.equal(t.version,2);});
-test('新建筑放置：扣费、重叠/水/高度/临海/人口规则',()=>{const s=rich(),p=find(s,(q,x,z)=>C.canPlace(s,'building','bakery',x,z).ok);assert.equal(C.placeBuilding(s,'bakery',p.x,p.z,1,now),1);assert.equal(s.buildings.bakery,1);assert.deepEqual(s.layout.bakery,{x:p.x,z:p.z,r:1});assert.equal(s.resources.wood,99999-110);assert.equal(C.objectAt(s,p.x,p.z),'b:bakery');assert.deepEqual(C.validateState(s),s);assert.throws(()=>C.placeBuilding(s,'kiln',p.x,p.z,0,now),/占用/);assert.equal(s.buildings.kiln,0);assert.equal(s.resources.wood,99999-110);const w=find(s,q=>q.t==='w'),sea=find(s,q=>q.t==='.');assert.throws(()=>C.placeBuilding(s,'kiln',w.x,w.z),/池塘/);assert.throws(()=>C.placeBuilding(s,'kiln',sea.x,sea.z),/陆地/);assert.throws(()=>C.placeBuilding(s,'kiln',-1,0),/范围/);const sand=find(s,(q,x,z)=>C.canPlace(s,'building','kiln',x,z).reason.includes('高度'));assert.ok(sand);assert.throws(()=>C.placeBuilding(s,'kiln',sand.x,sand.z),/高度/);assert.ok(find(s,(q,x,z)=>C.canPlace(s,'building','dock',x,z).ok));const top=find(s,(q,x,z)=>q.t==='.'&&C.tileAt(s,x,z+1)?.t==='s'&&x>5&&x<20),coast={x:top.x,z:top.z+1};s.decor=[];for(const [a,b]of [[0,1],[1,1],[0,2],[1,2]]){const i=C.tileIndex(top.x+a,top.z+b);s.island.terrain=s.island.terrain.slice(0,i)+'s'+s.island.terrain.slice(i+1);s.island.height=s.island.height.slice(0,i)+'0'+s.island.height.slice(i+1);}assert.ok(C.canPlace(s,'building','dock',coast.x,coast.z).ok);const inland=free(s);assert.equal(C.canPlace(s,'building','dock',inland.x,inland.z).ok,false);assert.match(C.canPlace(s,'building','dock',inland.x,inland.z).reason,/海边|高度|占用|陆地|池塘/);const s2=rich();s2.sessions=[];assert.equal(C.population(s2),3);assert.throws(()=>C.placeBuilding(s2,'dock',coast.x,coast.z),/需要 4 位居民/);assert.equal(s2.buildings.dock,0);const s3=state();assert.throws(()=>C.placeBuilding(s3,'bakery',p.x,p.z),/建材还不够/);});
-test('码头只能建在海边，灯塔 1×1',()=>{const s=rich();const isl=s.island;const sandOnly=find(s,(q,x,z)=>{const c=C.canPlace(s,'building','dock',x,z);return c.ok;});assert.ok(sandOnly);{let near=false;for(let a=-2;a<=3;a++)for(let b=-2;b<=3;b++)if(C.tileAt(s,sandOnly.x+a,sandOnly.z+b)?.t==='.')near=true;assert.ok(near);}assert.equal(C.buildingSize('lighthouse'),1);assert.equal(C.buildingSize('library'),3);const lh=find(s,(q,x,z)=>C.canPlace(s,'building','lighthouse',x,z).ok);assert.ok(lh);C.placeBuilding(s,'lighthouse',lh.x,lh.z);assert.equal(C.objectAt(s,lh.x+1,lh.z),null);const far=(x,z)=>{for(let a=-2;a<=2;a++)for(let b=-2;b<=2;b++)if(C.tileAt(s,x+a,z+b)?.t==='.')return false;return true;};const inl=find(s,(q,x,z)=>q.t!=='.'&&q.t!=='w'&&!C.objectAt(s,x,z)&&far(x,z));assert.ok(inl);assert.match(C.canPlace(s,'building','lighthouse',inl.x,inl.z).reason,/海边/);});
-test('移动已建成建筑免费，旋转与升级',()=>{const s=rich();const to=find(s,(q,x,z)=>q.t==='g'&&C.canPlace(s,'building','farm',x,z).ok);const spare=find(s,(q,x,z)=>C.canPlace(s,'building','cottage',x,z,'b:cottage').ok);const before={...s.resources};C.placeBuilding(s,'cottage',spare.x,spare.z,2,now);assert.deepEqual(s.resources,before);assert.deepEqual(s.layout.cottage,{x:spare.x,z:spare.z,r:2});assert.equal(s.buildings.cottage,1);assert.equal(C.placeBuilding(s,'cottage',spare.x+0,spare.z,3,now),1);assert.equal(C.rotateBuilding(s,'cottage'),0);assert.throws(()=>C.rotateBuilding(s,'dock'));const occ=C.objectAt(s,10,15);assert.equal(occ,'b:sawmill');assert.throws(()=>C.placeBuilding(s,'cottage',10,15));assert.deepEqual(s.layout.cottage,{x:spare.x,z:spare.z,r:0});assert.deepEqual(C.validateState(s),s);assert.ok(to);});
-test('升级未建成建筑会自动选址建造',()=>{const s=rich();assert.equal(C.upgrade(s,'quarry',now),1);assert.ok(s.layout.quarry);assert.equal(s.buildings.quarry,1);assert.deepEqual(C.validateState(s),s);assert.equal(C.upgrade(s,'quarry',now),2);const spot=find(s,(q,x,z)=>C.canPlace(s,'building','farm',x,z).ok);assert.equal(C.upgrade(s,'farm',now,spot),1);assert.deepEqual(s.layout.farm,{x:spot.x,z:spot.z,r:0});const low=state();assert.throws(()=>C.upgrade(low,'observatory',now),/建材/);const nop=rich();nop.sessions=[];assert.throws(()=>C.upgrade(nop,'library',now),/需要 10 位居民/);const full=rich();full.island.terrain='.'.repeat(784);full.island.height='0'.repeat(784);full.decor=[];full.layout={};assert.throws(()=>C.upgrade(full,'quarry',now),/岛上没有合适的空地，请先开拓土地/);const sp=C.findSpot(rich(),'cottage');assert.ok(sp);});
-test('装饰：放置、移动、旋转、拆除与限制',()=>{const s=rich(),p=free(s),before=s.resources.wood;const id=C.placeDecor(s,'bench',p.x,p.z,5);assert.equal(s.resources.wood,before-8);assert.equal(s.decor.find(d=>d.id===id).r,1);assert.equal(C.objectAt(s,p.x,p.z),'d:'+id);assert.throws(()=>C.placeDecor(s,'bench',p.x,p.z),/占用/);const q=find(s,(t,x,z)=>t.t==='g'&&!C.objectAt(s,x,z)&&(x!==p.x||z!==p.z));C.moveDecor(s,id,q.x,q.z);assert.equal(C.objectAt(s,p.x,p.z),null);assert.equal(C.rotateDecor(s,id),2);assert.throws(()=>C.moveDecor(s,id,10,15));assert.throws(()=>C.moveDecor(s,'nope',1,1));const wood=s.resources.wood;C.removeDecor(s,id);assert.equal(s.resources.wood,wood);assert.equal(C.objectAt(s,q.x,q.z),null);assert.throws(()=>C.removeDecor(s,id));assert.throws(()=>C.placeDecor(s,'unknown',p.x,p.z));const poor=state();poor.resources.stone=0;assert.throws(()=>C.placeDecor(poor,'rock',p.x,p.z),/建材/);const cap=rich();cap.decor=[];for(let i=0;i<600;i++)cap.decor.push({id:'x'+i,type:'pine',x:0,z:0,r:0});assert.throws(()=>C.placeDecor(cap,'pine',p.x,p.z),/上限/);const sea=find(s,q=>q.t==='.');assert.throws(()=>C.placeDecor(s,'pine',sea.x,sea.z));const w=find(s,q=>q.t==='w');assert.throws(()=>C.placeDecor(s,'pine',w.x,w.z));assert.deepEqual(C.validateState(s),s);});
-test('展台需要已拥有的收藏品；木桥仅池塘；帆船仅近岸海面',()=>{const s=rich(),p=free(s);assert.throws(()=>C.placeDecor(s,'display',p.x,p.z,0,'leaf'),/拥有/);s.collection.leaf=1;assert.throws(()=>C.placeDecor(s,'display',p.x,p.z,0,'nope'));assert.throws(()=>C.placeDecor(s,'display',p.x,p.z,0));const id=C.placeDecor(s,'display',p.x,p.z,0,'leaf');assert.equal(s.decor.find(d=>d.id===id).item,'leaf');assert.deepEqual(C.validateState(s),s);const w=find(s,q=>q.t==='w');assert.throws(()=>C.placeDecor(s,'bridge',p.x+0,p.z),/池塘|占用/);const free2=free(s);assert.throws(()=>C.placeDecor(s,'bridge',free2.x,free2.z),/池塘/);C.placeDecor(s,'bridge',w.x,w.z);assert.throws(()=>C.placeDecor(s,'pine',w.x,w.z));const coastal=find(s,(q,x,z)=>q.t==='.'&&C.canPlace(s,'decor','boat',x,z).ok);assert.ok(coastal);C.placeDecor(s,'boat',coastal.x,coastal.z);const far=find(s,(q,x,z)=>q.t==='.'&&!C.canPlace(s,'decor','boat',x,z).ok&&x>=1&&x<=26&&z>=1&&z<=26&&![[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>C.tileAt(s,x+a,z+b).t!=='.'));assert.throws(()=>C.placeDecor(s,'boat',far.x,far.z),/近岸/);assert.throws(()=>C.placeDecor(s,'boat',free2.x,free2.z));const edge=find(s,(q,x,z)=>q.t==='.'&&(x===0||z===0)&&C.canPlace(s,'decor','pine',x,z).ok===false);assert.throws(()=>C.placeDecor(s,'boat',edge.x,edge.z));assert.ok(C.canPlace(s,'decor','display',p.x,p.z,'d:'+id,'leaf').ok);assert.deepEqual(C.validateState(s),s);});
-test('地貌编辑：填海费用递增与限制',()=>{const s=rich();const edge=()=>find(s,(q,x,z)=>C.editable?0:q.t==='.'&&x>=1&&z>=1&&x<=26&&z<=26&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>C.tileAt(s,x+a,z+b).t!=='.'));const t=edge(),w0=s.resources.wood;assert.deepEqual(C.terrainCost(s,'reclaim',t.x,t.z),{stone:6,wood:4,food:2});C.editTerrain(s,'reclaim',t.x,t.z);assert.deepEqual(C.tileAt(s,t.x,t.z),{t:'s',h:0});assert.equal(s.resources.wood,w0-4);assert.throws(()=>C.editTerrain(s,'reclaim',t.x,t.z),/陆地/);const far=find(s,(q,x,z)=>q.t==='.'&&x===13&&z===1);assert.throws(()=>C.editTerrain(s,'reclaim',far.x,far.z),/紧邻/);assert.throws(()=>C.editTerrain(s,'reclaim',0,0),/最外圈/);assert.throws(()=>C.editTerrain(s,'reclaim',99,0));const n0=C.landCount(s);for(let i=0;i<30;i++){const e=edge();C.editTerrain(s,'reclaim',e.x,e.z);}assert.equal(C.landCount(s),n0+30);assert.deepEqual(C.terrainCost(s,'reclaim',1,1),{stone:6+Math.floor(31/12),wood:4+Math.floor(31/20),food:2+Math.floor(31/30)});const poor=state();poor.resources={wood:0,stone:0,food:0,stars:0};const e=find(poor,(q,x,z)=>q.t==='.'&&x>=1&&z>=1&&C.tileAt(poor,x,z+1)?.t==='s');assert.throws(()=>C.editTerrain(poor,'reclaim',e.x,e.z),/建材/);assert.deepEqual(C.validateState(s),s);});
-test('地貌编辑：涂刷、抬升、降低、还原为海、占用限制',()=>{const s=rich(),p=find(s,(q,x,z)=>q.t==='s'&&!C.objectAt(s,x,z)&&[[1,0],[-1,0],[0,1],[0,-1]].every(([a,b])=>C.tileAt(s,x+a,z+b).t!=='w'));const R0=()=>({...s.resources});let r=R0();C.editTerrain(s,'f',p.x,p.z);assert.equal(C.tileAt(s,p.x,p.z).t,'f');assert.equal(s.resources.food,r.food-2);r=R0();C.editTerrain(s,'r',p.x,p.z);assert.equal(s.resources.stone,r.stone-2);r=R0();C.editTerrain(s,'p',p.x,p.z);assert.equal(s.resources.stone,r.stone-3);r=R0();C.editTerrain(s,'g',p.x,p.z);C.editTerrain(s,'s',p.x,p.z);C.editTerrain(s,'w',p.x,p.z);assert.deepEqual(R0(),r);assert.equal(C.tileAt(s,p.x,p.z).t,'w');assert.throws(()=>C.editTerrain(s,'w',p.x,p.z),/已经/);r=R0();C.editTerrain(s,'raise',p.x,p.z);assert.equal(s.resources.stone,r.stone-4);assert.equal(C.tileAt(s,p.x,p.z).h,1);r=R0();C.editTerrain(s,'raise',p.x,p.z);assert.equal(s.resources.stone,r.stone-8);C.editTerrain(s,'raise',p.x,p.z);assert.equal(C.tileAt(s,p.x,p.z).h,3);assert.throws(()=>C.editTerrain(s,'raise',p.x,p.z),/最高/);assert.throws(()=>C.editTerrain(s,'sea',p.x,p.z),/降到最低/);r=R0();for(let i=0;i<3;i++)C.editTerrain(s,'lower',p.x,p.z);assert.deepEqual(R0(),r);assert.throws(()=>C.editTerrain(s,'lower',p.x,p.z),/最低/);C.editTerrain(s,'sea',p.x,p.z);assert.equal(C.tileAt(s,p.x,p.z).t,'.');assert.throws(()=>C.editTerrain(s,'g',p.x,p.z),/海/);assert.throws(()=>C.editTerrain(s,'nope',p.x,p.z));assert.throws(()=>C.editTerrain(s,'f',10,15),/移走/);const d=C.defaultDecor()[0];assert.throws(()=>C.editTerrain(s,'g',d.x,d.z),/移走/);assert.equal(C.TERRAIN_TOOLS.length,10);assert.deepEqual(C.validateState(s),s);});
-test('v2 校验拒绝重叠、坏地形、孤立布局、未知装饰与重复 id',()=>{const ok=()=>{const s=state();return s;};const bad=f=>{const s=ok();f(s);assert.throws(()=>C.validateState(s),/存档格式无效或版本不兼容，原有进度未改动/);};assert.deepEqual(C.validateState(ok()),ok());bad(s=>{s.layout.sawmill={x:13,z:12,r:0};});bad(s=>{s.decor.push({id:'z1',type:'pine',x:13,z:12,r:0});});bad(s=>{s.decor.push({id:'z1',type:'pine',x:0,z:0,r:0},{id:'z2',type:'pine',x:0,z:0,r:0});});bad(s=>{s.island.terrain=s.island.terrain.slice(1);});bad(s=>{s.island.terrain='x'+s.island.terrain.slice(1);});bad(s=>{s.island.height=s.island.height.replace('0','9');});bad(s=>{s.island.terrain='.'+s.island.terrain.slice(1);s.island.height='1'+s.island.height.slice(1);});bad(s=>{s.layout.quarry={x:5,z:5,r:0};});bad(s=>{delete s.layout.cottage;});bad(s=>{s.layout.cottage={x:27,z:27,r:0};});bad(s=>{s.layout.cottage={x:1.5,z:1,r:0};});bad(s=>{s.layout.cottage.r=4;});bad(s=>{s.decor.push({id:'z1',type:'ufo',x:0,z:0,r:0});});bad(s=>{s.decor.push({id:'g0',type:'pine',x:0,z:0,r:0});});bad(s=>{s.decor.push({id:'Bad Id',type:'pine',x:0,z:0,r:0});});bad(s=>{s.decor.push({id:'z1',type:'display',x:0,z:0,r:0,item:'nope'});});bad(s=>{s.decor.push({id:'z1',type:'display',x:0,z:0,r:0});});bad(s=>{delete s.island;});bad(s=>{delete s.decor;});bad(s=>{delete s.buildings.dock;});bad(s=>{s.buildings.dock=6;});bad(s=>{s.decor=Array.from({length:601},(_,i)=>({id:'q'+i,type:'pine',x:i%28,z:Math.floor(i/28)%28,r:0}));});const s=ok();s.decor.push({id:'z1',type:'display',x:0,z:0,r:1,item:'leaf'});assert.deepEqual(C.validateState(s),s);});
-test('新收藏品加入各稀有度奖池',()=>{const pools={};for(const c of C.COLLECTIONS)(pools[c.rarity]??=[]).push(c.id);assert.deepEqual([pools.common.length,pools.rare.length,pools.epic.length,pools.legendary.length],[6,5,4,3]);assert.equal(C.COLLECTIONS.length,18);const seen=new Set();for(const roll of [.99,.5,.2,.05,.01])for(let pick=0;pick<1;pick+=.05){const s=state();s.resources.stars=30;const seq=[roll,pick];let k=0;const r=C.draw(s,1,()=>seq[k++%2]);seen.add(r[0].id);}for(const id of ['acorn','teacup','hourglass','scroll','koi','globe','bonsai','phoenix'])assert.ok(seen.has(id),id);});
+const now = Date.UTC(2026, 8, 28, 12),
+  state = () => C.initialState(now);
+test('学习奖励、人口增长和休息预算', () => {
+  const s = state();
+  C.manualStudy(s, 60, now, '数学', now);
+  assert.equal(C.population(s), 4);
+  assert.equal(s.resources.wood, 240);
+  assert.equal(s.resources.stone, 140);
+  assert.equal(C.restCredit(s), 720);
+  C.startTimer(s, 'rest', 15, '', now);
+  assert.equal(s.timer.goal, 720);
+  C.finishTimer(s, now + 720000);
+  assert.equal(C.restCredit(s), 0);
+  assert.equal(s.resources.food, 54);
+});
+test('计时刷新恢复、暂停扣除、到点截断', () => {
+  let s = state();
+  C.startTimer(s, 'study', 25, '物理', now);
+  C.pauseTimer(s, now + 600000);
+  s = C.validateState(JSON.parse(JSON.stringify(s)));
+  C.resumeTimer(s, now + 1200000);
+  assert.equal(C.timerElapsed(s.timer, now + 1500000), 900);
+  C.finishTimer(s, now + 10 * C.HOUR);
+  assert.equal(C.studySeconds(s), 1500);
+  assert.equal(s.sessions[0].segments.length, 2);
+  assert.equal(s.sessions[0].endedAt, now + 2100000);
+  assert.equal(s.timer, null);
+});
+test('未满一分钟不发奖、完成后不能重复领取', () => {
+  const s = state();
+  C.startTimer(s, 'study', 25, '', now);
+  assert.throws(() => C.finishTimer(s, now + 30000));
+  assert.equal(s.resources.wood, 120);
+  C.finishTimer(s, now + 60000);
+  assert.throws(() => C.finishTimer(s, now + 120000));
+  assert.equal(s.sessions.length, 1);
+});
+test('跨周按实际学习区间分配，暂停不计入', () => {
+  const monday = C.weekStart(now),
+    s = state();
+  C.addSession(s, 'study', [{start: monday - 1800000, end: monday + 1800000}], '跨周学习', now);
+  assert.equal(C.secondsBetween(s, monday, monday + 24 * C.HOUR), 1800);
+  assert.equal(C.studySeconds(s), 3600);
+});
+test('补记拒绝未来、重叠、负数与非数字', () => {
+  const s = state();
+  C.manualStudy(s, 25, now, '英语', now);
+  assert.throws(() => C.manualStudy(s, 20, now, '英语', now));
+  assert.throws(() => C.manualStudy(s, 10, now + 60000, '', now));
+  assert.throws(() => C.manualStudy(s, -5, now, '', now));
+  assert.throws(() => C.manualStudy(s, NaN, now, '', now));
+  assert.throws(() => C.manualStudy(s, 10, NaN, '', now));
+  assert.equal(s.sessions.length, 1);
+});
+test('离线产出上限为24小时，领取不可重复，时钟回拨不生产', () => {
+  const s = state();
+  C.accrue(s, now + 100 * C.HOUR);
+  assert.equal(s.pending.wood, 432);
+  assert.equal(s.pending.stars, 48);
+  C.collect(s, now + 100 * C.HOUR);
+  const wood = s.resources.wood;
+  C.collect(s, now + 100 * C.HOUR);
+  assert.equal(s.resources.wood, wood);
+  C.accrue(s, now);
+  assert.equal(s.pending.wood, 0);
+  C.accrue(s, now + 101 * C.HOUR);
+  assert.equal(s.pending.wood, 18);
+});
+test('升级先按旧产速结算，随后使用新产速', () => {
+  const s = state();
+  C.upgrade(s, 'sawmill', now + C.HOUR);
+  assert.equal(s.pending.wood, 18);
+  assert.equal(C.rates(s).wood, 36);
+  C.accrue(s, now + 2 * C.HOUR);
+  assert.equal(s.pending.wood, 54);
+  assert.throws(() => C.upgrade(s, 'observatory'));
+});
+test('抽奖扣费、重复收藏、20抽保底和重置', () => {
+  const s = state();
+  s.resources.stars = 600;
+  for (let i = 0; i < 19; i++) C.draw(s, 1, () => 0.5);
+  assert.equal(s.pity, 19);
+  const result = C.draw(s, 1, () => 0.5);
+  assert.equal(result[0].rarity, 'epic');
+  assert.equal(s.pity, 0);
+  assert.equal(s.draws, 20);
+  assert.equal(s.resources.stars, 0);
+  assert.throws(() => C.draw(s, 1));
+  assert.equal(
+    Object.values(s.collection).reduce((a, b) => a + b),
+    20
+  );
+});
+test('无效存档拒绝、不修改原存档', () => {
+  const s = state();
+  assert.deepEqual(C.validateState(s), s);
+  const invalid = structuredClone(s);
+  invalid.resources.wood = -2;
+  assert.throws(() => C.validateState(invalid));
+  invalid.resources.wood = 1;
+  invalid.timer = {};
+  assert.throws(() => C.validateState(invalid));
+  invalid.timer = null;
+  invalid.collection = {'<script>': 1};
+  assert.throws(() => C.validateState(invalid));
+  assert.equal(s.resources.wood, 120);
+});
+test('五连抽失败不扣资源', () => {
+  const s = state();
+  assert.throws(() => C.draw(s, 5));
+  assert.equal(s.resources.stars, 30);
+  assert.equal(s.draws, 0);
+});
+const rich = () => {
+  const s = state();
+  s.resources = {wood: 99999, stone: 99999, food: 99999, stars: 99999};
+  s.sessions.push({
+    id: 'a',
+    kind: 'study',
+    topic: 'x',
+    segments: [{start: now - 20 * C.HOUR, end: now - 10 * C.HOUR}],
+    seconds: 36000,
+    endedAt: now - 10 * C.HOUR,
+    recordedAt: now
+  });
+  return s;
+};
+const find = (s, f) => {
+  for (let z = 0; z < 28; z++)
+    for (let x = 0; x < 28; x++) {
+      const q = C.tileAt(s, x, z);
+      if (f(q, x, z)) return {x, z};
+    }
+  return null;
+};
+const free = s => {
+  const o = C.occupancy(s);
+  return find(s, (q, x, z) => q.t === 'g' && !o.has(C.tileIndex(x, z)));
+};
+const v1 = () => ({
+  version: 1,
+  createdAt: now,
+  lastAccrual: now,
+  resources: {wood: 11, stone: 22, food: 33, stars: 44},
+  pending: {wood: 1, stone: 2, food: 3, stars: 4},
+  buildings: {cottage: 1, sawmill: 1, quarry: 2, farm: 0, observatory: 3},
+  sessions: [
+    {
+      id: 's1',
+      kind: 'study',
+      topic: '数学',
+      segments: [{start: now - 7200000, end: now - 3600000}],
+      seconds: 3600,
+      endedAt: now - 3600000,
+      recordedAt: now
+    }
+  ],
+  collection: {leaf: 2, crown: 1},
+  draws: 3,
+  pity: 2,
+  timer: null
+});
+test('v1 存档迁移为 v2 且保留进度', () => {
+  const old = v1(),
+    snap = structuredClone(old),
+    m = C.validateState(old);
+  assert.deepEqual(old, snap);
+  assert.equal(m.version, 2);
+  assert.equal(m.buildings.quarry, 2);
+  assert.equal(m.buildings.farm, 0);
+  assert.equal(m.buildings.observatory, 3);
+  assert.equal(m.buildings.dock, 0);
+  assert.equal(Object.keys(m.buildings).length, 13);
+  assert.deepEqual(m.resources, old.resources);
+  assert.deepEqual(m.sessions, old.sessions);
+  assert.deepEqual(m.collection, old.collection);
+  assert.equal(m.draws, 3);
+  assert.equal(m.pity, 2);
+  assert.deepEqual(Object.keys(m.layout).sort(), ['cottage', 'observatory', 'quarry', 'sawmill']);
+  assert.deepEqual(m.layout.quarry, C.defaultLayout().quarry);
+  assert.deepEqual(m.island, C.defaultIsland());
+  assert.deepEqual(m.decor, C.defaultDecor());
+  assert.deepEqual(C.validateState(m), m);
+  const bad = v1();
+  bad.resources.wood = -1;
+  assert.throws(() => C.validateState(bad), /存档格式无效或版本不兼容，原有进度未改动/);
+  assert.throws(() => C.validateState({...v1(), version: 3}), /存档格式无效/);
+  assert.throws(() => C.validateState({...v1(), version: 0}), /存档格式无效/);
+});
+test('默认布局与默认装饰全部合法', () => {
+  const s = state(),
+    lay = C.defaultLayout();
+  for (const k of Object.keys(lay)) {
+    s.layout[k] = lay[k];
+    s.buildings[k] = 1;
+  }
+  for (const [id, p] of Object.entries(lay)) {
+    assert.ok(C.canPlace(s, 'building', id, p.x, p.z, 'b:' + id).ok, id);
+    for (let a = 0; a < 2; a++)
+      for (let b = 0; b < 2; b++) assert.deepEqual(C.tileAt(s, p.x + a, p.z + b).h, 1);
+  }
+  const d = C.defaultDecor();
+  assert.ok(d.length >= 20);
+  assert.equal(new Set(d.map(o => o.id)).size, d.length);
+  assert.equal(new Set(d.map(o => o.x + ',' + o.z)).size, d.length);
+  s.decor = d;
+  for (const o of d) assert.ok(C.canPlace(s, 'decor', o.type, o.x, o.z, 'd:' + o.id).ok, o.id);
+  assert.deepEqual(C.validateState(s).decor, d);
+  const t = C.initialState(now);
+  assert.deepEqual(Object.keys(t.layout), ['cottage', 'sawmill']);
+  assert.equal(t.version, 2);
+});
+test('新建筑放置：扣费、重叠/水/高度/临海/人口规则', () => {
+  const s = rich(),
+    p = find(s, (q, x, z) => C.canPlace(s, 'building', 'bakery', x, z).ok);
+  assert.equal(C.placeBuilding(s, 'bakery', p.x, p.z, 1, now), 1);
+  assert.equal(s.buildings.bakery, 1);
+  assert.deepEqual(s.layout.bakery, {x: p.x, z: p.z, r: 1});
+  assert.equal(s.resources.wood, 99999 - 110);
+  assert.equal(C.objectAt(s, p.x, p.z), 'b:bakery');
+  assert.deepEqual(C.validateState(s), s);
+  assert.throws(() => C.placeBuilding(s, 'kiln', p.x, p.z, 0, now), /占用/);
+  assert.equal(s.buildings.kiln, 0);
+  assert.equal(s.resources.wood, 99999 - 110);
+  const w = find(s, q => q.t === 'w'),
+    sea = find(s, q => q.t === '.');
+  assert.throws(() => C.placeBuilding(s, 'kiln', w.x, w.z), /池塘/);
+  assert.throws(() => C.placeBuilding(s, 'kiln', sea.x, sea.z), /陆地/);
+  assert.throws(() => C.placeBuilding(s, 'kiln', -1, 0), /范围/);
+  const sand = find(s, (q, x, z) => C.canPlace(s, 'building', 'kiln', x, z).reason.includes('高度'));
+  assert.ok(sand);
+  assert.throws(() => C.placeBuilding(s, 'kiln', sand.x, sand.z), /高度/);
+  assert.ok(find(s, (q, x, z) => C.canPlace(s, 'building', 'dock', x, z).ok));
+  const top = find(s, (q, x, z) => q.t === '.' && C.tileAt(s, x, z + 1)?.t === 's' && x > 5 && x < 20),
+    coast = {x: top.x, z: top.z + 1};
+  s.decor = [];
+  for (const [a, b] of [
+    [0, 1],
+    [1, 1],
+    [0, 2],
+    [1, 2]
+  ]) {
+    const i = C.tileIndex(top.x + a, top.z + b);
+    s.island.terrain = s.island.terrain.slice(0, i) + 's' + s.island.terrain.slice(i + 1);
+    s.island.height = s.island.height.slice(0, i) + '0' + s.island.height.slice(i + 1);
+  }
+  assert.ok(C.canPlace(s, 'building', 'dock', coast.x, coast.z).ok);
+  const inland = free(s);
+  assert.equal(C.canPlace(s, 'building', 'dock', inland.x, inland.z).ok, false);
+  assert.match(C.canPlace(s, 'building', 'dock', inland.x, inland.z).reason, /海边|高度|占用|陆地|池塘/);
+  const s2 = rich();
+  s2.sessions = [];
+  assert.equal(C.population(s2), 3);
+  assert.throws(() => C.placeBuilding(s2, 'dock', coast.x, coast.z), /需要 4 位居民/);
+  assert.equal(s2.buildings.dock, 0);
+  const s3 = state();
+  assert.throws(() => C.placeBuilding(s3, 'bakery', p.x, p.z), /建材还不够/);
+});
+test('码头只能建在海边，灯塔 1×1', () => {
+  const s = rich();
+  const isl = s.island;
+  const sandOnly = find(s, (q, x, z) => {
+    const c = C.canPlace(s, 'building', 'dock', x, z);
+    return c.ok;
+  });
+  assert.ok(sandOnly);
+  {
+    let near = false;
+    for (let a = -2; a <= 3; a++)
+      for (let b = -2; b <= 3; b++) if (C.tileAt(s, sandOnly.x + a, sandOnly.z + b)?.t === '.') near = true;
+    assert.ok(near);
+  }
+  assert.equal(C.buildingSize('lighthouse'), 1);
+  assert.equal(C.buildingSize('library'), 3);
+  const lh = find(s, (q, x, z) => C.canPlace(s, 'building', 'lighthouse', x, z).ok);
+  assert.ok(lh);
+  C.placeBuilding(s, 'lighthouse', lh.x, lh.z);
+  assert.equal(C.objectAt(s, lh.x + 1, lh.z), null);
+  const far = (x, z) => {
+    for (let a = -2; a <= 2; a++)
+      for (let b = -2; b <= 2; b++) if (C.tileAt(s, x + a, z + b)?.t === '.') return false;
+    return true;
+  };
+  const inl = find(s, (q, x, z) => q.t !== '.' && q.t !== 'w' && !C.objectAt(s, x, z) && far(x, z));
+  assert.ok(inl);
+  assert.match(C.canPlace(s, 'building', 'lighthouse', inl.x, inl.z).reason, /海边/);
+});
+test('移动已建成建筑免费，旋转与升级', () => {
+  const s = rich();
+  const to = find(s, (q, x, z) => q.t === 'g' && C.canPlace(s, 'building', 'farm', x, z).ok);
+  const spare = find(s, (q, x, z) => C.canPlace(s, 'building', 'cottage', x, z, 'b:cottage').ok);
+  const before = {...s.resources};
+  C.placeBuilding(s, 'cottage', spare.x, spare.z, 2, now);
+  assert.deepEqual(s.resources, before);
+  assert.deepEqual(s.layout.cottage, {x: spare.x, z: spare.z, r: 2});
+  assert.equal(s.buildings.cottage, 1);
+  assert.equal(C.placeBuilding(s, 'cottage', spare.x + 0, spare.z, 3, now), 1);
+  assert.equal(C.rotateBuilding(s, 'cottage'), 0);
+  assert.throws(() => C.rotateBuilding(s, 'dock'));
+  const occ = C.objectAt(s, 10, 15);
+  assert.equal(occ, 'b:sawmill');
+  assert.throws(() => C.placeBuilding(s, 'cottage', 10, 15));
+  assert.deepEqual(s.layout.cottage, {x: spare.x, z: spare.z, r: 0});
+  assert.deepEqual(C.validateState(s), s);
+  assert.ok(to);
+});
+test('升级未建成建筑会自动选址建造', () => {
+  const s = rich();
+  assert.equal(C.upgrade(s, 'quarry', now), 1);
+  assert.ok(s.layout.quarry);
+  assert.equal(s.buildings.quarry, 1);
+  assert.deepEqual(C.validateState(s), s);
+  assert.equal(C.upgrade(s, 'quarry', now), 2);
+  const spot = find(s, (q, x, z) => C.canPlace(s, 'building', 'farm', x, z).ok);
+  assert.equal(C.upgrade(s, 'farm', now, spot), 1);
+  assert.deepEqual(s.layout.farm, {x: spot.x, z: spot.z, r: 0});
+  const low = state();
+  assert.throws(() => C.upgrade(low, 'observatory', now), /建材/);
+  const nop = rich();
+  nop.sessions = [];
+  assert.throws(() => C.upgrade(nop, 'library', now), /需要 10 位居民/);
+  const full = rich();
+  full.island.terrain = '.'.repeat(784);
+  full.island.height = '0'.repeat(784);
+  full.decor = [];
+  full.layout = {};
+  assert.throws(() => C.upgrade(full, 'quarry', now), /岛上没有合适的空地，请先开拓土地/);
+  const sp = C.findSpot(rich(), 'cottage');
+  assert.ok(sp);
+});
+test('装饰：放置、移动、旋转、拆除与限制', () => {
+  const s = rich(),
+    p = free(s),
+    before = s.resources.wood;
+  const id = C.placeDecor(s, 'bench', p.x, p.z, 5);
+  assert.equal(s.resources.wood, before - 8);
+  assert.equal(s.decor.find(d => d.id === id).r, 1);
+  assert.equal(C.objectAt(s, p.x, p.z), 'd:' + id);
+  assert.throws(() => C.placeDecor(s, 'bench', p.x, p.z), /占用/);
+  const q = find(s, (t, x, z) => t.t === 'g' && !C.objectAt(s, x, z) && (x !== p.x || z !== p.z));
+  C.moveDecor(s, id, q.x, q.z);
+  assert.equal(C.objectAt(s, p.x, p.z), null);
+  assert.equal(C.rotateDecor(s, id), 2);
+  assert.throws(() => C.moveDecor(s, id, 10, 15));
+  assert.throws(() => C.moveDecor(s, 'nope', 1, 1));
+  const wood = s.resources.wood;
+  C.removeDecor(s, id);
+  assert.equal(s.resources.wood, wood);
+  assert.equal(C.objectAt(s, q.x, q.z), null);
+  assert.throws(() => C.removeDecor(s, id));
+  assert.throws(() => C.placeDecor(s, 'unknown', p.x, p.z));
+  const poor = state();
+  poor.resources.stone = 0;
+  assert.throws(() => C.placeDecor(poor, 'rock', p.x, p.z), /建材/);
+  const cap = rich();
+  cap.decor = [];
+  for (let i = 0; i < 600; i++) cap.decor.push({id: 'x' + i, type: 'pine', x: 0, z: 0, r: 0});
+  assert.throws(() => C.placeDecor(cap, 'pine', p.x, p.z), /上限/);
+  const sea = find(s, q => q.t === '.');
+  assert.throws(() => C.placeDecor(s, 'pine', sea.x, sea.z));
+  const w = find(s, q => q.t === 'w');
+  assert.throws(() => C.placeDecor(s, 'pine', w.x, w.z));
+  assert.deepEqual(C.validateState(s), s);
+});
+test('展台需要已拥有的收藏品；木桥仅池塘；帆船仅近岸海面', () => {
+  const s = rich(),
+    p = free(s);
+  assert.throws(() => C.placeDecor(s, 'display', p.x, p.z, 0, 'leaf'), /拥有/);
+  s.collection.leaf = 1;
+  assert.throws(() => C.placeDecor(s, 'display', p.x, p.z, 0, 'nope'));
+  assert.throws(() => C.placeDecor(s, 'display', p.x, p.z, 0));
+  const id = C.placeDecor(s, 'display', p.x, p.z, 0, 'leaf');
+  assert.equal(s.decor.find(d => d.id === id).item, 'leaf');
+  assert.deepEqual(C.validateState(s), s);
+  const w = find(s, q => q.t === 'w');
+  assert.throws(() => C.placeDecor(s, 'bridge', p.x + 0, p.z), /池塘|占用/);
+  const free2 = free(s);
+  assert.throws(() => C.placeDecor(s, 'bridge', free2.x, free2.z), /池塘/);
+  C.placeDecor(s, 'bridge', w.x, w.z);
+  assert.throws(() => C.placeDecor(s, 'pine', w.x, w.z));
+  const coastal = find(s, (q, x, z) => q.t === '.' && C.canPlace(s, 'decor', 'boat', x, z).ok);
+  assert.ok(coastal);
+  C.placeDecor(s, 'boat', coastal.x, coastal.z);
+  const far = find(
+    s,
+    (q, x, z) =>
+      q.t === '.' &&
+      !C.canPlace(s, 'decor', 'boat', x, z).ok &&
+      x >= 1 &&
+      x <= 26 &&
+      z >= 1 &&
+      z <= 26 &&
+      ![
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1]
+      ].some(([a, b]) => C.tileAt(s, x + a, z + b).t !== '.')
+  );
+  assert.throws(() => C.placeDecor(s, 'boat', far.x, far.z), /近岸/);
+  assert.throws(() => C.placeDecor(s, 'boat', free2.x, free2.z));
+  const edge = find(
+    s,
+    (q, x, z) => q.t === '.' && (x === 0 || z === 0) && C.canPlace(s, 'decor', 'pine', x, z).ok === false
+  );
+  assert.throws(() => C.placeDecor(s, 'boat', edge.x, edge.z));
+  assert.ok(C.canPlace(s, 'decor', 'display', p.x, p.z, 'd:' + id, 'leaf').ok);
+  assert.deepEqual(C.validateState(s), s);
+});
+test('地貌编辑：填海费用递增与限制', () => {
+  const s = rich();
+  const edge = () =>
+    find(s, (q, x, z) =>
+      C.editable
+        ? 0
+        : q.t === '.' &&
+          x >= 1 &&
+          z >= 1 &&
+          x <= 26 &&
+          z <= 26 &&
+          [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1]
+          ].some(([a, b]) => C.tileAt(s, x + a, z + b).t !== '.')
+    );
+  const t = edge(),
+    w0 = s.resources.wood;
+  assert.deepEqual(C.terrainCost(s, 'reclaim', t.x, t.z), {stone: 6, wood: 4, food: 2});
+  C.editTerrain(s, 'reclaim', t.x, t.z);
+  assert.deepEqual(C.tileAt(s, t.x, t.z), {t: 's', h: 0});
+  assert.equal(s.resources.wood, w0 - 4);
+  assert.throws(() => C.editTerrain(s, 'reclaim', t.x, t.z), /陆地/);
+  const far = find(s, (q, x, z) => q.t === '.' && x === 13 && z === 1);
+  assert.throws(() => C.editTerrain(s, 'reclaim', far.x, far.z), /紧邻/);
+  assert.throws(() => C.editTerrain(s, 'reclaim', 0, 0), /最外圈/);
+  assert.throws(() => C.editTerrain(s, 'reclaim', 99, 0));
+  const n0 = C.landCount(s);
+  for (let i = 0; i < 30; i++) {
+    const e = edge();
+    C.editTerrain(s, 'reclaim', e.x, e.z);
+  }
+  assert.equal(C.landCount(s), n0 + 30);
+  assert.deepEqual(C.terrainCost(s, 'reclaim', 1, 1), {
+    stone: 6 + Math.floor(31 / 12),
+    wood: 4 + Math.floor(31 / 20),
+    food: 2 + Math.floor(31 / 30)
+  });
+  const poor = state();
+  poor.resources = {wood: 0, stone: 0, food: 0, stars: 0};
+  const e = find(poor, (q, x, z) => q.t === '.' && x >= 1 && z >= 1 && C.tileAt(poor, x, z + 1)?.t === 's');
+  assert.throws(() => C.editTerrain(poor, 'reclaim', e.x, e.z), /建材/);
+  assert.deepEqual(C.validateState(s), s);
+});
+test('地貌编辑：涂刷、抬升、降低、还原为海、占用限制', () => {
+  const s = rich(),
+    p = find(
+      s,
+      (q, x, z) =>
+        q.t === 's' &&
+        !C.objectAt(s, x, z) &&
+        [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1]
+        ].every(([a, b]) => C.tileAt(s, x + a, z + b).t !== 'w')
+    );
+  const R0 = () => ({...s.resources});
+  let r = R0();
+  C.editTerrain(s, 'f', p.x, p.z);
+  assert.equal(C.tileAt(s, p.x, p.z).t, 'f');
+  assert.equal(s.resources.food, r.food - 2);
+  r = R0();
+  C.editTerrain(s, 'r', p.x, p.z);
+  assert.equal(s.resources.stone, r.stone - 2);
+  r = R0();
+  C.editTerrain(s, 'p', p.x, p.z);
+  assert.equal(s.resources.stone, r.stone - 3);
+  r = R0();
+  C.editTerrain(s, 'g', p.x, p.z);
+  C.editTerrain(s, 's', p.x, p.z);
+  C.editTerrain(s, 'w', p.x, p.z);
+  assert.deepEqual(R0(), r);
+  assert.equal(C.tileAt(s, p.x, p.z).t, 'w');
+  assert.throws(() => C.editTerrain(s, 'w', p.x, p.z), /已经/);
+  r = R0();
+  C.editTerrain(s, 'raise', p.x, p.z);
+  assert.equal(s.resources.stone, r.stone - 4);
+  assert.equal(C.tileAt(s, p.x, p.z).h, 1);
+  r = R0();
+  C.editTerrain(s, 'raise', p.x, p.z);
+  assert.equal(s.resources.stone, r.stone - 8);
+  C.editTerrain(s, 'raise', p.x, p.z);
+  assert.equal(C.tileAt(s, p.x, p.z).h, 3);
+  assert.throws(() => C.editTerrain(s, 'raise', p.x, p.z), /最高/);
+  assert.throws(() => C.editTerrain(s, 'sea', p.x, p.z), /降到最低/);
+  r = R0();
+  for (let i = 0; i < 3; i++) C.editTerrain(s, 'lower', p.x, p.z);
+  assert.deepEqual(R0(), r);
+  assert.throws(() => C.editTerrain(s, 'lower', p.x, p.z), /最低/);
+  C.editTerrain(s, 'sea', p.x, p.z);
+  assert.equal(C.tileAt(s, p.x, p.z).t, '.');
+  assert.throws(() => C.editTerrain(s, 'g', p.x, p.z), /海/);
+  assert.throws(() => C.editTerrain(s, 'nope', p.x, p.z));
+  assert.throws(() => C.editTerrain(s, 'f', 10, 15), /移走/);
+  const d = C.defaultDecor()[0];
+  assert.throws(() => C.editTerrain(s, 'g', d.x, d.z), /移走/);
+  assert.equal(C.TERRAIN_TOOLS.length, 10);
+  assert.deepEqual(C.validateState(s), s);
+});
+test('v2 校验拒绝重叠、坏地形、孤立布局、未知装饰与重复 id', () => {
+  const ok = () => {
+    const s = state();
+    return s;
+  };
+  const bad = f => {
+    const s = ok();
+    f(s);
+    assert.throws(() => C.validateState(s), /存档格式无效或版本不兼容，原有进度未改动/);
+  };
+  assert.deepEqual(C.validateState(ok()), ok());
+  bad(s => {
+    s.layout.sawmill = {x: 13, z: 12, r: 0};
+  });
+  bad(s => {
+    s.decor.push({id: 'z1', type: 'pine', x: 13, z: 12, r: 0});
+  });
+  bad(s => {
+    s.decor.push({id: 'z1', type: 'pine', x: 0, z: 0, r: 0}, {id: 'z2', type: 'pine', x: 0, z: 0, r: 0});
+  });
+  bad(s => {
+    s.island.terrain = s.island.terrain.slice(1);
+  });
+  bad(s => {
+    s.island.terrain = 'x' + s.island.terrain.slice(1);
+  });
+  bad(s => {
+    s.island.height = s.island.height.replace('0', '9');
+  });
+  bad(s => {
+    s.island.terrain = '.' + s.island.terrain.slice(1);
+    s.island.height = '1' + s.island.height.slice(1);
+  });
+  bad(s => {
+    s.layout.quarry = {x: 5, z: 5, r: 0};
+  });
+  bad(s => {
+    delete s.layout.cottage;
+  });
+  bad(s => {
+    s.layout.cottage = {x: 27, z: 27, r: 0};
+  });
+  bad(s => {
+    s.layout.cottage = {x: 1.5, z: 1, r: 0};
+  });
+  bad(s => {
+    s.layout.cottage.r = 4;
+  });
+  bad(s => {
+    s.decor.push({id: 'z1', type: 'ufo', x: 0, z: 0, r: 0});
+  });
+  bad(s => {
+    s.decor.push({id: 'g0', type: 'pine', x: 0, z: 0, r: 0});
+  });
+  bad(s => {
+    s.decor.push({id: 'Bad Id', type: 'pine', x: 0, z: 0, r: 0});
+  });
+  bad(s => {
+    s.decor.push({id: 'z1', type: 'display', x: 0, z: 0, r: 0, item: 'nope'});
+  });
+  bad(s => {
+    s.decor.push({id: 'z1', type: 'display', x: 0, z: 0, r: 0});
+  });
+  bad(s => {
+    delete s.island;
+  });
+  bad(s => {
+    delete s.decor;
+  });
+  bad(s => {
+    delete s.buildings.dock;
+  });
+  bad(s => {
+    s.buildings.dock = 6;
+  });
+  bad(s => {
+    s.decor = Array.from({length: 601}, (_, i) => ({
+      id: 'q' + i,
+      type: 'pine',
+      x: i % 28,
+      z: Math.floor(i / 28) % 28,
+      r: 0
+    }));
+  });
+  const s = ok();
+  s.decor.push({id: 'z1', type: 'display', x: 0, z: 0, r: 1, item: 'leaf'});
+  assert.deepEqual(C.validateState(s), s);
+});
+test('新收藏品加入各稀有度奖池', () => {
+  const pools = {};
+  for (const c of C.COLLECTIONS) (pools[c.rarity] ??= []).push(c.id);
+  assert.deepEqual(
+    [pools.common.length, pools.rare.length, pools.epic.length, pools.legendary.length],
+    [6, 5, 4, 3]
+  );
+  assert.equal(C.COLLECTIONS.length, 18);
+  const seen = new Set();
+  for (const roll of [0.99, 0.5, 0.2, 0.05, 0.01])
+    for (let pick = 0; pick < 1; pick += 0.05) {
+      const s = state();
+      s.resources.stars = 30;
+      const seq = [roll, pick];
+      let k = 0;
+      const r = C.draw(s, 1, () => seq[k++ % 2]);
+      seen.add(r[0].id);
+    }
+  for (const id of ['acorn', 'teacup', 'hourglass', 'scroll', 'koi', 'globe', 'bonsai', 'phoenix'])
+    assert.ok(seen.has(id), id);
+});

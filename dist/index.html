@@ -1,22 +1,363 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#153f35"><meta name="description" content="用专注与休息，养成一座属于你的 3D 学习村庄。"><title>时光村落 · 让专注慢慢生长</title><link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32-v1.png"><link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192-v1.png"><link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-v1.png"><link rel="manifest" href="./manifest.webmanifest"><meta name="apple-mobile-web-app-title" content="时光村落"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="stylesheet" href="./style.css?v=6"><script src="./vendor/lucide.min.js" defer></script><script type="module" src="./app.js?v=4"></script></head>
-<body>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#153f35" />
+    <meta name="description" content="用专注与休息，养成一座属于你的 3D 学习村庄。" />
+    <title>时光村落 · 让专注慢慢生长</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32-v1.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192-v1.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-v1.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="时光村落" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="stylesheet" href="./style.css?v=7" />
+    <script src="./vendor/lucide.min.js" defer></script>
+    <script type="module" src="./app.js?v=5"></script>
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <a class="compact-brand" href="#village"
+          ><img class="app-brand-icon" src="./icons/icon-192-v1.png" width="34" height="34" alt="" /><strong>时光村落</strong
+          ><span>TIMEGROVE</span></a
+        >
+        <div class="topbar-end">
+          <span id="date-label"></span
+          ><button id="menu-button" class="icon-button" aria-label="打开村庄菜单" aria-haspopup="dialog"><i data-lucide="menu"></i></button>
+        </div>
+      </header>
 
-<main><header class="topbar"><a class="compact-brand" href="#village"><img class="app-brand-icon" src="./icons/icon-192-v1.png" width="34" height="34" alt=""><strong>时光村落</strong><span>TIMEGROVE</span></a><div class="topbar-end"><span id="date-label"></span><button id="menu-button" class="icon-button" aria-label="打开村庄菜单" aria-haspopup="dialog"><i data-lucide="menu"></i></button></div></header>
+      <div id="storage-alert" role="alert" hidden></div>
 
-<div id="storage-alert" role="alert" hidden></div>
+      <div id="home-pages" aria-label="村庄与计时两屏">
+        <div aria-label="村庄" id="page-village" class="home-screen village-screen">
+          <div class="screen-heading">
+            <div>
+              <span class="eyebrow">YOUR LITTLE WORLD</span>
+              <h1>我的村庄</h1>
+            </div>
+            <div class="village-badge">
+              <i data-lucide="trees"></i>
+              <div><strong id="village-level">初生聚落</strong><span id="village-progress">2 座建筑 · 3 位居民</span></div>
+            </div>
+          </div>
+          <section class="stats-grid" aria-label="学习概览">
+            <article class="stat">
+              <span class="stat-icon green"><i data-lucide="calendar-days"></i></span>
+              <div>
+                <p>本周累计学习</p>
+                <strong id="weekly-total">0 <small>小时</small> 00 <small>分</small></strong
+                ><span id="week-caption">从本周一开始，慢慢积累</span>
+              </div>
+              <div class="mini-bars" id="mini-bars" aria-hidden="true"></div>
+            </article>
+            <article class="stat">
+              <span class="stat-icon gold"><i data-lucide="clock-3"></i></span>
+              <div>
+                <p>距离上次学习打卡</p>
+                <strong id="last-study">尚未开始</strong><span id="last-caption">第一段专注，正等着你</span>
+              </div>
+            </article>
+            <article class="stat">
+              <span class="stat-icon lilac"><i data-lucide="users-round"></i></span>
+              <div>
+                <p>村庄居民</p>
+                <strong id="population">3 <small>位</small></strong
+                ><span id="population-caption">再学习 60 分钟，迎来新邻居</span>
+              </div>
+            </article>
+          </section>
+          <section class="resource-bar" aria-label="资源仓库">
+            <span class="resource-label"><i data-lucide="package"></i>我的仓库</span>
+            <div id="resources"></div>
+            <button class="quiet-button" id="rules-button" aria-label="查看资源规则"><i data-lucide="circle-help"></i></button>
+          </section>
 
-
-
-<div id="home-pages" aria-label="村庄与计时两屏"><div aria-label="村庄" id="page-village" class="home-screen village-screen"><div class="screen-heading"><div><span class="eyebrow">YOUR LITTLE WORLD</span><h1>我的村庄</h1></div><div class="village-badge"><i data-lucide="trees"></i><div><strong id="village-level">初生聚落</strong><span id="village-progress">2 座建筑 · 3 位居民</span></div></div></div>
-<section class="stats-grid" aria-label="学习概览"><article class="stat"><span class="stat-icon green"><i data-lucide="calendar-days"></i></span><div><p>本周累计学习</p><strong id="weekly-total">0 <small>小时</small> 00 <small>分</small></strong><span id="week-caption">从本周一开始，慢慢积累</span></div><div class="mini-bars" id="mini-bars" aria-hidden="true"></div></article><article class="stat"><span class="stat-icon gold"><i data-lucide="clock-3"></i></span><div><p>距离上次学习打卡</p><strong id="last-study">尚未开始</strong><span id="last-caption">第一段专注，正等着你</span></div></article><article class="stat"><span class="stat-icon lilac"><i data-lucide="users-round"></i></span><div><p>村庄居民</p><strong id="population">3 <small>位</small></strong><span id="population-caption">再学习 60 分钟，迎来新邻居</span></div></article></section>
-<section class="resource-bar" aria-label="资源仓库"><span class="resource-label"><i data-lucide="package"></i>我的仓库</span><div id="resources"></div><button class="quiet-button" id="rules-button" aria-label="查看资源规则"><i data-lucide="circle-help"></i></button></section>
-
-
-<section class="village-panel"><div class="panel-heading"><div><h2><span class="live-dot"></span>林间的家</h2><span>每一份专注，都在让这里变得不同</span></div><div class="panel-tools"><button class="icon-button" id="reset-camera" title="重置视角" aria-label="重置 3D 视角"><i data-lucide="scan"></i></button></div></div><div id="scene" aria-label="可拖动旋转的 3D 村庄"><div class="scene-loading" id="scene-loading">正在种下第一棵树…</div><div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合专注的一天</div><button class="build-entry" id="build-button" disabled title="3D 场景加载中…"><span class="build-entry-icon"><i data-lucide="hammer"></i></span>建造</button><div class="scene-hint"><i data-lucide="move"></i>拖动旋转 · 滚轮缩放 · 点击建筑</div><div id="building-label" hidden></div></div><div class="harvest-strip"><div><span class="harvest-icon"><i data-lucide="sprout"></i></span><div><strong>村庄正在悄悄生长</strong><p id="production-caption">木材 +18/h · 星砂 +2/h</p></div></div><button id="harvest-button" class="dark-button"><i data-lucide="hand-coins"></i><span id="harvest-label">领取产出</span></button></div></section><button class="screen-jump text-button" data-page="focus">上滑进入计时 <i data-lucide="chevron-down"></i></button></div><section id="page-focus" hidden class="home-screen focus-screen" aria-label="计时"><button class="screen-jump text-button" data-page="village"><i data-lucide="chevron-up"></i>回到村庄</button><section class="focus-panel"><div class="focus-heading"><h2><i data-lucide="timer"></i>留一段时间给自己</h2><span id="focus-status">准备出发</span></div><div class="mode-tabs" role="tablist" aria-label="计时模式"><button id="study-tab" role="tab" aria-selected="true" data-mode="study" class="selected">专注学习</button><button id="rest-tab" role="tab" aria-selected="false" data-mode="rest">好好休息</button></div><div class="timer-ring" id="timer-ring"><div><span id="timer-kicker">下一块砖，从此刻开始</span><strong id="timer-display" aria-label="剩余时间">25:00</strong><span id="timer-note">一小步，也算数。</span></div></div><div class="duration-options" id="durations"></div><label class="topic-field"><i data-lucide="pencil-line"></i><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容"></label><button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button><div class="timer-actions" hidden id="timer-actions"><button id="pause-button" class="secondary-button">暂停</button><button id="finish-button" class="primary-button">结束并打卡</button></div><div class="focus-reward" id="focus-reward"></div><button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button><button id="cancel-timer" class="text-button" hidden>放弃本次计时</button></section></section></div></main>
-<dialog id="manual-dialog"><form id="manual-form"><div class="dialog-heading"><h2>补记一段认真度过的时间</h2><button type="button" data-close="manual-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button></div><p class="subtle">补记与计时享有同等奖励，已有记录的时间不可重复。</p><label>学习内容<input name="topic" maxlength="80" placeholder="例如：复变函数 · 留数定理" required></label><label>学习时长（分钟）<input name="minutes" type="number" min="1" max="240" value="25" required></label><label>结束时间<input name="end" type="datetime-local" required></label><p id="manual-error" class="form-error" role="alert"></p><button type="submit" class="primary-button">保存打卡 · 领取奖励</button></form></dialog>
-<dialog id="settings-dialog"><div class="dialog-heading"><h2>让生长有迹可循</h2><button data-close="settings-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button></div><h3>村庄生活指南</h3><div class="rules-list"><p><strong>专注学习</strong><span>每分钟获得 2 木材、1 石料、0.4 星砂。累计每学习 60 分钟增加 1 位居民。</span></p><p><strong>适当休息</strong><span>每学习 5 分钟解锁 1 分钟可奖励休息。每分钟休息获得 2 补给、0.2 星砂，单次最多 15 分钟。</span></p><p><strong>建筑产出</strong><span>关闭网页也会按时间产出，最多储存 24 小时。领取后可继续储存；升级立即提升产速。</span></p><p><strong>星砂寻宝</strong><span>每次 30 星砂，无付费入口。连续 19 次未出史诗或传说，第 20 次至少史诗；出货后重新计数。</span></p><p><strong>计时与周统计</strong><span>计时刷新后保留，到点停止累计，需要手动打卡领奖。暂停时间不计入学习；本周按设备本地时区从周一 00:00 开始。</span></p></div><h3>自由建造（新）</h3><div class="rules-list"><p><strong>自由摆放</strong><span>点击「建造」进入建造模式，建筑可放在岛上任意合适的空地，也可随时免费移动与旋转。新建筑需要足够的居民才能建造。</span></p><p><strong>地貌工具</strong><span>填海造地消耗石料、木材与补给（岛越大越贵）；改变地貌：花甸 2 补给、岩地 2 石料、石径 3 石料；抬升每级消耗石料；降低、草地、沙滩、池塘与还原为海免费。</span></p><p><strong>装饰</strong><span>装饰按种类消耗资源，拆除不返还资源。收藏品可摆在奇物展台上展示。</span></p></div><h3>保存你的村庄</h3><p class="subtle">进度只保存在当前浏览器。清理网站数据会丢失存档；换设备时请导出后导入。GitHub 不会保存你的学习记录。</p><p class="subtle">此版本的存档格式已升级，旧版本无法再打开它；首次升级时会自动在本机保留一份旧存档备份（timegrove-save-v1-backup-before-v2）。</p><div class="backup-buttons"><button id="export-save" class="dark-button"><i data-lucide="download"></i>导出存档</button><button id="import-save" class="secondary-button"><i data-lucide="upload"></i>导入存档</button><input id="import-file" type="file" accept="application/json,.json" hidden></div></dialog>
-<dialog id="item-dialog"><div class="dialog-heading"><h2 id="item-name"></h2><button data-close="item-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button></div><div id="item-viewer" class="item-viewer"></div><p id="item-meta" class="item-meta"></p><p id="item-text" class="subtle"></p></dialog><dialog id="confirm-dialog"><h2 id="confirm-title"></h2><p id="confirm-text"></p><div class="backup-buttons"><button id="confirm-no" class="secondary-button">取消</button><button id="confirm-yes" class="primary-button">确认</button></div></dialog>
-<dialog id="result-dialog"><div class="dialog-heading"><h2>远方寄来的礼物</h2><button data-close="result-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button></div><div id="draw-results"></div><button data-close="result-dialog" class="primary-button">收进奇物柜</button></dialog><div id="toast" role="status" aria-live="polite"></div>
-<dialog id="secondary-dialog" class="secondary-dialog"><div class="dialog-heading"><button id="secondary-back" class="icon-button" aria-label="返回二级菜单"><i data-lucide="arrow-left"></i></button><h2 id="page-label"></h2><button data-close="secondary-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button></div><div class="secondary-heading"><h2 id="page-title"></h2><p id="page-subtitle"></p></div><section id="page-buildings" class="page buildings-section"><div class="section-heading"><div><h2>让村庄更丰盛</h2><p>建造与升级，让时间带来更多馈赠</p></div><span class="subtle">建筑最高 Lv.5</span></div><div class="buildings-grid" id="buildings"></div></section><div id="page-journal" class="page" hidden><section class="journal-summary"><div><span>累计学习</span><strong id="lifetime-hours">0 小时</strong></div><div><span>完成学习打卡</span><strong id="session-count">0 次</strong></div><div><span>本周专注</span><strong id="journal-week">0 分钟</strong></div></section><section class="white-panel"><div class="section-heading"><h2>这一周的生长</h2><span class="subtle">周一至周日 · 设备本地时区</span></div><div id="weekly-chart" class="weekly-chart"></div></section><section class="white-panel"><div class="section-heading"><h2>时间都有回音</h2><button id="journal-manual" class="secondary-button"><i data-lucide="plus"></i>补记学习</button></div><div id="all-sessions"></div><button id="load-more" class="secondary-button" hidden>查看更多</button></section></div><div id="page-collection" class="page" hidden><section class="collection-hero"><div><span class="eyebrow">THE CABINET OF WONDERS</span><h2>每一份认真，<br>都值得一份惊喜。</h2><p>用村庄积攒的星砂，遇见更多奇物。</p><div class="draw-buttons"><button id="draw-one" class="primary-button"><i data-lucide="sparkles"></i>寻找一次 · 30 星砂</button><button id="draw-five" class="secondary-button">寻找五次 · 150 星砂</button></div><span id="draw-balance" class="draw-balance"></span></div><div class="collection-emblem"><i data-lucide="gem"></i><span>THE WONDERS<br>OF YOUR TIME</span></div></section><div class="odds-strip">寻常 60% · 稀有 28% · 史诗 10% · 传说 2%<span id="pity-label">连续 20 次必得史诗或传说</span></div><div class="section-heading"><h2>我的奇物柜 <span id="cabinet-count">0 / 18</span></h2><span class="subtle">重复奇物保留为收藏数量</span></div><div id="collection-grid" class="collection-grid"></div></div><div hidden id="recent-sessions"></div></dialog><dialog id="menu-dialog"><div class="dialog-heading"><h2>村庄菜单</h2><button data-close="menu-dialog" class="icon-button" aria-label="关闭菜单"><i data-lucide="x"></i></button></div><div class="menu-grid"><button id="free-build-button" class="menu-wide" disabled><i data-lucide="blocks"></i><strong>自由建造</strong><span>摆放建筑与装饰，塑造岛屿地貌</span></button><button data-page="buildings"><i data-lucide="hammer"></i><strong>建筑管理</strong><span>建造、升级与产出</span></button><button data-page="journal"><i data-lucide="notebook-pen"></i><strong>学习手记</strong><span>本周统计与历史打卡</span></button><button data-page="collection"><i data-lucide="gem"></i><strong>奇物收藏 <small id="collection-count">0</small></strong><span>星砂寻宝与收藏柜</span></button><button id="settings-button"><i data-lucide="hard-drive-download"></i><strong>存档与规则</strong><span>导入、导出与玩法说明</span></button></div><p id="save-state" class="save-caption">进度自动保存在此设备</p></dialog><div id="build-hud" hidden><div class="bh-top"><div id="bh-res" class="bh-res" aria-label="资源"></div><p id="bh-hint" class="bh-hint" role="status"></p><button id="bh-done" class="primary-button"><i data-lucide="check"></i>完成</button></div><div class="bh-bottom"><div id="bh-action" class="bh-action" hidden></div><div class="bh-sheet"><div class="bh-tabs" role="tablist" aria-label="建造分类"><button role="tab" data-tab="building">建筑</button><button role="tab" data-tab="decor">装饰</button><button role="tab" data-tab="terrain">地貌</button><button role="tab" data-tab="manage" class="selected">整理</button><button id="bh-fold" class="bh-fold" aria-label="收起或展开面板" aria-expanded="true"><i data-lucide="chevron-down"></i></button></div><div id="bh-palette" class="bh-palette"></div></div></div></div>
-<nav class="screen-dock" aria-label="主页面"><button data-page="village" aria-current="page" class="selected"><i data-lucide="house"></i>村庄</button><button data-page="focus"><i data-lucide="timer"></i>计时</button></nav></body></html>
+          <section id="backup-nudge" class="backup-nudge" hidden aria-live="polite">
+            <span class="backup-nudge-icon"><i data-lucide="shield-check"></i></span>
+            <div>
+              <strong id="backup-nudge-title">给村庄留一份备份吧</strong>
+              <p id="backup-nudge-text"></p>
+            </div>
+            <div class="backup-nudge-actions">
+              <button id="backup-nudge-export" class="dark-button"><i data-lucide="download"></i>导出存档</button
+              ><button id="backup-nudge-later" class="text-button">过几天再说</button>
+            </div>
+          </section>
+          <section class="village-panel">
+            <div class="panel-heading">
+              <div>
+                <h2><span class="live-dot"></span>林间的家</h2>
+                <span>每一份专注，都在让这里变得不同</span>
+              </div>
+              <div class="panel-tools">
+                <button class="icon-button" id="reset-camera" title="重置视角" aria-label="重置 3D 视角"><i data-lucide="scan"></i></button>
+              </div>
+            </div>
+            <div id="scene" aria-label="可拖动旋转的 3D 村庄">
+              <div class="scene-loading" id="scene-loading">正在种下第一棵树…</div>
+              <div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合专注的一天</div>
+              <button class="build-entry" id="build-button" disabled title="3D 场景加载中…">
+                <span class="build-entry-icon"><i data-lucide="hammer"></i></span>建造
+              </button>
+              <div class="scene-hint"><i data-lucide="move"></i>拖动旋转 · 滚轮缩放 · 点击建筑</div>
+              <div id="building-label" hidden></div>
+            </div>
+            <div class="harvest-strip">
+              <div>
+                <span class="harvest-icon"><i data-lucide="sprout"></i></span>
+                <div>
+                  <strong>村庄正在悄悄生长</strong>
+                  <p id="production-caption">木材 +18/h · 星砂 +2/h</p>
+                </div>
+              </div>
+              <button id="harvest-button" class="dark-button">
+                <i data-lucide="hand-coins"></i><span id="harvest-label">领取产出</span>
+              </button>
+            </div>
+          </section>
+          <button class="screen-jump text-button" data-page="focus">上滑进入计时 <i data-lucide="chevron-down"></i></button>
+        </div>
+        <section id="page-focus" hidden class="home-screen focus-screen" aria-label="计时">
+          <button class="screen-jump text-button" data-page="village"><i data-lucide="chevron-up"></i>回到村庄</button>
+          <section class="focus-panel">
+            <div class="focus-heading">
+              <h2><i data-lucide="timer"></i>留一段时间给自己</h2>
+              <span id="focus-status">准备出发</span>
+            </div>
+            <div class="mode-tabs" role="tablist" aria-label="计时模式">
+              <button id="study-tab" role="tab" aria-selected="true" data-mode="study" class="selected">专注学习</button
+              ><button id="rest-tab" role="tab" aria-selected="false" data-mode="rest">好好休息</button>
+            </div>
+            <div class="timer-ring" id="timer-ring">
+              <div>
+                <span id="timer-kicker">下一块砖，从此刻开始</span><strong id="timer-display" aria-label="剩余时间">25:00</strong
+                ><span id="timer-note">一小步，也算数。</span>
+              </div>
+            </div>
+            <div class="duration-options" id="durations"></div>
+            <label class="topic-field"
+              ><i data-lucide="pencil-line"></i
+              ><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容" /></label
+            ><button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button>
+            <div class="timer-actions" hidden id="timer-actions">
+              <button id="pause-button" class="secondary-button">暂停</button
+              ><button id="finish-button" class="primary-button">结束并打卡</button>
+            </div>
+            <div class="focus-reward" id="focus-reward"></div>
+            <div class="alert-toggles" role="group" aria-label="到点提醒">
+              <button id="alert-sound" class="alert-chip" aria-pressed="true"><i data-lucide="volume-2"></i>提示音与震动</button
+              ><button id="alert-notify" class="alert-chip" aria-pressed="false"><i data-lucide="bell"></i>系统通知</button>
+            </div>
+            <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button
+            ><button id="cancel-timer" class="text-button" hidden>放弃本次计时</button>
+          </section>
+        </section>
+      </div>
+    </main>
+    <dialog id="manual-dialog">
+      <form id="manual-form">
+        <div class="dialog-heading">
+          <h2>补记一段认真度过的时间</h2>
+          <button type="button" data-close="manual-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
+        </div>
+        <p class="subtle">补记与计时享有同等奖励，已有记录的时间不可重复。</p>
+        <label>学习内容<input name="topic" maxlength="80" placeholder="例如：复变函数 · 留数定理" required /></label
+        ><label>学习时长（分钟）<input name="minutes" type="number" min="1" max="240" value="25" required /></label
+        ><label>结束时间<input name="end" type="datetime-local" required /></label>
+        <p id="manual-error" class="form-error" role="alert"></p>
+        <button type="submit" class="primary-button">保存打卡 · 领取奖励</button>
+      </form>
+    </dialog>
+    <dialog id="settings-dialog">
+      <div class="dialog-heading">
+        <h2>让生长有迹可循</h2>
+        <button data-close="settings-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <h3>村庄生活指南</h3>
+      <div class="rules-list">
+        <p><strong>专注学习</strong><span>每分钟获得 2 木材、1 石料、0.4 星砂。累计每学习 60 分钟增加 1 位居民。</span></p>
+        <p><strong>适当休息</strong><span>每学习 5 分钟解锁 1 分钟可奖励休息。每分钟休息获得 2 补给、0.2 星砂，单次最多 15 分钟。</span></p>
+        <p><strong>建筑产出</strong><span>关闭网页也会按时间产出，最多储存 24 小时。领取后可继续储存；升级立即提升产速。</span></p>
+        <p><strong>星砂寻宝</strong><span>每次 30 星砂，无付费入口。连续 19 次未出史诗或传说，第 20 次至少史诗；出货后重新计数。</span></p>
+        <p>
+          <strong>计时与周统计</strong
+          ><span>计时刷新后保留，到点停止累计，需要手动打卡领奖。暂停时间不计入学习；本周按设备本地时区从周一 00:00 开始。</span>
+        </p>
+      </div>
+      <h3>自由建造（新）</h3>
+      <div class="rules-list">
+        <p>
+          <strong>自由摆放</strong
+          ><span>点击「建造」进入建造模式，建筑可放在岛上任意合适的空地，也可随时免费移动与旋转。新建筑需要足够的居民才能建造。</span>
+        </p>
+        <p>
+          <strong>地貌工具</strong
+          ><span
+            >填海造地消耗石料、木材与补给（岛越大越贵）；改变地貌：花甸 2 补给、岩地 2 石料、石径 3
+            石料；抬升每级消耗石料；降低、草地、沙滩、池塘与还原为海免费。</span
+          >
+        </p>
+        <p>
+          <strong>到点提醒</strong
+          ><span
+            >计时页可开关提示音与震动、系统通知；标签页标题会显示倒计时。系统通知需要页面保持在后台打开，iPhone 需先「添加到主屏幕」。</span
+          >
+        </p>
+        <p><strong>装饰</strong><span>装饰按种类消耗资源，拆除不返还资源。收藏品可摆在奇物展台上展示。</span></p>
+      </div>
+      <h3>保存你的村庄</h3>
+      <p class="subtle">进度只保存在当前浏览器。清理网站数据会丢失存档；换设备时请导出后导入。GitHub 不会保存你的学习记录。</p>
+      <p class="subtle">
+        此版本的存档格式已升级，旧版本无法再打开它；首次升级时会自动在本机保留一份旧存档备份（timegrove-save-v1-backup-before-v2）。
+      </p>
+      <div class="backup-buttons">
+        <button id="export-save" class="dark-button"><i data-lucide="download"></i>导出存档</button
+        ><button id="import-save" class="secondary-button"><i data-lucide="upload"></i>导入存档</button
+        ><input id="import-file" type="file" accept="application/json,.json" hidden />
+      </div>
+      <div class="backup-pref">
+        <span id="backup-last">尚未导出过存档</span>
+        <label>备份提醒<select id="backup-every"></select></label>
+      </div>
+    </dialog>
+    <dialog id="item-dialog">
+      <div class="dialog-heading">
+        <h2 id="item-name"></h2>
+        <button data-close="item-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div id="item-viewer" class="item-viewer"></div>
+      <p id="item-meta" class="item-meta"></p>
+      <p id="item-text" class="subtle"></p>
+    </dialog>
+    <dialog id="confirm-dialog">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-text"></p>
+      <div class="backup-buttons">
+        <button id="confirm-no" class="secondary-button">取消</button><button id="confirm-yes" class="primary-button">确认</button>
+      </div>
+    </dialog>
+    <dialog id="result-dialog">
+      <div class="dialog-heading">
+        <h2>远方寄来的礼物</h2>
+        <button data-close="result-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div id="draw-results"></div>
+      <button data-close="result-dialog" class="primary-button">收进奇物柜</button>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="secondary-dialog" class="secondary-dialog">
+      <div class="dialog-heading">
+        <button id="secondary-back" class="icon-button" aria-label="返回二级菜单"><i data-lucide="arrow-left"></i></button>
+        <h2 id="page-label"></h2>
+        <button data-close="secondary-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div class="secondary-heading">
+        <h2 id="page-title"></h2>
+        <p id="page-subtitle"></p>
+      </div>
+      <section id="page-buildings" class="page buildings-section">
+        <div class="section-heading">
+          <div>
+            <h2>让村庄更丰盛</h2>
+            <p>建造与升级，让时间带来更多馈赠</p>
+          </div>
+          <span class="subtle">建筑最高 Lv.5</span>
+        </div>
+        <div class="buildings-grid" id="buildings"></div>
+      </section>
+      <div id="page-journal" class="page" hidden>
+        <section class="journal-summary">
+          <div><span>累计学习</span><strong id="lifetime-hours">0 小时</strong></div>
+          <div><span>完成学习打卡</span><strong id="session-count">0 次</strong></div>
+          <div><span>本周专注</span><strong id="journal-week">0 分钟</strong></div>
+        </section>
+        <section class="white-panel">
+          <div class="section-heading">
+            <h2>这一周的生长</h2>
+            <span class="subtle">周一至周日 · 设备本地时区</span>
+          </div>
+          <div id="weekly-chart" class="weekly-chart"></div>
+        </section>
+        <section class="white-panel">
+          <div class="section-heading">
+            <h2>时间都有回音</h2>
+            <button id="journal-manual" class="secondary-button"><i data-lucide="plus"></i>补记学习</button>
+          </div>
+          <div id="all-sessions"></div>
+          <button id="load-more" class="secondary-button" hidden>查看更多</button>
+        </section>
+      </div>
+      <div id="page-collection" class="page" hidden>
+        <section class="collection-hero">
+          <div>
+            <span class="eyebrow">THE CABINET OF WONDERS</span>
+            <h2>每一份认真，<br />都值得一份惊喜。</h2>
+            <p>用村庄积攒的星砂，遇见更多奇物。</p>
+            <div class="draw-buttons">
+              <button id="draw-one" class="primary-button"><i data-lucide="sparkles"></i>寻找一次 · 30 星砂</button
+              ><button id="draw-five" class="secondary-button">寻找五次 · 150 星砂</button>
+            </div>
+            <span id="draw-balance" class="draw-balance"></span>
+          </div>
+          <div class="collection-emblem">
+            <i data-lucide="gem"></i><span>THE WONDERS<br />OF YOUR TIME</span>
+          </div>
+        </section>
+        <div class="odds-strip">寻常 60% · 稀有 28% · 史诗 10% · 传说 2%<span id="pity-label">连续 20 次必得史诗或传说</span></div>
+        <div class="section-heading">
+          <h2>我的奇物柜 <span id="cabinet-count">0 / 18</span></h2>
+          <span class="subtle">重复奇物保留为收藏数量</span>
+        </div>
+        <div id="collection-grid" class="collection-grid"></div>
+      </div>
+      <div hidden id="recent-sessions"></div>
+    </dialog>
+    <dialog id="menu-dialog">
+      <div class="dialog-heading">
+        <h2>村庄菜单</h2>
+        <button data-close="menu-dialog" class="icon-button" aria-label="关闭菜单"><i data-lucide="x"></i></button>
+      </div>
+      <div class="menu-grid">
+        <button id="free-build-button" class="menu-wide" disabled>
+          <i data-lucide="blocks"></i><strong>自由建造</strong><span>摆放建筑与装饰，塑造岛屿地貌</span></button
+        ><button data-page="buildings"><i data-lucide="hammer"></i><strong>建筑管理</strong><span>建造、升级与产出</span></button
+        ><button data-page="journal"><i data-lucide="notebook-pen"></i><strong>学习手记</strong><span>本周统计与历史打卡</span></button
+        ><button data-page="collection">
+          <i data-lucide="gem"></i><strong>奇物收藏 <small id="collection-count">0</small></strong
+          ><span>星砂寻宝与收藏柜</span></button
+        ><button id="settings-button">
+          <i data-lucide="hard-drive-download"></i><strong>存档与规则</strong><span>导入、导出与玩法说明</span>
+        </button>
+      </div>
+      <p id="save-state" class="save-caption">进度自动保存在此设备</p>
+    </dialog>
+    <div id="build-hud" hidden>
+      <div class="bh-top">
+        <div id="bh-res" class="bh-res" aria-label="资源"></div>
+        <p id="bh-hint" class="bh-hint" role="status"></p>
+        <button id="bh-done" class="primary-button"><i data-lucide="check"></i>完成</button>
+      </div>
+      <div class="bh-bottom">
+        <div id="bh-action" class="bh-action" hidden></div>
+        <div class="bh-sheet">
+          <div class="bh-tabs" role="tablist" aria-label="建造分类">
+            <button role="tab" data-tab="building">建筑</button><button role="tab" data-tab="decor">装饰</button
+            ><button role="tab" data-tab="terrain">地貌</button><button role="tab" data-tab="manage" class="selected">整理</button
+            ><button id="bh-fold" class="bh-fold" aria-label="收起或展开面板" aria-expanded="true">
+              <i data-lucide="chevron-down"></i>
+            </button>
+          </div>
+          <div id="bh-palette" class="bh-palette"></div>
+        </div>
+      </div>
+    </div>
+    <nav class="screen-dock" aria-label="主页面">
+      <button data-page="village" aria-current="page" class="selected"><i data-lucide="house"></i>村庄</button
+      ><button data-page="focus"><i data-lucide="timer"></i>计时</button>
+    </nav>
+  </body>
+</html>
