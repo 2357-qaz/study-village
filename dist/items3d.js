@@ -30,7 +30,7 @@ export function createItemModel(id) {
   itemModel(new Builder(new LiveSink(g, richMat)), id);
   return g;
 }
-function stage(id) {
+function stage(id, {pedestal = true} = {}) {
   const scene = new THREE.Scene();
   scene.add(new THREE.HemisphereLight(0xfff8ea, 0x8a7f9a, 2.2));
   const key = new THREE.DirectionalLight(0xfff0d8, 3.2);
@@ -58,7 +58,7 @@ function stage(id) {
   );
   disc.position.y = -size.y / 2 - 0.03;
   disc.scale.setScalar(Math.max(size.x, size.z, 0.5) * 0.85);
-  pivot.add(disc);
+  if (pedestal) pivot.add(disc);
   const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 50),
     dist = Math.max(size.x, size.y, size.z) * 2.25 + 0.5;
   camera.position.set(0, dist * 0.42, dist);
@@ -85,7 +85,7 @@ export function itemThumbnail(id) {
       new Promise((resolve, reject) => {
         try {
           const r = sharedRenderer(),
-            {scene, camera, pivot} = stage(id);
+            {scene, camera, pivot} = stage(id, {pedestal: false});
           pivot.rotation.y = -0.55;
           r.setClearColor(0, 0);
           r.render(scene, camera);
@@ -98,7 +98,8 @@ export function itemThumbnail(id) {
     );
   return cache.get(id);
 }
-export function mountItemViewer(el, id) {
+// Options: pedestal (cream display disc), spin (idle turn speed, rad/s).
+export function mountItemViewer(el, id, {pedestal = true, spin = 0.35} = {}) {
   const r = new THREE.WebGLRenderer({antialias: true, alpha: true});
   r.setPixelRatio(Math.min(devicePixelRatio, 2));
   r.outputColorSpace = THREE.SRGBColorSpace;
@@ -113,10 +114,10 @@ export function mountItemViewer(el, id) {
     touchAction: 'none',
     cursor: 'grab'
   });
-  const {scene, camera, pivot, model} = stage(id);
+  const {scene, camera, pivot, model} = stage(id, {pedestal});
   let rot = -0.55,
     tilt = 0,
-    vel = 0.35,
+    vel = spin,
     drag = null,
     raf = 0,
     last = 0,
@@ -150,7 +151,7 @@ export function mountItemViewer(el, id) {
   });
   const up = () => {
     drag = null;
-    vel = THREE.MathUtils.clamp(vel, -3, 3) || 0.35;
+    vel = THREE.MathUtils.clamp(vel, -3, 3) || spin;
   };
   r.domElement.addEventListener('pointerup', up);
   r.domElement.addEventListener('pointercancel', up);
@@ -162,7 +163,7 @@ export function mountItemViewer(el, id) {
     last = ms;
     if (!drag && !reduce) {
       rot += vel * dt;
-      vel += (0.35 * Math.sign(vel || 1) - vel) * dt * 1.5;
+      vel += (spin * Math.sign(vel || 1) - vel) * dt * 1.5;
     }
     pivot.rotation.set(tilt, rot, 0);
     if (!reduce)

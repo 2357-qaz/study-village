@@ -92,6 +92,9 @@ export function primeAudio() {
   }
 }
 
+// Shared AudioContext for other sound effects (null until a user gesture has primed it).
+export const audioContext = () => audio;
+
 // A soft three-note wind-chime, synthesised so no audio file is needed.
 export function chime() {
   if (!audio) return;
