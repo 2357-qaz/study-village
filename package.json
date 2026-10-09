@@ -1,1 +1,12 @@
-{"name":"study-village","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs","start":"python3 -m http.server 4173 --directory dist"}}
+{
+  "name": "study-village",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "start": "python3 -m http.server 4173 --directory dist",
+    "format": "npx -y prettier@3.3.3 --write \"dist/*.{js,css,html}\" \"tests/*.mjs\"",
+    "format:check": "npx -y prettier@3.3.3 --check \"dist/*.{js,css,html}\" \"tests/*.mjs\""
+  }
+}
