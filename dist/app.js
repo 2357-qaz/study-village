@@ -15,7 +15,7 @@ import {
   inBuild,
   state
 } from './ui/store.js?v=9';
-import {setPage} from './ui/nav.js?v=9';
+import {setPage} from './ui/nav.js?v=10';
 import {renderStats, updateLast, renderProduction} from './ui/home.js?v=9';
 import {updateTimer} from './ui/timer.js?v=9';
 import {renderBuildings} from './ui/buildings.js?v=9';
