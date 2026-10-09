@@ -59,3 +59,7 @@ body.build-mode #toast{left:50%;bottom:auto;top:calc(88px + env(safe-area-inset-
 @media(max-width:480px){.bh-card{flex-basis:138px}.bh-tabs button[data-tab]{font-size:14px}.build-entry{padding:0 12px}}
 @media(max-height:560px){.bh-card{flex-basis:128px;padding:8px 9px}.bh-card p{display:none}.bh-hint{display:none}}
 @media(prefers-reduced-motion:reduce){.bh-fold svg{transition:none}}
+
+/* build entry: frosted chip inside the scene, mirroring the weather tag */
+.build-entry{position:absolute;top:6px;right:16px;z-index:2;display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 13px 0 5px;border:1px solid #e0e7d3;border-radius:20px;background:#f5f7eae6;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--forest);font-size:13px;font-weight:600;letter-spacing:.5px;box-shadow:0 2px 10px #153f3512}.build-entry::after{content:'';position:absolute;inset:-6px}.build-entry-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--lime);color:var(--forest)}.build-entry .build-entry-icon svg{width:15px;height:15px;color:var(--forest);stroke-width:2}.build-entry:hover:not(:disabled){background:#fbfcf6;border-color:#cddcb4}.build-entry:disabled{opacity:.5}body.build-mode .build-entry{display:none!important}
+@media(max-width:760px){.build-entry{top:4px;right:10px;min-height:32px;font-size:12px;padding:0 11px 0 4px}.build-entry-icon{width:24px;height:24px}}
