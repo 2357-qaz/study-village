@@ -130,7 +130,7 @@ function markScreen(p) {
   if (location.hash !== `#${p}`) history.replaceState(null, '', `#${p}`);
 }
 function setPage(p) {
-  if (!['village', 'focus', 'buildings', 'journal', 'collection'].includes(p)) p = 'village';
+  if (!['village', 'focus', 'buildings', 'journal', 'collection', 'wish'].includes(p)) p = 'village';
   $('#menu-dialog').close();
   if (p === 'village' || p === 'focus') {
     $('#secondary-dialog').close();
@@ -141,7 +141,8 @@ function setPage(p) {
   const titles = {
     buildings: ['建筑管理', '让村庄更丰盛', '建造与升级，让时间带来更多馈赠。'],
     journal: ['学习手记', '认真度过的时间，都在这里。', '不必每一天都完美，回头看看，你已经走了很远。'],
-    collection: ['奇物收藏', '收集一小片世界的惊奇。', '让每一段专注，成为值得珍藏的回忆。']
+    collection: ['奇物柜', '收集一小片世界的惊奇。', '让每一段专注，成为值得珍藏的回忆。'],
+    wish: ['星砂寻宝', '让星光落进你的口袋。', '每次 30 星砂；连续 20 次内必遇史诗或传说。']
   };
   $$('#secondary-dialog .page').forEach(el => {
     el.hidden = el.id !== `page-${p}`;
@@ -453,20 +454,81 @@ function renderJournal() {
     )
     .join('');
 }
+const RARITY_ORDER = ['legendary', 'epic', 'rare', 'common'],
+  RARITY_STARS = {common: 2, rare: 3, epic: 4, legendary: 5},
+  WISH_LOG = 'timegrove-wish-log';
+let cabinetFilter = 'all';
+function wishLog() {
+  try {
+    const log = JSON.parse(localStorage.getItem(WISH_LOG) || '[]');
+    return Array.isArray(log) ? log : [];
+  } catch {
+    return [];
+  }
+}
+function addWishLog(results) {
+  const at = Date.now(),
+    log = [...results.map(r => ({t: at, id: r.id})).reverse(), ...wishLog()].slice(0, 60);
+  try {
+    localStorage.setItem(WISH_LOG, JSON.stringify(log));
+  } catch {}
+}
 function renderCollections() {
-  const count = Object.keys(state.collection).length;
-  $('#collection-count').textContent = count;
-  $('#cabinet-count').textContent = `${count} / ${C.COLLECTIONS.length}`;
-  $('#collection-grid').innerHTML = C.COLLECTIONS.map(c => {
-    const qty = state.collection[c.id] || 0;
-    return `<article class="collectible ${c.rarity} ${qty ? '' : 'unowned'}" ${qty ? `data-item="${c.id}" tabindex="0" role="button" aria-label="查看${c.name}"` : ''}>${qty ? `<span class="item-count">× ${qty}</span>` : ''}<div class="item-art" ${qty ? `data-thumb="${c.id}"` : ''}>${qty ? thumbInner(c.id, c.icon) : icon(c.icon)}</div><h3>${c.name}</h3><p>${qty ? c.text : '还在远方，等待与你相遇。'}</p><span class="rarity">${C.RARITIES[c.rarity].name} · ${qty ? '已收藏' : '未发现'}</span></article>`;
-  }).join('');
-  if ($('#secondary-dialog').open && page === 'collection') hydrateThumbs($('#collection-grid'));
-  $('#draw-balance').textContent = `拥有 ${fmt(state.resources.stars)} 星砂 · 已寻找 ${state.draws} 次`;
-  $('#pity-label').textContent = `再 ${20 - state.pity} 次内必得史诗或传说`;
+  const owned = C.COLLECTIONS.filter(c => state.collection[c.id]),
+    total = C.COLLECTIONS.length;
+  $('#collection-count').textContent = owned.length;
+  // cabinet
+  $('#cabinet-count').textContent = `${owned.length} / ${total}`;
+  $('#cabinet-ring').style.strokeDasharray = `${(owned.length / total) * 119.4} 119.4`;
+  $('#cabinet-filters').innerHTML = ['all', ...RARITY_ORDER]
+    .map(r => {
+      const pool = r === 'all' ? C.COLLECTIONS : C.COLLECTIONS.filter(c => c.rarity === r),
+        have = pool.filter(c => state.collection[c.id]).length;
+      return `<button role="tab" class="cab-filter ${r === 'all' ? '' : 'r-' + r}" data-filter="${r}" aria-selected="${cabinetFilter === r}">${r === 'all' ? '全部' : C.RARITIES[r].name}<small>${have}/${pool.length}</small></button>`;
+    })
+    .join('');
+  $('#collection-grid').innerHTML = C.COLLECTIONS.filter(
+    c => cabinetFilter === 'all' || c.rarity === cabinetFilter
+  )
+    .sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity))
+    .map(c => {
+      const qty = state.collection[c.id] || 0;
+      return `<article class="collectible ${c.rarity} ${qty ? '' : 'unowned'}" ${qty ? `data-item="${c.id}" tabindex="0" role="button" aria-label="查看${c.name}"` : ''}>${qty > 1 ? `<span class="item-count">× ${qty}</span>` : ''}<div class="item-art" data-thumb="${c.id}">${thumbInner(c.id, c.icon)}</div><span class="item-stars" aria-label="${C.RARITIES[c.rarity].name}">${'★'.repeat(RARITY_STARS[c.rarity])}</span><h3>${qty ? c.name : '？？？'}</h3><p>${qty ? c.text : '还在远方，等待与你相遇。'}</p></article>`;
+    })
+    .join('');
+  // wish page
+  $('#wish-balance').textContent = fmt(state.resources.stars);
+  $('#pity-label').textContent = `保底进度 ${state.pity} / 20 · 再 ${20 - state.pity} 次内必得史诗或传说`;
+  $('#pity-fill').style.width = `${(state.pity / 20) * 100}%`;
+  $('#draw-balance').textContent = `已寻宝 ${state.draws} 次`;
   $('#draw-one').disabled = state.resources.stars < 30 || drawBusy || broken;
   $('#draw-five').disabled = state.resources.stars < 150 || drawBusy || broken;
+  const log = wishLog().slice(0, 20);
+  $('#wish-log').innerHTML = log.length
+    ? log
+        .map(e => {
+          const c = C.COLLECTIONS.find(x => x.id === e.id);
+          if (!c) return '';
+          const when = new Date(e.t).toLocaleString('zh-CN', {
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          return `<div class="wish-log-row r-${c.rarity}"><span class="wl-art" data-thumb="${c.id}">${thumbInner(c.id, c.icon)}</span><b>${c.name}</b><span class="wl-stars">${'★'.repeat(RARITY_STARS[c.rarity])}</span><time>${when}</time></div>`;
+        })
+        .join('')
+    : `<div class="empty-state">${icon('sparkles')}还没有寻宝记录。<br>攒够 30 星砂，去看看今晚的流星吧。</div>`;
+  if ($('#secondary-dialog').open && page === 'collection') hydrateThumbs($('#collection-grid'));
+  if ($('#secondary-dialog').open && page === 'wish') hydrateThumbs($('#page-wish'));
 }
+$('#cabinet-filters').addEventListener('click', e => {
+  const b = e.target.closest('[data-filter]');
+  if (!b) return;
+  cabinetFilter = b.dataset.filter;
+  renderCollections();
+  icons();
+});
 // Collectible 3D thumbnails: icons render first, then swap to cached PNGs; any failure silently keeps the icon.
 let items3d = null,
   viewer = null,
@@ -768,28 +830,63 @@ $('#import-file').onchange = safe(async e => {
     toast('存档未能保存，请检查浏览器存储空间。');
   }
 });
+let wishModule = null;
 async function search(count) {
   if (drawBusy) return;
   drawBusy = true;
+  A.primeAudio();
   renderCollections();
   try {
+    // The draw is committed to the save before any animation plays.
     const result = await transact(s =>
       C.draw(s, count, () => crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296)
     );
-    $('#draw-results').innerHTML = result
-      .map(
-        c =>
-          `<article class="draw-result ${c.rarity}"><span class="dr-art" data-thumb="${c.id}">${thumbInner(c.id, c.icon)}</span><div><span>${C.RARITIES[c.rarity].name} · ${c.isNew ? '首次发现' : '再次相遇'}</span><h3>${c.name}</h3><p>${c.text}</p></div></article>`
-      )
-      .join('');
-    icons();
-    hydrateThumbs($('#draw-results'));
-    $('#result-dialog').showModal();
+    addWishLog(result);
+    renderCollections();
+    try {
+      wishModule ??= await import('./wish.js?v=6');
+      await playWishStage(result);
+    } catch {
+      showResultDialog(result);
+    }
+    const fresh = result.filter(r => r.isNew).length;
+    if (fresh) toast(`奇物柜里多了 ${fresh} 件新奇物！`);
   } finally {
     drawBusy = false;
     renderCollections();
     icons();
   }
+}
+async function playWishStage(result) {
+  const stage = $('#wish-stage');
+  stage.showModal();
+  try {
+    await wishModule.playWish(stage, result, {
+      thumb: id => wantThumb(id),
+      viewer: items3d?.mountItemViewer
+        ? (el, id) => items3d.mountItemViewer(el, id, {pedestal: false, spin: 0.9})
+        : null,
+      iconHTML: c => `<span class="ws-icon">${window.lucide ? icon(c.icon) : ''}</span>`,
+      rarityName: r => C.RARITIES[r].name,
+      audio: A.loadPrefs().sound ? A.audioContext() : null,
+      reduceMotion: matchMedia('(prefers-reduced-motion: reduce)').matches
+    });
+  } finally {
+    stage.close();
+    stage.innerHTML = '';
+  }
+}
+$('#wish-stage').addEventListener('cancel', e => e.preventDefault());
+function showResultDialog(result) {
+  $('#draw-results').innerHTML = result
+    .map(
+      c =>
+        `<article class="draw-result ${c.rarity}"><span class="dr-art" data-thumb="${c.id}">${thumbInner(c.id, c.icon)}</span><div><span>${C.RARITIES[c.rarity].name} · ${c.isNew ? '首次发现' : '再次相遇'}</span><h3>${c.name}</h3><p>${c.text}</p></div></article>`
+    )
+    .join('');
+  icons();
+  hydrateThumbs($('#draw-results'));
+  $('#result-dialog').showModal();
 }
 $('#draw-one').onclick = safe(() => search(1));
 $('#draw-five').onclick = safe(() => search(5));

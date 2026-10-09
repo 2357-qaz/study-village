@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=7" />
+    <link rel="stylesheet" href="./style.css?v=8" />
     <script src="./vendor/lucide.min.js" defer></script>
-    <script type="module" src="./app.js?v=5"></script>
+    <script type="module" src="./app.js?v=6"></script>
   </head>
   <body>
     <main>
@@ -224,6 +224,7 @@
         <label>备份提醒<select id="backup-every"></select></label>
       </div>
     </dialog>
+    <dialog id="wish-stage" class="wish-stage" aria-label="寻宝动画"></dialog>
     <dialog id="item-dialog">
       <div class="dialog-heading">
         <h2 id="item-name"></h2>
@@ -291,28 +292,59 @@
           <button id="load-more" class="secondary-button" hidden>查看更多</button>
         </section>
       </div>
-      <div id="page-collection" class="page" hidden>
-        <section class="collection-hero">
-          <div>
-            <span class="eyebrow">THE CABINET OF WONDERS</span>
-            <h2>每一份认真，<br />都值得一份惊喜。</h2>
-            <p>用村庄积攒的星砂，遇见更多奇物。</p>
-            <div class="draw-buttons">
-              <button id="draw-one" class="primary-button"><i data-lucide="sparkles"></i>寻找一次 · 30 星砂</button
-              ><button id="draw-five" class="secondary-button">寻找五次 · 150 星砂</button>
+      <div id="page-wish" class="page" hidden>
+        <section class="wish-banner">
+          <div class="wish-copy">
+            <span class="eyebrow">STARDUST WISH · 常驻寻宝</span>
+            <h2>星海寻宝</h2>
+            <p>把专注攒下的星砂撒向夜空，看看今晚会落下什么。</p>
+            <div class="wish-rates">
+              <span class="r-legendary">传说 2%</span><span class="r-epic">史诗 10%</span><span class="r-rare">稀有 28%</span
+              ><span class="r-common">寻常 60%</span>
             </div>
-            <span id="draw-balance" class="draw-balance"></span>
           </div>
-          <div class="collection-emblem">
-            <i data-lucide="gem"></i><span>THE WONDERS<br />OF YOUR TIME</span>
+          <div class="wish-showcase" aria-hidden="true">
+            <span class="wish-float f1" data-thumb="crown"></span><span class="wish-float f2" data-thumb="phoenix"></span
+            ><span class="wish-float f3" data-thumb="bonsai"></span>
           </div>
         </section>
-        <div class="odds-strip">寻常 60% · 稀有 28% · 史诗 10% · 传说 2%<span id="pity-label">连续 20 次必得史诗或传说</span></div>
-        <div class="section-heading">
-          <h2>我的奇物柜 <span id="cabinet-count">0 / 18</span></h2>
-          <span class="subtle">重复奇物保留为收藏数量</span>
+        <div class="wish-bar">
+          <span class="wish-balance"><i data-lucide="sparkles"></i><b id="wish-balance">0</b> 星砂</span>
+          <div class="wish-pity">
+            <span id="pity-label">连续 20 次必得史诗或传说</span>
+            <div class="pity-track"><i id="pity-fill"></i></div>
+          </div>
         </div>
-        <div id="collection-grid" class="collection-grid"></div>
+        <div class="wish-actions">
+          <button id="draw-one" class="wish-btn">
+            <span>寻找一次</span><small><i data-lucide="sparkles"></i>30</small></button
+          ><button id="draw-five" class="wish-btn gold">
+            <span>寻找五次</span><small><i data-lucide="sparkles"></i>150</small>
+          </button>
+        </div>
+        <p id="draw-balance" class="draw-balance"></p>
+        <section class="white-panel">
+          <div class="section-heading">
+            <h2>最近寻宝</h2>
+            <span class="subtle">仅保存在本设备</span>
+          </div>
+          <div id="wish-log" class="wish-log"></div>
+        </section>
+      </div>
+      <div id="page-collection" class="page" hidden>
+        <section class="cabinet-head">
+          <div class="cabinet-progress">
+            <svg viewBox="0 0 44 44" aria-hidden="true">
+              <circle cx="22" cy="22" r="19" />
+              <circle id="cabinet-ring" cx="22" cy="22" r="19" />
+            </svg>
+            <div><strong id="cabinet-count">0 / 18</strong><span>已收集的奇物</span></div>
+          </div>
+          <button class="secondary-button" data-page="wish"><i data-lucide="sparkles"></i>去星砂寻宝</button>
+        </section>
+        <div id="cabinet-filters" class="cabinet-filters" role="tablist" aria-label="按稀有度筛选"></div>
+        <div id="collection-grid" class="collection-grid cabinet-grid"></div>
+        <p class="subtle cabinet-note">重复获得的奇物会累计数量；点击已收藏的奇物可 360° 查看。</p>
       </div>
       <div hidden id="recent-sessions"></div>
     </dialog>
@@ -326,10 +358,11 @@
           <i data-lucide="blocks"></i><strong>自由建造</strong><span>摆放建筑与装饰，塑造岛屿地貌</span></button
         ><button data-page="buildings"><i data-lucide="hammer"></i><strong>建筑管理</strong><span>建造、升级与产出</span></button
         ><button data-page="journal"><i data-lucide="notebook-pen"></i><strong>学习手记</strong><span>本周统计与历史打卡</span></button
+        ><button data-page="wish"><i data-lucide="sparkles"></i><strong>星砂寻宝</strong><span>流星落下，遇见奇物</span></button
         ><button data-page="collection">
-          <i data-lucide="gem"></i><strong>奇物收藏 <small id="collection-count">0</small></strong
-          ><span>星砂寻宝与收藏柜</span></button
-        ><button id="settings-button">
+          <i data-lucide="gem"></i><strong>奇物柜 <small id="collection-count">0</small></strong
+          ><span>收藏进度与 3D 查看</span></button
+        ><button id="settings-button" class="menu-span">
           <i data-lucide="hard-drive-download"></i><strong>存档与规则</strong><span>导入、导出与玩法说明</span>
         </button>
       </div>
