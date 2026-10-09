@@ -63,14 +63,16 @@ python3 -m http.server 4173 --directory dist
 
 - `dist/index.html`、`dist/style.css`：响应式界面。
 - `dist/core.js`：纯函数规则、统计、计时、存档验证。
-- `dist/app.js`：交互、事务、本机存档和可选只读 WebMCP 状态工具。
+- `dist/app.js`：入口，组装各功能模块、启动定时刷新、加载 3D 村庄与可选只读 WebMCP 状态工具。
+- `dist/ui/`：界面按功能拆分的模块。`store.js` 负责存档读写、事务（Web Locks）、共享状态与通用工具，其余模块通过 `onRender()` 注册各自的渲染：`nav.js` 页面切换、`home.js` 村庄概览、`timer.js` 计时与补记、`buildings.js` 建筑管理、`journal.js` 学习手记、`collection.js` 奇物柜与寻宝、`thumbs.js` 收藏品缩略图、`save.js` 存档导入导出与备份提醒、`build.js` 建造模式。
 - `dist/scene.js`：3D 场景：地形网格烘焙、海洋、昼夜光照（按本机时间）、居民寻路、建造模式手势与拾取。
 - `dist/models.js`：程序化低多边形模型（13 座建筑×5 级细节、20 种装饰、居民、18 件收藏品），静态部分合并为少量网格绘制。
 - `dist/wish.js`：寻宝全屏动画（Canvas 星空与流星、揭晓、汇总、合成音效）。
 - `dist/alerts.js`、`dist/sw.js`：到点提醒与备份提醒；仅用于通知的极简 Service Worker（不缓存页面）。
 - `dist/items3d.js`：收藏品缩略图与可拖动旋转的 3D 查看器。
 - `docs/v2-spec.md`：v2 规则与接口规格。
-- `dist/vendor/`：随项目打包的 Three.js 0.180.0 与 Lucide，附原许可。
+- `dist/vendor/`：随项目打包的 Three.js 0.180.0，以及按需生成的 Lucide 图标子集 `lucide-icons.js`（附原许可）。
+- `tools/build-icons.mjs`：扫描源码中用到的图标，从 `tools/lucide-full.min.js` 生成图标子集；新增图标后运行 `npm run icons`（`npm test` 会检查子集是否同步）。
 - `tests/core.test.mjs`：奖励、统计、跨周、计时、存档、离线产出、抽奖保底，以及 v1→v2 迁移、放置/地貌/装饰规则验证（22 项）。
 - `.github/workflows/pages.yml`：GitHub Pages 发布流程。
 

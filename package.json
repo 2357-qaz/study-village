@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "start": "python3 -m http.server 4173 --directory dist",
-    "format": "npx -y prettier@3.3.3 --write \"dist/*.{js,css,html}\" \"tests/*.mjs\"",
-    "format:check": "npx -y prettier@3.3.3 --check \"dist/*.{js,css,html}\" \"tests/*.mjs\""
+    "format": "npx -y prettier@3.3.3 --write \"dist/*.{js,css,html}\" \"dist/ui/*.js\" \"tests/*.mjs\" \"tools/*.mjs\"",
+    "format:check": "npx -y prettier@3.3.3 --check \"dist/*.{js,css,html}\" \"dist/ui/*.js\" \"tests/*.mjs\" \"tools/*.mjs\"",
+    "icons": "node tools/build-icons.mjs"
   }
 }
