@@ -70,7 +70,8 @@ python3 -m http.server 4173 --directory dist
 - `dist/alerts.js`、`dist/sw.js`：到点提醒与备份提醒；仅用于通知的极简 Service Worker（不缓存页面）。
 - `dist/items3d.js`：收藏品缩略图与可拖动旋转的 3D 查看器。
 - `docs/v2-spec.md`：v2 规则与接口规格。
-- `dist/vendor/`：随项目打包的 Three.js 0.180.0 与 Lucide，附原许可。
+- `dist/vendor/`：随项目打包的 Three.js 0.180.0，以及按需生成的 Lucide 图标子集 `lucide-icons.js`（附原许可）。
+- `tools/build-icons.mjs`：扫描源码中用到的图标，从 `tools/lucide-full.min.js` 生成图标子集；新增图标后运行 `npm run icons`（`npm test` 会检查子集是否同步）。
 - `tests/core.test.mjs`：奖励、统计、跨周、计时、存档、离线产出、抽奖保底，以及 v1→v2 迁移、放置/地貌/装饰规则验证（22 项）。
 - `.github/workflows/pages.yml`：GitHub Pages 发布流程。
 
