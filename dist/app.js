@@ -1,4 +1,5 @@
 import * as C from './core.js?v=4';
+import * as A from './alerts.js?v=5';
 const KEY = 'timegrove-save-v1',
   BACKUP = KEY + '-previous',
   V1BAK = 'timegrove-save-v1-backup-before-v2';
@@ -20,6 +21,7 @@ let state = C.initialState(),
   broken = false,
   toastTimeout,
   readyNotified = false;
+const BASE_TITLE = document.title;
 function icons() {
   window.lucide?.createIcons();
 }
@@ -384,8 +386,34 @@ function updateTimer() {
   if (t && remain === 0 && !readyNotified) {
     readyNotified = true;
     toast(mode === 'study' ? '这一段专注完成了，记得打卡领取奖励。' : '休息结束，欢迎回来。');
+    A.timerFinished(t.kind);
   }
   if (!t) readyNotified = false;
+  document.title = A.timerTitle(t, remain, BASE_TITLE);
+  A.scheduleEnd(remain, !!t && t.runningSince !== null, updateTimer);
+}
+function renderAlerts() {
+  const prefs = A.loadPrefs(),
+    notifyOn = prefs.notify && A.notificationsSupported() && Notification.permission === 'granted';
+  $('#alert-sound').setAttribute('aria-pressed', String(prefs.sound));
+  $('#alert-notify').setAttribute('aria-pressed', String(notifyOn));
+  $('#alert-notify').hidden = !A.notificationsSupported();
+}
+function renderBackup() {
+  const prefs = A.loadPrefs(),
+    due = broken
+      ? null
+      : A.backupDue(prefs, {createdAt: state.createdAt, studySeconds: C.studySeconds(state)});
+  $('#backup-nudge').hidden = !due;
+  if (due) {
+    $('#backup-nudge-title').textContent = due.never ? '给村庄留一份备份吧' : `已经 ${due.days} 天没有备份了`;
+    $('#backup-nudge-text').textContent =
+      `${due.never ? '至今' : '上次备份后'}已学习 ${duration(due.newStudy)}。存档只在这个浏览器里，导出一份，换设备或清理浏览器也不怕。`;
+  }
+  $('#backup-last').textContent = A.describeLastExport(prefs);
+  $('#backup-every').innerHTML = A.BACKUP_INTERVALS.map(
+    o => `<option value="${o.days}" ${o.days === prefs.backupEvery ? 'selected' : ''}>${o.label}</option>`
+  ).join('');
 }
 function renderBuildings() {
   const pop = C.population(state);
@@ -542,6 +570,8 @@ function render() {
   renderJournal();
   renderCollections();
   if (inBuild()) renderBuild();
+  renderAlerts();
+  renderBackup();
   icons();
   village?.update(state);
 }
@@ -609,12 +639,14 @@ document.addEventListener(
   })
 );
 $('#start-button').onclick = safe(async () => {
+  A.primeAudio();
   await transact(s => C.startTimer(s, mode, minutes, $('#topic').value));
   toast(mode === 'study' ? '村庄等你回来。安心专注吧。' : '伸个懒腰，给自己一点空白。');
 });
-$('#pause-button').onclick = safe(() =>
-  transact(s => (s.timer?.runningSince === null ? C.resumeTimer(s) : C.pauseTimer(s)))
-);
+$('#pause-button').onclick = safe(() => {
+  A.primeAudio();
+  return transact(s => (s.timer?.runningSince === null ? C.resumeTimer(s) : C.pauseTimer(s)));
+});
 $('#finish-button').onclick = safe(async () => {
   const before = C.population(state);
   const r = await transact(s => C.finishTimer(s));
@@ -649,23 +681,53 @@ $('#settings-button').onclick = $('#rules-button').onclick = () => {
   $('#menu-dialog').close();
   $('#settings-dialog').showModal();
 };
-function exportFile(text, name) {
-  const a = document.createElement('a'),
-    url = URL.createObjectURL(new Blob([text], {type: 'application/json'}));
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-$('#export-save').onclick = () => {
+async function exportSave() {
+  let text;
   try {
-    const text = localStorage.getItem(KEY) || JSON.stringify(state);
-    exportFile(text, `timegrove-${new Date().toISOString().slice(0, 10)}.json`);
-    toast('存档已导出，记得妥善保存。');
+    text = localStorage.getItem(KEY) || JSON.stringify(state);
   } catch {
     toast('无法读取本机存档，请检查浏览器存储设置。');
+    return;
   }
+  if (!(await A.saveBackupFile(text, `timegrove-${new Date().toISOString().slice(0, 10)}.json`))) return;
+  A.savePrefs({lastExportAt: Date.now(), lastExportStudy: C.studySeconds(state), snoozeUntil: 0});
+  renderBackup();
+  toast('存档已导出，记得放在网盘或其他安全的地方。');
+}
+$('#export-save').onclick = safe(exportSave);
+$('#backup-nudge-export').onclick = safe(exportSave);
+$('#backup-nudge-later').onclick = () => {
+  A.savePrefs({snoozeUntil: Date.now() + 3 * 24 * 3600 * 1000});
+  renderBackup();
+  toast('好的，3 天后再提醒你。');
 };
+$('#backup-every').onchange = e => {
+  A.savePrefs({backupEvery: Number(e.target.value), snoozeUntil: 0});
+  renderBackup();
+};
+$('#alert-sound').onclick = () => {
+  const on = !A.loadPrefs().sound;
+  A.savePrefs({sound: on});
+  if (on) {
+    A.primeAudio();
+    A.chime();
+  }
+  renderAlerts();
+};
+$('#alert-notify').onclick = safe(async () => {
+  const prefs = A.loadPrefs();
+  if (prefs.notify && Notification.permission === 'granted') {
+    A.savePrefs({notify: false});
+    renderAlerts();
+    return;
+  }
+  const result = await A.enableNotifications();
+  A.savePrefs({notify: result === 'granted'});
+  renderAlerts();
+  if (result === 'granted') toast('好的，计时结束时会发送通知（需要保持页面在后台打开）。');
+  else if (result === 'denied') toast('通知权限被拒绝了，可以在浏览器的网站设置里重新开启。');
+});
+document.addEventListener('pointerdown', () => A.loadPrefs().sound && A.primeAudio(), {once: true});
 $('#import-save').onclick = () => $('#import-file').click();
 $('#import-file').onchange = safe(async e => {
   const file = e.target.files[0];
@@ -1285,6 +1347,7 @@ setInterval(() => {
 }, 1000);
 setInterval(() => {
   renderStats();
+  renderBackup();
   icons();
 }, 60000);
 import('./items3d.js?v=4')

@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=6" />
+    <link rel="stylesheet" href="./style.css?v=7" />
     <script src="./vendor/lucide.min.js" defer></script>
-    <script type="module" src="./app.js?v=4"></script>
+    <script type="module" src="./app.js?v=5"></script>
   </head>
   <body>
     <main>
@@ -76,6 +76,17 @@
             <button class="quiet-button" id="rules-button" aria-label="查看资源规则"><i data-lucide="circle-help"></i></button>
           </section>
 
+          <section id="backup-nudge" class="backup-nudge" hidden aria-live="polite">
+            <span class="backup-nudge-icon"><i data-lucide="shield-check"></i></span>
+            <div>
+              <strong id="backup-nudge-title">给村庄留一份备份吧</strong>
+              <p id="backup-nudge-text"></p>
+            </div>
+            <div class="backup-nudge-actions">
+              <button id="backup-nudge-export" class="dark-button"><i data-lucide="download"></i>导出存档</button
+              ><button id="backup-nudge-later" class="text-button">过几天再说</button>
+            </div>
+          </section>
           <section class="village-panel">
             <div class="panel-heading">
               <div>
@@ -137,6 +148,10 @@
               ><button id="finish-button" class="primary-button">结束并打卡</button>
             </div>
             <div class="focus-reward" id="focus-reward"></div>
+            <div class="alert-toggles" role="group" aria-label="到点提醒">
+              <button id="alert-sound" class="alert-chip" aria-pressed="true"><i data-lucide="volume-2"></i>提示音与震动</button
+              ><button id="alert-notify" class="alert-chip" aria-pressed="false"><i data-lucide="bell"></i>系统通知</button>
+            </div>
             <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button
             ><button id="cancel-timer" class="text-button" hidden>放弃本次计时</button>
           </section>
@@ -186,6 +201,12 @@
             石料；抬升每级消耗石料；降低、草地、沙滩、池塘与还原为海免费。</span
           >
         </p>
+        <p>
+          <strong>到点提醒</strong
+          ><span
+            >计时页可开关提示音与震动、系统通知；标签页标题会显示倒计时。系统通知需要页面保持在后台打开，iPhone 需先「添加到主屏幕」。</span
+          >
+        </p>
         <p><strong>装饰</strong><span>装饰按种类消耗资源，拆除不返还资源。收藏品可摆在奇物展台上展示。</span></p>
       </div>
       <h3>保存你的村庄</h3>
@@ -197,6 +218,10 @@
         <button id="export-save" class="dark-button"><i data-lucide="download"></i>导出存档</button
         ><button id="import-save" class="secondary-button"><i data-lucide="upload"></i>导入存档</button
         ><input id="import-file" type="file" accept="application/json,.json" hidden />
+      </div>
+      <div class="backup-pref">
+        <span id="backup-last">尚未导出过存档</span>
+        <label>备份提醒<select id="backup-every"></select></label>
       </div>
     </dialog>
     <dialog id="item-dialog">
