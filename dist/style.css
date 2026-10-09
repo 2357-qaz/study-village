@@ -5147,3 +5147,71 @@ body.build-mode .build-entry {
     white-space: nowrap;
   }
 }
+
+/* ---------- dock hierarchy: 村庄 · 计时 are the core; the rest are compact icons ---------- */
+.screen-dock {
+  display: flex;
+  align-items: center;
+}
+.screen-dock .dock-core {
+  flex-direction: row;
+  gap: 8px;
+  min-width: 118px;
+  min-height: 46px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.screen-dock .dock-minor {
+  flex-direction: column;
+  width: 46px;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0;
+  color: #9fbaa5;
+}
+.screen-dock .dock-minor span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.screen-dock .dock-minor svg {
+  width: 19px;
+  height: 19px;
+}
+.dock-divider {
+  flex: none;
+  width: 1px;
+  height: 26px;
+  margin: 0 4px;
+  background: #ffffff2b;
+}
+@media (max-width: 760px) {
+  .screen-dock {
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+  }
+  .screen-dock .dock-core {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 50px;
+    padding: 0 8px;
+    font-size: 15px;
+  }
+  .screen-dock .dock-core svg {
+    width: 19px;
+    height: 19px;
+  }
+  .screen-dock .dock-minor {
+    flex: none;
+    width: 44px;
+    min-height: 50px;
+  }
+  :root {
+    --dock-h: calc(76px + env(safe-area-inset-bottom));
+  }
+}

@@ -79,7 +79,6 @@ document.addEventListener('keydown', e => {
 });
 $('#menu-button').onclick = () => $('#menu-dialog').showModal();
 $('#dock-more').onclick = () => $('#menu-dialog').showModal();
-$('#secondary-back').onclick = () => $('#secondary-dialog').close();
 // Each gesture selects one complete screen; the two screens never share a scroll position.
 const pager = $('#home-pages');
 let swipe = null,

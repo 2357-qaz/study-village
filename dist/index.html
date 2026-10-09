@@ -252,7 +252,6 @@
     <div id="toast" role="status" aria-live="polite"></div>
     <dialog id="secondary-dialog" class="secondary-dialog">
       <div class="dialog-heading">
-        <button id="secondary-back" class="icon-button" aria-label="返回二级菜单"><i data-lucide="arrow-left"></i></button>
         <h2 id="page-label"></h2>
         <button data-close="secondary-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
       </div>
@@ -389,12 +388,17 @@
       </div>
     </div>
     <nav class="screen-dock" aria-label="主导航">
-      <button data-page="village" data-dock="village" aria-current="page" class="selected">
+      <button class="dock-core" data-page="village" data-dock="village" aria-current="page">
         <i data-lucide="house"></i><span>村庄</span></button
-      ><button data-page="focus" data-dock="focus"><i data-lucide="timer"></i><span>计时</span></button
-      ><button data-page="wonders" data-dock="wonders"><i data-lucide="gem"></i><span>奇物</span></button
-      ><button data-page="journal" data-dock="journal"><i data-lucide="notebook-pen"></i><span>手记</span></button
-      ><button id="dock-more" data-dock="more" aria-haspopup="dialog"><i data-lucide="layout-grid"></i><span>更多</span></button>
+      ><button class="dock-core" data-page="focus" data-dock="focus"><i data-lucide="timer"></i><span>计时</span></button
+      ><span class="dock-divider" aria-hidden="true"></span
+      ><button class="dock-minor" data-page="journal" data-dock="journal" aria-label="学习手记" title="学习手记">
+        <i data-lucide="notebook-pen"></i><span>手记</span></button
+      ><button class="dock-minor" data-page="wonders" data-dock="wonders" aria-label="奇物" title="奇物">
+        <i data-lucide="gem"></i><span>奇物</span></button
+      ><button class="dock-minor" id="dock-more" data-dock="more" aria-haspopup="dialog" aria-label="更多" title="更多">
+        <i data-lucide="layout-grid"></i><span>更多</span>
+      </button>
     </nav>
   </body>
 </html>
