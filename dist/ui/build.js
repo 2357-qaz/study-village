@@ -18,7 +18,7 @@ import {
   broken,
   village
 } from './store.js?v=9';
-import {setPage} from './nav.js?v=9';
+import {setPage} from './nav.js?v=10';
 import {thumbInner, hydrateThumbs} from './thumbs.js?v=9';
 const decorDefs = () =>
   Array.isArray(C.DECOR) ? C.DECOR : Object.entries(C.DECOR).map(([id, v]) => ({id, ...v}));
