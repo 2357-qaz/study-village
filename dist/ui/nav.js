@@ -1,5 +1,24 @@
 // Page navigation: the two swipeable home screens and the secondary pages in a dialog.
 import {$, $$, render, safe, setCurrentPage} from './store.js?v=8';
+// Bottom navigation: which dock item represents each page.
+const DOCK = {
+  village: 'village',
+  focus: 'focus',
+  wish: 'wonders',
+  collection: 'wonders',
+  journal: 'journal',
+  buildings: 'more'
+};
+const phone = matchMedia('(max-width: 760px)');
+let lastWonder = 'wish';
+function markDock(key) {
+  $$('.screen-dock [data-dock]').forEach(b => {
+    const active = b.dataset.dock === key;
+    b.classList.toggle('selected', active);
+    if (active) b.setAttribute('aria-current', 'page');
+    else b.removeAttribute('aria-current');
+  });
+}
 function markScreen(p) {
   setCurrentPage(p);
   $('#home-pages').dataset.screen = p;
@@ -9,23 +28,21 @@ function markScreen(p) {
     el.setAttribute('aria-hidden', String(!active));
     if (active) el.scrollTop = 0;
   });
-  $$('.screen-dock [data-page]').forEach(b => {
-    const active = b.dataset.page === p;
-    b.classList.toggle('selected', active);
-    if (active) b.setAttribute('aria-current', 'page');
-    else b.removeAttribute('aria-current');
-  });
+  markDock(p);
   if (location.hash !== `#${p}`) history.replaceState(null, '', `#${p}`);
 }
 export function setPage(p) {
+  if (p === 'wonders') p = lastWonder;
   if (!['village', 'focus', 'buildings', 'journal', 'collection', 'wish'].includes(p)) p = 'village';
   $('#menu-dialog').close();
+  const sheet = $('#secondary-dialog');
   if (p === 'village' || p === 'focus') {
-    $('#secondary-dialog').close();
+    sheet.close();
     markScreen(p);
     return;
   }
   setCurrentPage(p);
+  if (p === 'wish' || p === 'collection') lastWonder = p;
   const titles = {
     buildings: ['建筑管理', '让村庄更丰盛', '建造与升级，让时间带来更多馈赠。'],
     journal: ['学习手记', '认真度过的时间，都在这里。', '不必每一天都完美，回头看看，你已经走了很远。'],
@@ -39,16 +56,29 @@ export function setPage(p) {
   $('#page-label').textContent = titles[p][0];
   $('#page-title').textContent = titles[p][1];
   $('#page-subtitle').textContent = titles[p][2];
-  $('#secondary-dialog').classList.toggle('wish-mode', p === 'wish');
-  if (!$('#secondary-dialog').open) $('#secondary-dialog').showModal();
-  $('#secondary-dialog').scrollTop = 0;
+  sheet.classList.toggle('wish-mode', p === 'wish');
+  // 寻宝 and 奇物柜 share one dock item; a segmented switch moves between them.
+  $('#wonder-switch').hidden = !(p === 'wish' || p === 'collection');
+  $$('#wonder-switch [data-page]').forEach(b =>
+    b.setAttribute('aria-selected', String(b.dataset.page === p))
+  );
+  markDock(DOCK[p]);
+  // On phones the page fills the screen above the dock and stays non-modal, so the dock remains usable.
+  if (sheet.open && sheet.matches(':modal') === phone.matches) sheet.close();
+  if (!sheet.open) phone.matches ? sheet.show() : sheet.showModal();
+  sheet.scrollTop = 0;
   render();
 }
+$('#secondary-dialog').addEventListener('close', () =>
+  markDock($('#home-pages').dataset.screen || 'village')
+);
+document.addEventListener('keydown', e => {
+  const sheet = $('#secondary-dialog');
+  if (e.key === 'Escape' && sheet.open && !sheet.matches(':modal') && !document.querySelector('dialog:modal'))
+    sheet.close();
+});
 $('#menu-button').onclick = () => $('#menu-dialog').showModal();
-$('#secondary-back').onclick = () => {
-  $('#secondary-dialog').close();
-  $('#menu-dialog').showModal();
-};
+$('#dock-more').onclick = () => $('#menu-dialog').showModal();
 // Each gesture selects one complete screen; the two screens never share a scroll position.
 const pager = $('#home-pages');
 let swipe = null,

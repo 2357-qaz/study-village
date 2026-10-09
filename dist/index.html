@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=9" />
-    <script src="./vendor/lucide-icons.js?v=1" defer></script>
-    <script type="module" src="./app.js?v=8"></script>
+    <link rel="stylesheet" href="./style.css?v=10" />
+    <script src="./vendor/lucide-icons.js?v=2" defer></script>
+    <script type="module" src="./app.js?v=9"></script>
   </head>
   <body>
     <main>
@@ -83,8 +83,8 @@
               <p id="backup-nudge-text"></p>
             </div>
             <div class="backup-nudge-actions">
-              <button id="backup-nudge-export" class="dark-button"><i data-lucide="download"></i>导出存档</button
-              ><button id="backup-nudge-later" class="text-button">过几天再说</button>
+              <button id="backup-nudge-export" class="primary-button"><i data-lucide="download"></i>导出存档</button
+              ><button id="backup-nudge-later" class="text-button">稍后</button>
             </div>
           </section>
           <section class="village-panel">
@@ -114,7 +114,7 @@
                   <p id="production-caption">木材 +18/h · 星砂 +2/h</p>
                 </div>
               </div>
-              <button id="harvest-button" class="dark-button">
+              <button id="harvest-button" class="primary-button">
                 <i data-lucide="hand-coins"></i><span id="harvest-label">领取产出</span>
               </button>
             </div>
@@ -215,7 +215,7 @@
         此版本的存档格式已升级，旧版本无法再打开它；首次升级时会自动在本机保留一份旧存档备份（timegrove-save-v1-backup-before-v2）。
       </p>
       <div class="backup-buttons">
-        <button id="export-save" class="dark-button"><i data-lucide="download"></i>导出存档</button
+        <button id="export-save" class="primary-button"><i data-lucide="download"></i>导出存档</button
         ><button id="import-save" class="secondary-button"><i data-lucide="upload"></i>导入存档</button
         ><input id="import-file" type="file" accept="application/json,.json" hidden />
       </div>
@@ -252,9 +252,12 @@
     <div id="toast" role="status" aria-live="polite"></div>
     <dialog id="secondary-dialog" class="secondary-dialog">
       <div class="dialog-heading">
-        <button id="secondary-back" class="icon-button" aria-label="返回二级菜单"><i data-lucide="arrow-left"></i></button>
         <h2 id="page-label"></h2>
         <button data-close="secondary-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div class="page-switch" id="wonder-switch" role="tablist" aria-label="奇物" hidden>
+        <button role="tab" data-page="wish"><i data-lucide="sparkles"></i>星砂寻宝</button
+        ><button role="tab" data-page="collection"><i data-lucide="gem"></i>奇物柜<small id="collection-count">0</small></button>
       </div>
       <div class="secondary-heading">
         <h2 id="page-title"></h2>
@@ -358,12 +361,7 @@
         <button id="free-build-button" class="menu-wide" disabled>
           <i data-lucide="blocks"></i><strong>自由建造</strong><span>摆放建筑与装饰，塑造岛屿地貌</span></button
         ><button data-page="buildings"><i data-lucide="hammer"></i><strong>建筑管理</strong><span>建造、升级与产出</span></button
-        ><button data-page="journal"><i data-lucide="notebook-pen"></i><strong>学习手记</strong><span>本周统计与历史打卡</span></button
-        ><button data-page="wish"><i data-lucide="sparkles"></i><strong>星砂寻宝</strong><span>流星落下，遇见奇物</span></button
-        ><button data-page="collection">
-          <i data-lucide="gem"></i><strong>奇物柜 <small id="collection-count">0</small></strong
-          ><span>收藏进度与 3D 查看</span></button
-        ><button id="settings-button" class="menu-span">
+        ><button id="settings-button">
           <i data-lucide="hard-drive-download"></i><strong>存档与规则</strong><span>导入、导出与玩法说明</span>
         </button>
       </div>
@@ -389,9 +387,18 @@
         </div>
       </div>
     </div>
-    <nav class="screen-dock" aria-label="主页面">
-      <button data-page="village" aria-current="page" class="selected"><i data-lucide="house"></i>村庄</button
-      ><button data-page="focus"><i data-lucide="timer"></i>计时</button>
+    <nav class="screen-dock" aria-label="主导航">
+      <button class="dock-core" data-page="village" data-dock="village" aria-current="page">
+        <i data-lucide="house"></i><span>村庄</span></button
+      ><button class="dock-core" data-page="focus" data-dock="focus"><i data-lucide="timer"></i><span>计时</span></button
+      ><span class="dock-divider" aria-hidden="true"></span
+      ><button class="dock-minor" data-page="journal" data-dock="journal" aria-label="学习手记" title="学习手记">
+        <i data-lucide="notebook-pen"></i><span>手记</span></button
+      ><button class="dock-minor" data-page="wonders" data-dock="wonders" aria-label="奇物" title="奇物">
+        <i data-lucide="gem"></i><span>奇物</span></button
+      ><button class="dock-minor" id="dock-more" data-dock="more" aria-haspopup="dialog" aria-label="更多" title="更多">
+        <i data-lucide="layout-grid"></i><span>更多</span>
+      </button>
     </nav>
   </body>
 </html>
