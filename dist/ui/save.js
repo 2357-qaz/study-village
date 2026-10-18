@@ -34,8 +34,8 @@ export function renderBackup() {
     el.hidden = status === 'unsupported';
     el.textContent =
       status === 'persisted'
-        ? '存档已受浏览器保护，不会被自动清理。'
-        : '浏览器可能在长期未打开时清理存档。添加到主屏幕或定期导出可以避免丢失。';
+        ? '浏览器已批准持久化存储，可降低自动清理风险；仍建议定期导出备份。'
+        : '浏览器可能清理本机存档；建议定期导出到其他位置，添加到主屏幕也不能代替备份。';
   });
   $('#backup-every').innerHTML = A.BACKUP_INTERVALS.map(
     o => `<option value="${o.days}" ${o.days === prefs.backupEvery ? 'selected' : ''}>${o.label}</option>`
