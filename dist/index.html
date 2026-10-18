@@ -269,10 +269,9 @@
         <button id="confirm-no" class="secondary-button">取消</button><button id="confirm-yes" class="primary-button">确认</button>
       </div>
     </dialog>
-    <dialog id="story-dialog" class="story-dialog" aria-labelledby="story-title" autofocus>
+    <dialog id="story-dialog" class="story-dialog" aria-labelledby="story-title" tabindex="-1">
       <div class="story-art" id="story-art" aria-hidden="true"></div>
-      <h2 id="story-title"></h2>
-      <p id="story-text"></p>
+      <div class="story-pages" id="story-pages"></div>
       <div class="story-dots" id="story-dots" aria-hidden="true"></div>
       <div class="story-actions">
         <button id="story-skip" class="text-button">跳过</button><button id="story-next" class="primary-button">继续</button>

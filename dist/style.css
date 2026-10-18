@@ -6337,12 +6337,25 @@ button:not(:disabled):active {
   height: 54px;
   stroke-width: 1.4;
 }
+.story-pages {
+  display: grid;
+}
+.story-page {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.story-page.on {
+  visibility: visible;
+  opacity: 1;
+}
 .story-dialog h2 {
   margin: 0 0 10px;
   font-size: 22px;
   font-weight: 700;
 }
-.story-dialog > p {
+.story-page p {
   margin: 0 auto;
   max-width: 320px;
   font-size: 15px;
@@ -6424,7 +6437,7 @@ button:not(:disabled):active {
     background: radial-gradient(circle at 50% 30%, #5a4826, #3a2f1a 58%, #241d12);
     color: #f3cc7c;
   }
-  .story-dialog > p,
+  .story-page p,
   .story-card p {
     color: var(--ios-label-2);
   }
@@ -6438,4 +6451,7 @@ button:not(:disabled):active {
   #settings-dialog .story-card {
     background: var(--ios-raised);
   }
+}
+.story-dialog:focus {
+  outline: none;
 }

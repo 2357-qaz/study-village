@@ -13,7 +13,8 @@ import {
   state,
   broken,
   items3d,
-  page
+  page,
+  onDialogClose
 } from './store.js?v=10';
 import {thumbInner, wantThumb, hydrateThumbs} from './thumbs.js?v=10';
 let drawBusy = false,
@@ -149,7 +150,7 @@ function openItem(id) {
     icons();
   }
 }
-$('#item-dialog').addEventListener('close', closeViewer);
+onDialogClose($('#item-dialog'), closeViewer);
 $('#collection-grid').addEventListener('keydown', e => {
   const it = e.target.closest?.('[data-item]');
   if (it && (e.key === 'Enter' || e.key === ' ')) {

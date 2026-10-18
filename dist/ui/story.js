@@ -20,12 +20,19 @@ const PAGES = [
   }
 ];
 let page = 0;
+// All pages sit stacked in one grid cell, so the sheet keeps the height of the longest page.
+$('#story-pages').innerHTML = PAGES.map(
+  p => `<section class="story-page"><h2>${p.title}</h2><p>${p.text}</p></section>`
+).join('');
 function draw() {
   const p = PAGES[page];
   $('#story-art').innerHTML = `<i data-lucide="${p.icon}"></i>`;
   $('#story-art').classList.toggle('warm', page === PAGES.length - 1);
-  $('#story-title').textContent = p.title;
-  $('#story-text').textContent = p.text;
+  document.querySelectorAll('.story-page').forEach((s, i) => {
+    s.classList.toggle('on', i === page);
+    s.setAttribute('aria-hidden', String(i !== page));
+    s.querySelector('h2').id = i === page ? 'story-title' : '';
+  });
   $('#story-dots').innerHTML = PAGES.map((_, i) => `<i class="${i === page ? 'on' : ''}"></i>`).join('');
   $('#story-next').textContent = page === PAGES.length - 1 ? '点亮书屋的灯' : '继续';
   $('#story-skip').hidden = page === PAGES.length - 1;
@@ -35,6 +42,7 @@ export function openStory() {
   page = 0;
   draw();
   $('#story-dialog').showModal();
+  $('#story-dialog').focus(); // no focus ring on the buttons when the sheet opens
   // Mark as seen as soon as it is shown: the dialog 'close' event is not reliable enough to depend on.
   A.savePrefs({storySeen: 1});
 }
