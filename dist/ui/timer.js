@@ -72,7 +72,9 @@ export function updateTimer() {
       ? '这个梦读完了，去打卡收下它吧'
       : t.runningSince === null
         ? '随时可以继续'
-        : '旧梦正一点点化成光'
+        : mode === 'study'
+          ? '旧梦正一点点化成光'
+          : '海风正慢慢吹走疲惫'
     : '读完一个梦，小镇就亮一点。';
   $('#pause-button').textContent = t?.runningSince === null ? '继续' : '暂停';
   $('#pause-button').disabled = remain === 0;
