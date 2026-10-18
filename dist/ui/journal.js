@@ -1,5 +1,5 @@
 // Study journal: totals, weekly chart and session history.
-import * as C from '../core.js?v=5';
+import * as C from '../core.js?v=6';
 import {$, icon, esc, duration, weekData, icons, onRender, state} from './store.js?v=10';
 let historyLimit = 30;
 function sessionHTML(x) {

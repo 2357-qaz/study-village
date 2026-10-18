@@ -1,5 +1,5 @@
 // Focus / rest timer, manual study entries and timer alert toggles.
-import * as C from '../core.js?v=5';
+import * as C from '../core.js?v=6';
 import * as A from '../alerts.js?v=6';
 import {requestPersist} from '../offline.js?v=1';
 import {
