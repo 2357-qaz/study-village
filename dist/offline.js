@@ -4,19 +4,23 @@ async function warm() {
   const urls = new Set([location.href.split('#')[0], new URL('./', location.href).href]);
   for (const e of performance.getEntriesByType('resource')) urls.add(e.name);
   const cache = await caches.open(CACHE);
-  // Drop older ?v= copies of files this page now loads with a newer version string.
+  // Cache current versions before pruning old copies, so a partial update
+  // cannot discard the only offline version of a resource.
   const current = new Map([...urls].map(h => [new URL(h).pathname, new URL(h).search]));
-  for (const req of await cache.keys()) {
-    const url = new URL(req.url);
-    if (current.has(url.pathname) && current.get(url.pathname) !== url.search && url.search)
-      await cache.delete(req);
-  }
   for (const href of urls) {
     const url = new URL(href);
     if (url.origin !== location.origin || url.pathname.endsWith('/sw.js')) continue;
     try {
       if (!(await cache.match(href))) await cache.add(href);
     } catch {}
+  }
+  for (const req of await cache.keys()) {
+    const url = new URL(req.url);
+    const latestSearch = current.get(url.pathname);
+    if (url.search && latestSearch !== undefined && url.search !== latestSearch) {
+      const latest = new URL(url.pathname + latestSearch, url.origin);
+      if (await cache.match(latest.href)) await cache.delete(req);
+    }
   }
 }
 export async function requestPersist() {
