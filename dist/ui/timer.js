@@ -132,7 +132,9 @@ $('#finish-button').onclick = safe(async () => {
   const before = C.population(state);
   const r = await transact(s => C.finishTimer(s));
   requestPersist();
-  toast(`梦已读完！${rewardText(r)}${C.population(state) > before ? ' · 有人决定在小镇住下了' : ''}`);
+  toast(
+    `梦已读完！${rewardText(r)}${C.population(state) > before ? ' · 有人决定在小镇住下了，金色的小兽从雾里走来' : ''}`
+  );
 });
 $('#cancel-timer').onclick = safe(async () => {
   if (await confirmAction('放弃本次计时？', '尚未打卡的时间不会计入学习，也不会获得奖励。'))

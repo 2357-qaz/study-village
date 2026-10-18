@@ -138,6 +138,19 @@ export const BUILDINGS = [
     coastal: false
   },
   {
+    id: 'gatekeeper',
+    name: '守门人小屋',
+    icon: 'door-open',
+    desc: '守门人每天清晨吹响号角，唤金色的小兽出门。',
+    resource: 'food',
+    rate: 16,
+    cost: {wood: 150, stone: 180, food: 40},
+    color: '#b8935a',
+    size: 2,
+    pop: 8,
+    coastal: false
+  },
+  {
     id: 'lighthouse',
     name: '海角灯塔',
     icon: 'tower-control',
@@ -241,7 +254,8 @@ export function initialState(now = Date.now()) {
       teahouse: 0,
       lighthouse: 0,
       library: 0,
-      clocktower: 0
+      clocktower: 0,
+      gatekeeper: 0
     },
     layout: {cottage: {...LAYOUT.cottage}, sawmill: {...LAYOUT.sawmill}},
     island: defaultIsland(),
@@ -445,6 +459,8 @@ export function draw(s, count = 1, rng = Math.random) {
   }
   return results;
 }
+// Buildings added after save format v2 shipped; older v2 saves have no entry for them.
+const LATE_BUILDINGS = new Set(['gatekeeper']);
 export function validateState(x) {
   const fail = () => {
     throw Error('存档格式无效或版本不兼容，原有进度未改动');
@@ -454,8 +470,13 @@ export function validateState(x) {
   if (!x || (v !== 1 && v !== 2) || !n(x.createdAt, 1e14) || !n(x.lastAccrual, 1e14)) fail();
   for (const obj of ['resources', 'pending'])
     for (const k of Object.keys(RESOURCES)) if (!n(x[obj]?.[k])) fail();
+  const late = id => v === 2 && LATE_BUILDINGS.has(id) && x.buildings && x.buildings[id] === undefined;
   for (const b of v === 1 ? BUILDINGS.slice(0, 5) : BUILDINGS)
-    if (!Number.isInteger(x.buildings?.[b.id]) || x.buildings[b.id] < 0 || x.buildings[b.id] > 5) fail();
+    if (
+      !late(b.id) &&
+      (!Number.isInteger(x.buildings?.[b.id]) || x.buildings[b.id] < 0 || x.buildings[b.id] > 5)
+    )
+      fail();
   if (!Array.isArray(x.sessions) || x.sessions.length > 100000) fail();
   const intervals = [];
   for (const a of x.sessions) {
@@ -515,6 +536,7 @@ export function validateState(x) {
   }
   const c = JSON.parse(JSON.stringify(x));
   if (v === 1) return migrate(c);
+  for (const id of LATE_BUILDINGS) c.buildings[id] ??= 0;
   validateV2(c, fail);
   return c;
 }
@@ -546,6 +568,8 @@ export const DECOR = [
   {id: 'campfire', name: '篝火', icon: 'flame-kindling', cost: {wood: 10}, place: 'land'},
   {id: 'tent', name: '帐篷', icon: 'tent', cost: {wood: 6, food: 6}, place: 'land'},
   {id: 'bridge', name: '木桥', icon: 'waves', cost: {wood: 10}, place: 'pond'},
+  {id: 'stonebridge', name: '旧石桥', icon: 'landmark', cost: {stone: 16, wood: 4}, place: 'pond'},
+  {id: 'gate', name: '旧城门', icon: 'castle', cost: {stone: 24, wood: 4}, place: 'land'},
   {id: 'boat', name: '小帆船', icon: 'sailboat', cost: {wood: 20}, place: 'sea'},
   {id: 'statue', name: '星辉雕像', icon: 'star', cost: {stone: 30, stars: 20}, place: 'land'},
   {id: 'display', name: '奇物展台', icon: 'gem', cost: {stone: 12, stars: 10}, place: 'land'}

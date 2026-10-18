@@ -8,8 +8,10 @@ import {
   buildingModel,
   decorModel,
   villagerModel,
+  beastModel,
   shade
 } from './models.js?v=5';
+import {audioContext, loadPrefs} from './alerts.js?v=6';
 const PI = Math.PI,
   H = PI / 2,
   N = C.GRID,
@@ -69,12 +71,12 @@ const SKY = {
   dusk: {
     top: 0x8c90c9,
     bottom: 0xf4b48c,
-    hs: 0xffd6b4,
+    hs: 0xffd9a6,
     hg: 0x6a6f5e,
     hi: 1.7,
-    sun: 0xffa66a,
-    si: 2.3,
-    el: 0.3,
+    sun: 0xffb258,
+    si: 2.5,
+    el: 0.22,
     glow: 0.45,
     tag: '黄昏 · 钟声快要停了'
   },
@@ -143,20 +145,38 @@ export function createVillage(container, onSelect) {
   scene.fog = new THREE.Fog(0xf2f3df, 60, 120);
   // ---------- materials ----------
   const solidMat = new THREE.MeshStandardMaterial({vertexColors: true, roughness: 0.88, flatShading: true});
-  // Terrain and sea get their own copies that can be desaturated towards a misty blue-grey while
-  // the town is young (see warmth below); buildings, trees and villagers stay in full colour.
+  // Winter shader, shared by terrain, sea and the baked buildings/trees:
+  // uCold desaturates towards a misty blue-grey (terrain and sea only, while the town is young);
+  // uSnow lays patchy snow on upward faces (terrain, roofs, tree tops), melting as the town warms.
   const coldU = {value: 0},
-    chillShader = sh => {
-      sh.uniforms.uCold = coldU;
+    snowU = {value: 0},
+    noneU = {value: 0},
+    winterShader = (cold, snow) => sh => {
+      sh.uniforms.uCold = cold;
+      sh.uniforms.uSnow = snow;
+      sh.vertexShader =
+        'varying vec3 vWN;\nvarying vec3 vWP;\n' +
+        sh.vertexShader.replace(
+          '#include <begin_vertex>',
+          '#include <begin_vertex>\n  vWN = normalize(mat3(modelMatrix) * objectNormal);\n  vWP = (modelMatrix * vec4(transformed, 1.0)).xyz;'
+        );
       sh.fragmentShader =
-        'uniform float uCold;\n' +
+        'uniform float uCold;\nuniform float uSnow;\nvarying vec3 vWN;\nvarying vec3 vWP;\n' +
+        'float wHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\n' +
+        'float wNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);' +
+        ' return mix(mix(wHash(i), wHash(i + vec2(1.0, 0.0)), f.x), mix(wHash(i + vec2(0.0, 1.0)), wHash(i + vec2(1.0, 1.0)), f.x), f.y); }\n' +
         sh.fragmentShader.replace(
           '#include <color_fragment>',
-          '#include <color_fragment>\n  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))) * vec3(0.92, 0.98, 1.07), uCold);'
+          `#include <color_fragment>
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))) * vec3(0.92, 0.98, 1.07), uCold);
+  float wN = wNoise(vWP.xz * 1.3) * 0.65 + wNoise(vWP.xz * 4.1) * 0.35;
+  float wCover = smoothstep(1.0 - uSnow - 0.12, 1.0 - uSnow + 0.12, wN) * smoothstep(0.5, 0.85, vWN.y) * step(0.001, uSnow);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.95, 0.98), wCover);`
         );
     },
     terrainMat = solidMat.clone();
-  terrainMat.onBeforeCompile = chillShader;
+  terrainMat.onBeforeCompile = winterShader(coldU, snowU);
+  solidMat.onBeforeCompile = winterShader(noneU, snowU);
   const glowMat = new THREE.MeshStandardMaterial({
     vertexColors: true,
     roughness: 0.5,
@@ -180,7 +200,7 @@ export function createVillage(container, onSelect) {
     opacity: 0.86,
     flatShading: true
   });
-  seaMat.onBeforeCompile = chillShader;
+  seaMat.onBeforeCompile = winterShader(coldU, noneU);
   const live = new Map(),
     liveGlow = new Set();
   let glowLevel = 0;
@@ -830,6 +850,149 @@ export function createVillage(container, onSelect) {
     buildVillagers(s, occ);
     renderGhost();
     renderSelection();
+    const pop = C.population(s);
+    if (lastPop !== null && pop > lastPop) startParade(s, Math.min(5, pop - lastPop));
+    lastPop = pop;
+  }
+  // ---------- golden beasts: a short parade whenever new residents arrive ----------
+  const beastsGroup = new THREE.Group();
+  world.add(beastsGroup);
+  let parade = null,
+    lastPop = null;
+  const tileXZ = i => [(i % N) - HALF + 0.5, Math.floor(i / N) - HALF + 0.5];
+  // A loop of free land tiles around the island (no buildings, decor or ponds), via BFS between
+  // waypoints picked at even angles; starts by the gatekeeper's lodge when there is one.
+  function paradeRoute(s) {
+    if (walk.size < 12) return null;
+    let far = 0;
+    for (const i of walk) far = Math.max(far, Math.hypot(...tileXZ(i)));
+    const r = Math.max(2.2, far * 0.58),
+      way = [];
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * PI * 2;
+      let best = -1,
+        score = 1e9;
+      for (const i of walk) {
+        const [x, z] = tileXZ(i),
+          d = Math.hypot(x, z),
+          da = Math.abs(((Math.atan2(z, x) - a + PI * 3) % (PI * 2)) - PI),
+          sc = Math.abs(d - r) + da * 3.5;
+        if (sc < score) (score = sc), (best = i);
+      }
+      if (best >= 0 && way[way.length - 1] !== best) way.push(best);
+    }
+    const bfs = (from, to) => {
+      const prev = new Map([[from, -1]]),
+        q = [from];
+      while (q.length) {
+        const c = q.shift();
+        if (c === to) break;
+        const x = c % N;
+        for (const n of [c + 1, c - 1, c + N, c - N]) {
+          if ((n === c + 1 && x === N - 1) || (n === c - 1 && x === 0)) continue;
+          if (walk.has(n) && !prev.has(n)) prev.set(n, c), q.push(n);
+        }
+      }
+      if (!prev.has(to)) return null;
+      const out = [];
+      for (let c = to; c !== -1; c = prev.get(c)) out.push(c);
+      return out.reverse();
+    };
+    const tiles = [];
+    for (let k = 0; k < way.length; k++) {
+      const seg = bfs(way[k], way[(k + 1) % way.length]);
+      if (seg) tiles.push(...seg.slice(tiles.length ? 1 : 0));
+    }
+    if (tiles.length < 10) return null;
+    const gk = s.layout?.gatekeeper;
+    if (gk) {
+      let bi = 0,
+        bd = 1e9;
+      tiles.forEach((i, k) => {
+        const d = Math.hypot((i % N) - gk.x - 1, Math.floor(i / N) - gk.z - 1);
+        if (d < bd) (bd = d), (bi = k);
+      });
+      tiles.push(...tiles.splice(0, bi));
+    }
+    const pts = tiles.map(i => {
+      const [x, z] = tileXZ(i);
+      return new THREE.Vector3(x, TOP(+s.island.height[i]), z);
+    });
+    // drop consecutive duplicates so the spline stays well-formed
+    const clean = pts.filter((p, k) => !k || p.distanceToSquared(pts[k - 1]) > 0.01);
+    const curve = new THREE.CatmullRomCurve3(clean, false, 'centripetal', 0.3);
+    return {curve, len: curve.getLength()};
+  }
+  function horn() {
+    const a = audioContext();
+    if (!a || !loadPrefs().sound) return;
+    const t0 = a.currentTime + 0.05,
+      gain = a.createGain(),
+      lp = a.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 760;
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.05, t0 + 0.35);
+    gain.gain.setValueAtTime(0.05, t0 + 1.3);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.4);
+    lp.connect(gain);
+    gain.connect(a.destination);
+    for (const f of [196, 294]) {
+      const o = a.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f * 0.96, t0);
+      o.frequency.linearRampToValueAtTime(f, t0 + 0.3);
+      o.connect(lp);
+      o.start(t0);
+      o.stop(t0 + 2.5);
+    }
+  }
+  function startParade(s, n) {
+    if (motion.matches || parade) return;
+    const route = paradeRoute(s);
+    if (!route) return;
+    const beasts = [];
+    for (let i = 0; i < n; i++) {
+      const g = new THREE.Group(),
+        legs = beastModel(new Builder(new LiveSink(g, liveMat)));
+      g.scale.setScalar(0.001);
+      beastsGroup.add(g);
+      beasts.push({g, legs});
+    }
+    parade = {...route, beasts, u: 0, gap: 0.9};
+    horn();
+  }
+  function stepParade(dt, t) {
+    if (!parade) return;
+    const P = parade,
+      speed = 0.95;
+    P.u += dt * speed;
+    let alive = false;
+    P.beasts.forEach((b, i) => {
+      const u = P.u - i * P.gap;
+      if (u < 0 || u > P.len) {
+        b.g.visible = false;
+        if (u <= P.len) alive = true;
+        return;
+      }
+      alive = true;
+      b.g.visible = true;
+      const f = u / P.len,
+        p = P.curve.getPointAt(f),
+        d = P.curve.getTangentAt(f);
+      b.g.position.set(p.x, p.y + Math.abs(Math.sin(t * 7 + i)) * 0.015, p.z);
+      b.g.rotation.y = Math.atan2(d.x, d.z);
+      // fade in out of the mist at the start, back into it at the end
+      const edge = Math.min(1, u / 1.2, (P.len - u) / 1.2);
+      b.g.scale.setScalar(Math.max(0.001, edge) * 1.45);
+      const sw = Math.sin(t * 8 + i) * 0.5;
+      b.legs[0].rotation.x = b.legs[3].rotation.x = sw;
+      b.legs[1].rotation.x = b.legs[2].rotation.x = -sw;
+    });
+    if (!alive) {
+      disposeGroup(beastsGroup);
+      parade = null;
+    }
   }
   // ---------- camera & input ----------
   let angle = 0.52,
@@ -998,6 +1161,68 @@ export function createVillage(container, onSelect) {
   // ---------- sky & time ----------
   const tag = document.querySelector('.scene-tag'),
     forced = Number(new URLSearchParams(location.search).get('hour'));
+  // ---------- winter: falling snow ----------
+  const SNOW_N = 700,
+    snowPos = new Float32Array(SNOW_N * 3),
+    snowSeed = new Float32Array(SNOW_N);
+  for (let i = 0; i < SNOW_N; i++) {
+    snowPos.set([(hash(i, 1) - 0.5) * 32, hash(i, 2) * 12, (hash(i, 3) - 0.5) * 32], i * 3);
+    snowSeed[i] = hash(i, 4);
+  }
+  const snowGeo = new THREE.BufferGeometry();
+  snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+  const flakeCanvas = document.createElement('canvas');
+  flakeCanvas.width = flakeCanvas.height = 32;
+  {
+    const g = flakeCanvas.getContext('2d'),
+      grd = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(0.45, 'rgba(255,255,255,0.75)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 32, 32);
+  }
+  const snowMat = new THREE.PointsMaterial({
+      map: new THREE.CanvasTexture(flakeCanvas),
+      size: 0.17,
+      transparent: true,
+      depthWrite: false,
+      opacity: 0,
+      fog: false
+    }),
+    snowfall = new THREE.Points(snowGeo, snowMat);
+  snowfall.frustumCulled = false;
+  snowfall.visible = false;
+  scene.add(snowfall);
+  let snowLevel = 0,
+    snowTarget = 0;
+  // ---------- winter: the wall of mist around the sea (only its far side is drawn) ----------
+  const mistU = {uColor: {value: new THREE.Color(0xdfe5e8)}, uOpacity: {value: 0.4}, uTime: {value: 0}},
+    mistWall = new THREE.Mesh(
+      new THREE.CylinderGeometry(1, 1, 1, 72, 1, true),
+      new THREE.ShaderMaterial({
+        uniforms: mistU,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.BackSide,
+        vertexShader:
+          'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+        fragmentShader: `uniform vec3 uColor; uniform float uOpacity, uTime; varying vec2 vUv;
+          float h(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+          float n(vec2 p, float per) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+            vec2 a = vec2(mod(i.x, per), i.y), b = vec2(mod(i.x + 1.0, per), i.y);
+            return mix(mix(h(a), h(b), f.x), mix(h(a + vec2(0.0, 1.0)), h(b + vec2(0.0, 1.0)), f.x), f.y); }
+          void main() {
+            float v = vUv.y;
+            vec2 q = vec2(vUv.x * 36.0 + uTime * 0.06, v * 3.0 - uTime * 0.03);
+            float m = 0.45 + 0.55 * (n(q, 36.0) * 0.6 + n(q * vec2(2.0, 2.3), 72.0) * 0.4);
+            float a = smoothstep(0.0, 0.18, v) * (1.0 - smoothstep(0.3 + m * 0.35, 1.0, v));
+            gl_FragColor = vec4(uColor, a * m * uOpacity);
+          }`
+      })
+    );
+  mistWall.renderOrder = -1;
+  scene.add(mistWall);
   let skyKey = '';
   // Warmth: a newcomer's town is cold and misty; building and new residents bring the colour back.
   // Only sky, light, sea and mist are chilled; buildings and lamplight keep their warm colours.
@@ -1023,6 +1248,18 @@ export function createVillage(container, onSelect) {
     for (const key of ['top', 'bottom', 'hs', 'hg']) chill(k[key], cold);
     chill(k.sun, cold * 0.7);
     coldU.value = cold * 1.15;
+    // Snow lies thick on a young town and melts away as it grows; it still snows now and then.
+    snowU.value = Math.max(0, Math.min(0.85, (1 - warmth) * 1.1 - 0.12));
+    const forcedSnow = new URLSearchParams(location.search).get('snow'),
+      chance = 0.22 + 0.73 * Math.pow(1 - warmth, 1.3);
+    snowTarget =
+      forcedSnow !== null
+        ? +forcedSnow
+        : hash(Math.floor(Date.now() / 1.8e6), 77) < chance
+          ? 0.6 + 0.4 * (1 - warmth)
+          : 0;
+    mistU.uColor.value.copy(k.bottom).lerp(new THREE.Color(0xffffff), 0.25);
+    mistU.uOpacity.value = 0.3 + 0.9 * cold;
     chill(pondMat.color.set(0x8fd0c8), cold);
     scene.fog.near = 60 - 80 * cold;
     scene.fog.far = 120 - 85 * cold;
@@ -1085,6 +1322,24 @@ export function createVillage(container, onSelect) {
     const now = new Date(),
       hh = (now.getHours() % 12) + now.getMinutes() / 60,
       mm = now.getMinutes() + now.getSeconds() / 60;
+    mistU.uTime.value = t;
+    mistWall.scale.set(oceanR + 2.4, 7, oceanR + 2.4);
+    mistWall.position.y = 2.6;
+    snowLevel += (snowTarget - snowLevel) * Math.min(1, dt * 0.3);
+    snowfall.visible = snowLevel > 0.02 && !motion.matches;
+    if (snowfall.visible) {
+      snowMat.opacity = Math.min(1, snowLevel) * 0.9;
+      snowfall.position.set(target.x, 0, target.z);
+      for (let i = 0; i < SNOW_N; i++) {
+        const k = i * 3,
+          sd = snowSeed[i];
+        snowPos[k + 1] -= dt * (0.5 + sd * 0.45);
+        snowPos[k] += Math.sin(t * 0.6 + sd * 40) * dt * 0.14;
+        if (snowPos[k + 1] < -0.2) snowPos[k + 1] += 12;
+      }
+      snowGeo.attributes.position.needsUpdate = true;
+    }
+    stepParade(dt, t);
     if ((state?.timer?.kind === 'study' && state.timer.runningSince != null) || dreamH === null) {
       dreamH = hh;
       dreamM = mm;

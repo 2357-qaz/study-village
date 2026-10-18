@@ -1163,16 +1163,16 @@ const BUILD = {
       b.at(0, 0, 0, {ry: i * H}, () => {
         b.box(0.5, 0.05, 0.25, P.stone, 0, 0.03, 0.88);
       });
-    b.box(0.9, 1.1, 0.9, 0xd8cfb8, 0, 0.67, 0);
+    b.box(0.9, 1.1, 0.9, 0xd2cfc5, 0, 0.67, 0);
     for (let r = 0; r < 5; r++)
-      for (const s of [-1, 1]) b.box(0.92, 0.04, 0.02, shade(0xd8cfb8, -0.06), 0, 0.3 + r * 0.22, s * 0.455);
+      for (const s of [-1, 1]) b.box(0.92, 0.04, 0.02, shade(0xd2cfc5, -0.06), 0, 0.3 + r * 0.22, s * 0.455);
     door(b, 0, 0.12, 0.455, 0, 0.3, 0.5, 0x6a4f3a);
     arched(b, 0.455, 0.75, 0, H, 0.16, 0.32);
     arched(b, -0.455, 0.75, 0, -H, 0.16, 0.32);
     b.box(0.98, 0.08, 0.98, P.stone, 0, 1.25, 0);
     const t2 = 1.3 + (lv >= 3 ? 0.25 : 0);
-    b.box(0.8, t2, 0.8, 0xefe4c8, 0, 1.29 + t2 / 2, 0);
-    frame(b, 0.8, t2, 0.8, 1.29);
+    b.box(0.8, t2, 0.8, 0xdcd8cc, 0, 1.29 + t2 / 2, 0);
+    for (const f of [0.02, 0.5, 0.98]) b.box(0.84, 0.05, 0.84, 0xc4bfb1, 0, 1.29 + t2 * f, 0);
     for (let i = 0; i < 4; i++)
       b.at(0, 1.29 + t2 * 0.62, 0, {ry: i * H}, () => {
         b.cyl(0.27, 0.27, 0.04, P.white, 0, 0, 0.41, 20, {rx: H});
@@ -1188,10 +1188,10 @@ const BUILD = {
     b.box(0.94, 0.07, 0.94, P.stone, 0, yb + 0.03, 0);
     // open belfry
     for (const x of [-0.36, 0.36])
-      for (const z of [-0.36, 0.36]) b.box(0.09, 0.5, 0.09, 0xd8cfb8, x, yb + 0.32, z);
+      for (const z of [-0.36, 0.36]) b.box(0.09, 0.5, 0.09, 0xd2cfc5, x, yb + 0.32, z);
     b.cyl(0.13, 0.17, 0.22, P.gold, 0, yb + 0.42, 0, 10, {mat: {metal: 0.6, rough: 0.35}});
     b.box(0.86, 0.06, 0.86, P.stone, 0, yb + 0.6, 0);
-    b.cyl(0, 0.707, 0.85, 0x4c5d86, 0, yb + 1.06, 0, 4, {ry: PI / 4, sx: 0.95, sz: 0.95});
+    b.cyl(0, 0.707, 0.85, 0x5f6e82, 0, yb + 1.06, 0, 4, {ry: PI / 4, sx: 0.95, sz: 0.95});
     b.cyl(0.015, 0.015, 0.4, P.gold, 0, yb + 1.6, 0, 4);
     b.ball(0.06, P.gold, 0, yb + 1.75, 0, {glow: 1});
     if (lv >= 2)
@@ -1216,8 +1216,54 @@ const BUILD = {
         });
     if (lv >= 5) flag(b, 0, yb + 1.85, 0, P.gold, 0.35);
     stars(b, lv, 0.18, 0.92);
+  },
+  // 守门人小屋: a squat stone lodge by the gate; the keeper's horn calls the golden beasts.
+  gatekeeper(b, lv) {
+    const wallC = 0xd6d2c6,
+      slate = 0x6a7a8e;
+    b.at(-0.25, 0, -0.1, () => {
+      plinth(b, 1.0, 0.86, 0.14, 0xa9a69c);
+      b.box(0.88, 0.62, 0.74, wallC, 0, 0.45, 0);
+      for (const sx of [-1, 1])
+        for (const sz of [-1, 1])
+          for (let k = 0; k < 3; k++)
+            b.box(0.09, 0.12, 0.09, k % 2 ? 0xc4bfb1 : 0xcfcabd, sx * 0.43, 0.2 + k * 0.2, sz * 0.36);
+      door(b, 0.16, 0.14, 0.375, 0, 0.22, 0.38, 0x5a4636);
+      win(b, -0.2, 0.48, 0.375, 0, 0.18, 0.2);
+      win(b, -0.445, 0.48, 0, -H, 0.16, 0.18);
+      gable(b, 0.88, 0.74, 0.5, slate, 0.76, {wall: wallC});
+      chimney(b, -0.25, 0.86, -0.15, 0.4, true);
+      // the horn hangs by the door
+      b.at(0.4, 0.5, 0.4, {rz: 0.5}, () => {
+        b.cone(0.05, 0.22, 0xe9dcc0, 0, 0, 0, 8, {rz: H});
+        b.tor(0.05, 0.01, 0xb08a4a, 0.1, 0, 0, {ry: H, m: 10});
+      });
+    });
+    // a small pen of pale fence where the beasts gather at dusk
+    b.at(0.55, 0, 0.45, () => {
+      for (const [x, z, ry, len] of [
+        [0, -0.38, 0, 0.8],
+        [0.38, 0, H, 0.76],
+        [0, 0.38, 0, 0.8]
+      ])
+        b.at(x, 0, z, {ry}, () => {
+          const n = 3;
+          for (let i = 0; i <= n; i++) b.box(0.045, 0.24, 0.045, 0xe6dfcd, -len / 2 + (i * len) / n, 0.12, 0);
+          b.box(len, 0.03, 0.03, 0xd9d1bb, 0, 0.1, 0);
+          b.box(len, 0.03, 0.03, 0xd9d1bb, 0, 0.19, 0);
+        });
+      b.box(0.3, 0.12, 0.18, 0xcdb27a, 0.05, 0.06, 0.05);
+      b.box(0.28, 0.04, 0.16, 0xe3cf8f, 0.05, 0.13, 0.05);
+    });
+    // firewood under the eave
+    logs(b, -0.75, 0, 0.55, lv >= 3 ? 4 : 3, 0.4, 0);
+    if (lv >= 2) lantern(b, 0.12, 0, 0.82);
+    if (lv >= 4) bench(b, -0.25, 0, 0.82);
+    if (lv >= 5) b.ball(0.06, P.gold, -0.25, 1.52, -0.1, {glow: 1});
+    stars(b, lv, 0.06, 0.95);
   }
 };
+
 export function buildingModel(b, id, level = 1) {
   (BUILD[id] || BUILD.cottage)(b, Math.max(1, level));
 }
@@ -1430,7 +1476,9 @@ const DEC = {
     for (let i = 0; i < 7; i++) {
       const x = -0.45 + i * 0.15,
         y = 0.06 + Math.sin((i / 6) * PI) * 0.14;
-      b.box(0.14, 0.04, 0.5, i % 2 ? 0xb98f5f : 0xc7a06c, x, y, 0, {rz: -Math.cos((i / 6) * PI) * 0.35});
+      b.box(0.16, 0.04, 0.5, i % 2 ? 0xb98f5f : 0xc7a06c, x, y, 0, {
+        rz: Math.atan((0.14 * PI * Math.cos((i / 6) * PI)) / 0.9)
+      });
     }
     for (const z of [-0.24, 0.24]) {
       for (let i = 0; i < 4; i++) {
@@ -1439,6 +1487,37 @@ const DEC = {
       }
       b.box(0.9, 0.03, 0.03, P.timber, 0, 0.38, z);
     }
+  },
+  // 旧石桥: a single stone arch over the pond, a nod to the old bridge across the town's river.
+  stonebridge(b, v) {
+    const st = 0xcfcbc0,
+      st2 = 0xbcb7aa,
+      arc = (x0, span, y0, rise, n, w, h, d, z, c2) => {
+        for (let i = 0; i < n; i++) {
+          const u = (i + 0.5) / n,
+            x = x0 + u * span,
+            y = y0 + Math.sin(u * PI) * rise,
+            slope = Math.atan((rise * PI * Math.cos(u * PI)) / span);
+          b.box((span / n) * 1.12, h, d, i % 2 ? st : c2, x, y, z, {rz: slope});
+        }
+      };
+    arc(-0.5, 1.0, 0.1, 0.18, 10, 0, 0.07, 0.52, 0, st2); // deck
+    for (const z of [-0.25, 0.25]) arc(-0.48, 0.96, 0.17, 0.18, 8, 0, 0.1, 0.05, z, st2); // parapets
+    for (const x of [-0.46, 0.46]) b.box(0.12, 0.16, 0.58, st2, x, 0.06, 0); // abutments
+  },
+  // 旧城门: a fragment of the old wall with an empty arch, a nod to the wall around the town.
+  gate(b, v) {
+    const st = 0xd0ccc1,
+      st2 = 0xbdb8ab;
+    for (const x of [-0.34, 0.34]) {
+      b.box(0.26, 0.86, 0.3, st, x, 0.43, 0);
+      for (let k = 0; k < 4; k++) b.box(0.27, 0.02, 0.31, st2, x, 0.12 + k * 0.22, 0);
+    }
+    b.tor(0.21, 0.07, st, 0, 0.66, 0, {arc: PI, m: 12, n: 4});
+    b.box(0.96, 0.18, 0.32, st, 0, 0.95, 0);
+    for (let i = 0; i < 4; i++) b.box(0.14, 0.12, 0.32, st2, -0.36 + i * 0.24, 1.1, 0);
+    b.box(0.05, 0.28, 0.02, 0x6b5a46, 0.3, 0.55, 0.17);
+    b.ball(0.04, 0xffe7a8, 0.3, 0.42, 0.19, {glow: 1});
   },
   boat(b, v) {
     b.dyn(
@@ -1488,6 +1567,42 @@ const DEC = {
 };
 export function decorModel(b, type, v = 0, item) {
   (DEC[type] || DEC.rock)(b, v, item);
+}
+
+/* ---------- golden beast (parade) ---------- */
+// Low-poly golden beast with a single pale horn; returns the four leg pivots for the walk cycle.
+export function beastModel(b) {
+  const coat = 0xe2b452,
+    pale = 0xf3dc98,
+    o = {mat: {emissive: 0.12, rough: 0.55}};
+  const legs = [];
+  for (const [x, z] of [
+    [-0.08, 0.15],
+    [0.08, 0.15],
+    [-0.08, -0.17],
+    [0.08, -0.17]
+  ])
+    legs.push(
+      b.dyn(
+        {type: 'beastleg'},
+        q => {
+          q.box(0.05, 0.24, 0.05, coat, 0, -0.12, 0, o);
+          q.box(0.055, 0.04, 0.055, 0x6b5a46, 0, -0.245, 0);
+        },
+        x,
+        0.27,
+        z
+      )
+    );
+  b.ball(0.2, coat, 0, 0.36, 0, {...o, sx: 0.62, sy: 0.6, sz: 1.08, detail: 1});
+  b.cyl(0.055, 0.075, 0.26, coat, 0, 0.49, 0.2, 7, {...o, rx: -0.55});
+  b.box(0.1, 0.1, 0.2, coat, 0, 0.6, 0.32, {...o, rx: 0.35});
+  b.box(0.075, 0.07, 0.08, pale, 0, 0.56, 0.42, {rx: 0.35});
+  for (const s of [-1, 1]) b.cone(0.02, 0.06, coat, s * 0.04, 0.68, 0.27, 4, {rz: s * 0.3});
+  b.cone(0.02, 0.26, 0xf4eedf, 0, 0.75, 0.39, 7, {rx: 0.85, mat: {emissive: 0.35}});
+  for (let i = 0; i < 4; i++) b.box(0.03, 0.06, 0.05, pale, 0, 0.58 - i * 0.05, 0.25 - i * 0.07, {rx: -0.5});
+  b.cyl(0.02, 0.04, 0.22, pale, 0, 0.36, -0.28, 5, {rx: 0.9});
+  return legs;
 }
 
 /* ---------- villager ---------- */

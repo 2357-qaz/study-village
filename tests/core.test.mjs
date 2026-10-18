@@ -173,7 +173,7 @@ test('v1 存档迁移为 v2 且保留进度', () => {
   assert.equal(m.buildings.farm, 0);
   assert.equal(m.buildings.observatory, 3);
   assert.equal(m.buildings.dock, 0);
-  assert.equal(Object.keys(m.buildings).length, 13);
+  assert.equal(Object.keys(m.buildings).length, C.BUILDINGS.length);
   assert.deepEqual(m.resources, old.resources);
   assert.deepEqual(m.sessions, old.sessions);
   assert.deepEqual(m.collection, old.collection);
@@ -621,4 +621,13 @@ test('新收藏品加入各稀有度奖池', () => {
     }
   for (const id of ['acorn', 'teacup', 'hourglass', 'scroll', 'koi', 'globe', 'bonsai', 'phoenix'])
     assert.ok(seen.has(id), id);
+});
+
+test('早于新建筑的 v2 存档仍可读取，新建筑记为 0', () => {
+  const s = C.initialState(Date.now());
+  delete s.buildings.gatekeeper;
+  const snap = structuredClone(s),
+    m = C.validateState(s);
+  assert.deepEqual(s, snap);
+  assert.equal(m.buildings.gatekeeper, 0);
 });
