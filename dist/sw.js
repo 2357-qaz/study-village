@@ -12,16 +12,23 @@ self.addEventListener('activate', event =>
   )
 );
 // Fetch from network and refresh the cache; on failure fall back to the cached copy.
-async function fromNetwork(request) {
-  const response = await fetch(request);
-  if (response.ok && response.type === 'basic') {
-    const copy = response.clone();
-    caches.open(CACHE).then(
-      c => c.put(request, copy),
-      () => {}
-    );
-  }
-  return response;
+function fromNetwork(request, event) {
+  const network = fetch(request);
+  // Keep the worker alive until the response has been safely cached,
+  // without delaying the network response or blocking navigation.
+  event.waitUntil(
+    network
+      .then(async response => {
+        if (!response.ok || response.type !== 'basic') return;
+        try {
+          await (await caches.open(CACHE)).put(request, response.clone());
+        } catch {
+          // Storage quota or cache failure must never block the online app.
+        }
+      })
+      .catch(() => {})
+  );
+  return network;
 }
 async function cached(request) {
   const nav = request.mode === 'navigate';
@@ -31,8 +38,8 @@ async function cached(request) {
     undefined
   );
 }
-async function respond(request) {
-  const network = fromNetwork(request);
+async function respond(request, event) {
+  const network = fromNetwork(request, event);
   network.catch(() => {}); // avoid unhandled rejection when the cache won the race
   try {
     if (request.mode !== 'navigate') return await network;
@@ -48,7 +55,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.pathname.endsWith('/sw.js')) return;
-  event.respondWith(respond(request));
+  event.respondWith(respond(request, event));
 });
 self.addEventListener('notificationclick', event => {
   event.notification.close();
