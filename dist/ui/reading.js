@@ -13,6 +13,13 @@ const room = $('#reading-room'),
   motion = matchMedia('(prefers-reduced-motion: reduce)');
 let mod = null,
   lastKey = '',
+  lastOpts = null,
+  pose = '',
+  lookUntil = 0,
+  turnUntil = 0,
+  nextTurn = 0,
+  hadTimer = false,
+  greeted = false,
   revealTimer = 0,
   wake = null,
   clockAt = new Date();
@@ -44,7 +51,7 @@ async function paintRoom() {
   if (key === lastKey) return;
   lastKey = key;
   try {
-    mod ??= await import('../reading-room.js?v=1');
+    mod ??= await import('../reading-room.js?v=2');
     const r = mod.renderRoom(opts);
     if (key !== lastKey) return; // a newer size arrived meanwhile
     const [sx, sy] = r.points.shell,
@@ -62,12 +69,85 @@ async function paintRoom() {
     room.dataset.daypart = r.daypart;
     img.src = r.url;
     room.classList.add('ready');
+    lastOpts = opts;
+    pose = '';
+    showPose();
+    warmPoses();
   } catch {
     room.classList.add('no-room'); // no WebGL: the timer still works on a plain panel
   }
 }
 
+/* ---------- the companion: a still layer per pose, cross-faded ---------- */
+const faces = [...room.querySelectorAll('.companion-img')];
+function poseNow(now = Date.now()) {
+  const t = state.timer;
+  if (t && C.timerElapsed(t) >= t.goal) return 'tea';
+  if (now < lookUntil) return 'look';
+  if (now < turnUntil) return 'turn';
+  return 'read';
+}
+function showPose() {
+  if (!mod || !lastOpts) return;
+  const want = poseNow();
+  if (want === pose) return;
+  pose = want;
+  let layer;
+  try {
+    layer = mod.renderCompanion(lastOpts, want);
+  } catch {
+    return;
+  }
+  const [on, off] = faces[0].classList.contains('on') ? faces : [faces[1], faces[0]];
+  off.onload = () => {
+    off.classList.add('on');
+    on.classList.remove('on');
+  };
+  off.src = layer.url;
+}
+// render the other poses while the page is idle, so switching later is instant
+function warmPoses() {
+  const opts = lastOpts,
+    queue = ['look', 'turn', 'tea'],
+    idle = window.requestIdleCallback || (f => setTimeout(f, 400));
+  const next = () => {
+    if (opts !== lastOpts || !queue.length) return;
+    try {
+      mod.renderCompanion(opts, queue.shift());
+    } catch {}
+    idle(next);
+  };
+  idle(next);
+}
+function say(text, ms = 6000) {
+  const el = $('#room-say');
+  el.textContent = text;
+  el.classList.add('on');
+  setTimeout(() => el.classList.remove('on'), ms);
+}
+// she looks up when you start reading, turns a page now and then, and greets you after a long absence
+function behave(now = Date.now()) {
+  const t = state.timer,
+    running = t && t.kind === 'study' && t.runningSince !== null;
+  if (t && !hadTimer) lookUntil = now + 3500;
+  hadTimer = !!t;
+  if (running && now > nextTurn) {
+    if (nextTurn) turnUntil = now + 1400;
+    nextTurn = now + 50000 + Math.random() * 60000;
+  }
+  if (!greeted && onFocus() && !t) {
+    greeted = true;
+    const last = state.sessions.reduce((m, s) => Math.max(m, s.endedAt), 0);
+    if (last && now - last > 3 * 864e5) {
+      lookUntil = now + 6000;
+      say('她抬起头：你回来啦。');
+    }
+  }
+  showPose();
+}
+
 function tick() {
+  behave();
   const t = state.timer;
   if (t && t.kind === 'study' && t.runningSince !== null) clockAt = new Date();
   const hh = (clockAt.getHours() % 12) + clockAt.getMinutes() / 60,

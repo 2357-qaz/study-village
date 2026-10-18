@@ -6689,13 +6689,14 @@ button:not(:disabled):active {
 .room-controls {
   display: none;
 }
+/* wide rooms: she sits on the right, so the time goes bottom-left */
 @container (min-aspect-ratio: 1/1) {
   .room-time {
-    left: auto;
-    right: 6%;
+    left: 6%;
+    right: auto;
     bottom: 9%;
-    align-items: flex-end;
-    text-align: right;
+    align-items: flex-start;
+    text-align: left;
   }
 }
 
@@ -6883,4 +6884,45 @@ body.reading-mode #toast {
   body.reading-mode .room-time {
     bottom: calc(24% + env(safe-area-inset-bottom));
   }
+}
+/* the companion layer: same size as the room image, cross-faded between poses */
+.companion-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+}
+.reading-room.ready .companion-img.on {
+  opacity: 1;
+}
+.room-say {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  z-index: 3;
+  margin: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(28, 24, 22, 0.45);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  font-size: 13px;
+  color: #fff;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -4px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+  pointer-events: none;
+}
+.room-say.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+body.reading-mode .room-say {
+  top: calc(64px + env(safe-area-inset-top));
 }

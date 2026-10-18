@@ -3,6 +3,7 @@
 // top of it, using the projected positions this module returns.
 import * as THREE from './vendor/three.module.min.js';
 import {Builder, LiveSink, P, shade} from './models.js?v=5';
+import {companionModel} from './companion.js?v=1';
 
 const PI = Math.PI,
   H = PI / 2;
@@ -16,7 +17,16 @@ const C_STONE = 0xd8d4c9,
 const mats = new Map();
 function mat(color, o = {}) {
   const m = o.mat || {},
-    key = [color, o.glow ? 1 : 0, m.emissive, m.rough, m.metal, m.basic ? 1 : 0].join('|');
+    key = [
+      color,
+      o.glow ? 1 : 0,
+      m.emissive,
+      m.rough,
+      m.metal,
+      m.basic ? 1 : 0,
+      m.smooth ? 1 : 0,
+      m.double ? 1 : 0
+    ].join('|');
   let x = mats.get(key);
   if (!x) {
     x = m.basic
@@ -25,7 +35,8 @@ function mat(color, o = {}) {
           color,
           roughness: m.rough ?? 0.82,
           metalness: m.metal ?? 0,
-          flatShading: true
+          flatShading: !m.smooth,
+          side: m.double ? THREE.DoubleSide : THREE.FrontSide
         });
     if (m.emissive || o.glow) {
       x.emissive.set(o.glow ? 0xffc46b : color);
@@ -200,19 +211,19 @@ function room(b, {snowTex, skyTop}) {
     }
   });
   // ladder leaning on the shelf
-  b.at(1.0, 0, -1.55, {rx: -0.22}, () => {
+  b.at(2.25, 0, -1.55, {rx: -0.22}, () => {
     for (const s of [-1, 1]) b.box(0.05, 2.6, 0.05, C_WOOD, s * 0.2, 1.3, 0);
     for (let k = 0; k < 7; k++) b.box(0.4, 0.035, 0.04, C_WOOD, 0, 0.3 + k * 0.34, 0);
   });
   // the companion's corner (an empty armchair and side table for now)
-  b.at(1.85, 0, -0.55, {ry: -0.75}, () => {
+  b.at(CHAIR.x, 0, CHAIR.z, {ry: CHAIR.ry}, () => {
     b.box(0.62, 0.32, 0.58, 0x6a5a7a, 0, 0.26, 0);
     b.box(0.62, 0.55, 0.14, 0x6a5a7a, 0, 0.6, -0.24);
     for (const s of [-1, 1]) b.box(0.12, 0.2, 0.58, shade(0x6a5a7a, -0.06), s * 0.3, 0.52, 0);
     for (const sx of [-1, 1])
       for (const sz of [-1, 1]) b.box(0.05, 0.1, 0.05, C_DARK, sx * 0.26, 0.05, sz * 0.24);
   });
-  b.at(1.2, 0, -0.1, () => {
+  b.at(CHAIR.x + 0.62, 0, CHAIR.z + 0.32, () => {
     b.cyl(0.2, 0.2, 0.04, C_WOOD, 0, 0.55, 0, 14);
     b.cyl(0.03, 0.05, 0.55, C_DARK, 0, 0.27, 0, 6);
     b.cyl(0.05, 0.04, 0.09, 0xf1eadb, 0.05, 0.62, 0.02, 10); // a cup of tea
@@ -281,36 +292,46 @@ function daypartOf(hour) {
   return 'day';
 }
 
-let renderer = null;
+// Where she sits (the armchair) and where she stands to pour tea (beside the desk, facing the cup).
+const CHAIR = {x: 1.0, z: -0.85, ry: -0.5},
+  TEA = {x: 1.02, z: 0.72, ry: -PI / 2},
+  CUP = new THREE.Vector3(0.47, 0.815, 0.77);
+
+let renderer = null,
+  built = null;
 const cache = new Map();
-// opts: {width, height, hour, snow (0..1), warmth (0..1), cover (0..1)}
-// Resolves to {url, points: {shell, clock, lamp, window: [x, y]} in 0..1 of the image, clockR}.
-export function renderRoom(opts) {
-  const daypart = daypartOf(opts.hour),
-    w = Math.max(200, Math.round(opts.width)),
-    h = Math.max(200, Math.round(opts.height)),
-    key = [
-      w,
-      h,
-      daypart,
-      opts.snow > 0 ? 1 : 0,
-      Math.round(opts.warmth * 4),
-      Math.round(opts.cover * 4)
-    ].join('|');
-  if (cache.has(key)) return cache.get(key);
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  renderer ??= new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true, alpha: false});
-  renderer.setPixelRatio(dpr);
+
+function sceneKey(opts, w, h) {
+  return [
+    w,
+    h,
+    daypartOf(opts.hour),
+    opts.snow > 0 ? 1 : 0,
+    Math.round(opts.warmth * 4),
+    Math.round(opts.cover * 4)
+  ].join('|');
+}
+function setup(w, h) {
+  renderer ??= new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true, alpha: true});
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(w, h, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  const night = daypart === 'night',
-    scene = new THREE.Scene();
-  scene.background = new THREE.Color(night ? 0x1a1d22 : 0xcfd2cc);
-  renderer.toneMappingExposure = night ? 0.95 : 1.05;
-  const snowTex = outsideTexture({daypart, snow: opts.snow, warmth: opts.warmth, cover: opts.cover}),
+}
+
+// Builds (or reuses) the room scene, lights and camera for one screen shape and weather.
+function build(opts) {
+  const w = Math.max(200, Math.round(opts.width)),
+    h = Math.max(200, Math.round(opts.height)),
+    key = sceneKey(opts, w, h);
+  if (built?.key === key) return built;
+  built?.snowTex.dispose();
+  const daypart = daypartOf(opts.hour),
+    night = daypart === 'night',
+    scene = new THREE.Scene(),
+    snowTex = outsideTexture({daypart, snow: opts.snow, warmth: opts.warmth, cover: opts.cover}),
     grp = new THREE.Group(),
     pts = room(new Builder(new TexSink(grp, mat)), {snowTex, skyTop: SKY_TOP[daypart]});
   grp.traverse(o => {
@@ -327,7 +348,7 @@ export function renderRoom(opts) {
   );
   ceil.rotation.x = PI / 2;
   ceil.position.set(0, 3.6, 0.4);
-  scene.add(ceil);
+  grp.add(ceil);
   const coolSky = {day: 0xcdd9e4, dawn: 0xd9d2d6, dusk: 0xd6c6c4, night: 0x56607a}[daypart];
   scene.add(new THREE.HemisphereLight(coolSky, 0x4d4038, night ? 1.1 : 1.35));
   scene.add(new THREE.AmbientLight(night ? 0x4a4560 : 0x8a8478, night ? 1.4 : 0.6));
@@ -343,6 +364,10 @@ export function renderRoom(opts) {
   lamp.castShadow = true;
   lamp.shadow.mapSize.set(512, 512);
   scene.add(lamp);
+  // a soft reading light over her armchair
+  const nook = new THREE.PointLight(0xffd29a, night ? 2.2 : 0.8, 2.6, 1.6);
+  nook.position.set(CHAIR.x - 0.25, 1.45, CHAIR.z + 0.55);
+  scene.add(nook);
   // camera: from behind the reader's chair; pull back on narrow (portrait) screens
   const aspect = w / h,
     vfov = 44,
@@ -355,25 +380,89 @@ export function renderRoom(opts) {
   cam.lookAt(look);
   cam.updateMatrixWorld();
   // shift the view so the dream shell sits centred, a little below the middle, on every screen shape
-  const sp = pts.shell.clone().project(cam);
-  const ty = aspect > 1 ? 0.68 : aspect < 0.62 ? 0.47 : 0.6; // tall full-screen views leave room below for the time
+  const sp = pts.shell.clone().project(cam),
+    ty = aspect > 1 ? 0.68 : aspect < 0.62 ? 0.47 : 0.6; // tall full-screen views leave room below for the time
   cam.setViewOffset(w, h, ((sp.x + 1) / 2 - 0.5) * w, ((1 - sp.y) / 2 - ty) * h, w, h);
-  renderer.render(scene, cam);
+  built = {key, w, h, aspect, daypart, night, scene, grp, cam, pts, snowTex, occluding: false, actor: null};
+  return built;
+}
+
+// opts: {width, height, hour, snow (0..1), warmth (0..1), cover (0..1)}
+// Returns {url, daypart, points: {shell, clock, lamp, window: [x, y]} in 0..1 of the image, clockR}.
+export function renderRoom(opts) {
+  const B = build(opts);
+  if (cache.has(B.key)) return cache.get(B.key);
+  setup(B.w, B.h);
+  if (B.occluding) throw Error('room already turned into occluders'); // layers are rendered after
+  B.scene.background = new THREE.Color(B.night ? 0x1a1d22 : 0xcfd2cc);
+  renderer.toneMappingExposure = B.night ? 0.95 : 1.05;
+  renderer.render(B.scene, B.cam);
   const url = renderer.domElement.toDataURL('image/jpeg', 0.9),
     proj = v => {
-      const p = v.clone().project(cam);
+      const p = v.clone().project(B.cam);
       return [(p.x + 1) / 2, (1 - p.y) / 2];
     },
-    edge = proj(pts.clock.clone().add(new THREE.Vector3(0.2, 0, 0))),
-    c = proj(pts.clock),
+    edge = proj(B.pts.clock.clone().add(new THREE.Vector3(0.2, 0, 0))),
+    c = proj(B.pts.clock),
     result = {
       url,
-      daypart,
-      points: {shell: proj(pts.shell), clock: c, lamp: proj(pts.lamp), window: proj(pts.window)},
-      clockR: Math.hypot(edge[0] - c[0], (edge[1] - c[1]) / aspect)
+      daypart: B.daypart,
+      points: {shell: proj(B.pts.shell), clock: c, lamp: proj(B.pts.lamp), window: proj(B.pts.window)},
+      clockR: Math.hypot(edge[0] - c[0], (edge[1] - c[1]) / B.aspect)
     };
-  snowTex.dispose();
-  grp.traverse(o => o.geometry?.dispose?.());
+  cache.set(B.key, result);
+  return result;
+}
+
+const occluder = new THREE.MeshBasicMaterial({colorWrite: false});
+function teaThings(b) {
+  // the reader's cup and saucer on the desk, and a soft shadow at her feet
+  b.at(CUP.x, CUP.y, CUP.z, () => {
+    b.cyl(0.075, 0.07, 0.012, 0xeae4d6, 0, 0.006, 0, 20, {mat: {smooth: 1, rough: 0.35}});
+    b.cyl(0.045, 0.035, 0.06, 0xeae4d6, 0, 0.042, 0, 20, {mat: {smooth: 1, rough: 0.35}});
+    b.cyl(0.041, 0.041, 0.004, 0xb07a3c, 0, 0.066, 0, 20, {mat: {smooth: 1, rough: 0.2}});
+  });
+}
+// A transparent layer with her in the given pose, drawn over renderRoom's image for the same opts.
+// The room is still in the scene but only writes depth, so the armchair and desk hide her properly.
+export function renderCompanion(opts, pose) {
+  const B = build(opts),
+    key = B.key + '|' + pose;
+  if (cache.has(key)) return cache.get(key);
+  if (!cache.has(B.key)) renderRoom(opts);
+  setup(B.w, B.h);
+  if (!B.occluding) {
+    B.grp.traverse(o => {
+      if (o.isMesh) o.material = occluder;
+    });
+    B.occluding = true;
+  }
+  if (B.actor) B.scene.remove(B.actor);
+  const actor = new THREE.Group(),
+    b = new Builder(new LiveSink(actor, mat)),
+    at = pose === 'tea' ? TEA : CHAIR;
+  b.at(at.x, 0, at.z, {ry: at.ry}, () => companionModel(b, {pose}));
+  if (pose === 'tea') teaThings(b);
+  actor.traverse(o => {
+    if (o.isMesh) {
+      o.castShadow = true;
+      o.receiveShadow = true;
+    }
+  });
+  if (pose === 'tea') {
+    const blob = new THREE.Mesh(
+      new THREE.CircleGeometry(0.28, 32).rotateX(-H),
+      new THREE.MeshBasicMaterial({color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false})
+    );
+    blob.position.set(TEA.x, 0.012, TEA.z);
+    actor.add(blob);
+  }
+  B.scene.add(actor);
+  B.actor = actor;
+  B.scene.background = null;
+  renderer.setClearColor(0x000000, 0);
+  renderer.render(B.scene, B.cam);
+  const result = {url: renderer.domElement.toDataURL('image/png')};
   cache.set(key, result);
   return result;
 }

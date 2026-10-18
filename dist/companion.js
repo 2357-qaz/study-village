@@ -1,6 +1,7 @@
 // 书屋守灯人: the quiet companion who reads with you. Unlike the low-poly villagers she is built
 // from smooth, higher-resolution shapes (own geometry with smooth normals, marked {smooth}).
-// companionModel(b, {look, pose}) — look: 'a' | 'b' | 'c'; pose: 'stand' | 'read'.
+// companionModel(b, {pose}) — pose: 'read' | 'turn' | 'look' (seated in the armchair, origin on
+// the floor under the seat, facing +z) or 'tea' (standing, pouring tea towards +z).
 import * as THREE from './vendor/three.module.min.js';
 
 const PI = Math.PI,
@@ -9,13 +10,13 @@ const G = new Map(),
   geo = (k, make) => G.get(k) || (G.set(k, make()), G.get(k));
 const SPH = () => geo('sph', () => new THREE.SphereGeometry(1, 40, 28));
 const partial = (ps, pl, ts, tl) =>
-  geo(`ps${ps}:${pl}:${ts}:${tl}`, () => new THREE.SphereGeometry(1, 40, 28, ps, pl, ts, tl));
+  geo(`ps${ps}:${pl}:${ts}:${tl}`, () => new THREE.SphereGeometry(1, 48, 32, ps, pl, ts, tl));
 const capsule = (r, len) =>
   geo(
-    `cap${r.toFixed(3)}:${len.toFixed(3)}`,
+    `cap${r.toFixed(4)}:${len.toFixed(4)}`,
     () => new THREE.CapsuleGeometry(r, Math.max(0.001, len), 8, 20)
   );
-const lathe = (key, pts, seg = 40) =>
+const lathe = (key, pts, seg = 48) =>
   geo(
     key,
     () =>
@@ -25,172 +26,178 @@ const lathe = (key, pts, seg = 40) =>
       )
   );
 const torus = (R, r, arc = PI * 2) =>
-  geo(`tor${R}:${r}:${arc}`, () => new THREE.TorusGeometry(R, r, 12, 40, arc));
+  geo(`tor${R}:${r}:${arc}`, () => new THREE.TorusGeometry(R, r, 14, 48, arc));
 
 const SMOOTH = {smooth: 1, rough: 0.7},
-  CLOTH = {smooth: 1, rough: 0.85, double: 1};
+  CLOTH = {smooth: 1, rough: 0.88, double: 1},
+  HAIRM = {smooth: 1, rough: 0.55};
+const C = {
+  skin: 0xf3dac6,
+  cheek: 0xefb9ab,
+  ink: 0x3a2c28,
+  hair: 0xc9ccd4, // cool ash: stays silver-grey under the warm lamp
+  hair2: 0xbcc0c9,
+  hair3: 0xd6d9df,
+  cardigan: 0xb3acc4,
+  cardEdge: 0xa39cb6,
+  blouse: 0xf6f3ec,
+  skirt: 0x4a4a58,
+  stock: 0xe2dccf,
+  shoe: 0x4a3a30,
+  ribbon: 0x6f8ab0,
+  frame: 0x8a6a3a,
+  pot: 0xeae4d6
+};
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const _q = new THREE.Quaternion(),
-  _e = new THREE.Euler(),
-  _up = new THREE.Vector3(0, 1, 0);
+  _e = new THREE.Euler();
 
 // ellipsoid
 function E(b, c, x, y, z, rx, ry = rx, rz = rx, o = {}) {
   b.geo(SPH(), c, x, y, z, {...o, sx: rx, sy: ry, sz: rz, mat: {...SMOOTH, ...o.mat}});
 }
-// capsule limb between two points
-function limb(b, c, p, q, r, o = {}) {
-  const a = new THREE.Vector3(...p),
-    d = new THREE.Vector3(...q).sub(a),
-    len = d.length(),
-    m = a.clone().addScaledVector(d, 0.5);
-  _q.setFromUnitVectors(_up, d.normalize());
+// rotation (as YXZ euler options) that turns +Y (or `from`) onto direction d
+function aim(d, from = V(0, 1, 0)) {
+  _q.setFromUnitVectors(from, d.clone().normalize());
   _e.setFromQuaternion(_q, 'YXZ');
-  b.geo(capsule(r, len), c, m.x, m.y, m.z, {...o, rx: _e.x, ry: _e.y, rz: _e.z, mat: {...SMOOTH, ...o.mat}});
+  return {rx: _e.x, ry: _e.y, rz: _e.z};
+}
+// capsule between two points
+function limb(b, c, p, q, r, o = {}) {
+  const a = Array.isArray(p) ? V(...p) : p,
+    e = Array.isArray(q) ? V(...q) : q,
+    d = e.clone().sub(a),
+    m = a.clone().addScaledVector(d, 0.5);
+  b.geo(capsule(r, d.length()), c, m.x, m.y, m.z, {...o, ...aim(d), mat: {...SMOOTH, ...o.mat}});
 }
 
-const LOOKS = {
-  // a: 守灯人 — dark brown hair in a low braid, cream knit, forest-green skirt, mustard scarf
-  a: {hair: 0x4a3428, top: 0xe9dcc4, skirt: 0x3f5a4a, scarf: 0xc99a3a, shoe: 0x5a4030, sock: 0x6b5a4a},
-  // b: short black bob with bangs, navy dress with a white collar, rust scarf
-  b: {
-    hair: 0x24262d,
-    top: 0x2f3e5a,
-    skirt: 0x2f3e5a,
-    scarf: 0x9a4a3a,
-    collar: 0xf4f1ea,
-    shoe: 0x3a2e28,
-    sock: 0x2a2a30
-  },
-  // c: pale ash hair half up with a blue ribbon, lavender-grey cardigan, charcoal skirt, round glasses
-  c: {
-    hair: 0xdcd8d0,
-    top: 0xb7b0c6,
-    skirt: 0x4a4a58,
-    ribbon: 0x6f8ab0,
-    collar: 0xf6f3ec,
-    shoe: 0x4a3a30,
-    sock: 0xe8e2d6
+/* ---------- head ---------- */
+function eyes(b, hy, open) {
+  for (const s of [-1, 1]) {
+    b.at(s * 0.042, hy - 0.006, 0.101, {ry: s * 0.32}, () => {
+      if (open) {
+        // open, soft eyes looking up at you: iris, a glint, the upper lash line
+        E(b, 0x4a5568, 0, -0.002, 0, 0.0105, 0.014, 0.005);
+        E(b, 0x22252c, 0, -0.003, 0.003, 0.006, 0.008, 0.003);
+        E(b, 0xffffff, s * -0.003, 0.004, 0.006, 0.0025, 0.0025, 0.001);
+        b.geo(torus(0.0135, 0.0026, PI), C.ink, 0, 0.0, 0.002, {sy: 0.85, mat: SMOOTH});
+        limb(b, C.ink, [s * 0.013, 0.002, 0.002], [s * 0.019, 0.007, 0.003], 0.0016);
+      } else {
+        // lowered eyelids, lashes falling from them
+        b.geo(torus(0.017, 0.0034, PI), C.ink, 0, 0.004, 0, {rz: PI, sy: 0.75, mat: SMOOTH});
+        for (let k = 0; k < 3; k++) {
+          const a = PI * (1.15 + k * 0.18),
+            x = Math.cos(a) * 0.017 * -s,
+            y = 0.004 + Math.sin(a) * 0.017 * 0.75;
+          limb(b, C.ink, [x, y, 0.001], [x * 1.25, y - 0.008, 0.004], 0.0014);
+        }
+      }
+    });
+    limb(
+      b,
+      C.hair2,
+      [s * 0.02, hy + (open ? 0.04 : 0.035), 0.103],
+      [s * 0.06, hy + (open ? 0.046 : 0.04), 0.094],
+      0.0032
+    );
+    E(b, C.cheek, s * 0.058, hy - 0.035, 0.083, 0.02, 0.012, 0.008, {mat: {rough: 0.9}});
   }
-};
-const SKIN = 0xf3dac6,
-  CHEEK = 0xefb9ab,
-  INK = 0x3a2c28;
-
-function head(b, L, look, tilt) {
-  // head pivot sits at the top of the neck
-  b.at(0, 0, 0, {rx: tilt}, () => {
+}
+function head(b, {tilt = 0, turn = 0, open = false}) {
+  b.at(0, 0, 0, {rx: tilt, ry: turn}, () => {
     const hy = 0.115;
     // one egg-shaped head: full at the cheeks, narrowing to a soft chin
     b.geo(
-      lathe(
-        'head',
-        [
-          [0, -0.112],
-          [0.03, -0.11],
-          [0.06, -0.094],
-          [0.084, -0.066],
-          [0.1, -0.03],
-          [0.106, 0.01],
-          [0.104, 0.05],
-          [0.092, 0.088],
-          [0.066, 0.114],
-          [0.034, 0.125],
-          [0, 0.128]
-        ],
-        48
-      ),
-      SKIN,
+      lathe('head', [
+        [0, -0.112],
+        [0.03, -0.11],
+        [0.06, -0.094],
+        [0.084, -0.066],
+        [0.1, -0.03],
+        [0.106, 0.01],
+        [0.104, 0.05],
+        [0.092, 0.088],
+        [0.066, 0.114],
+        [0.034, 0.125],
+        [0, 0.128]
+      ]),
+      C.skin,
       0,
       hy,
       0.006,
       {sz: 1.04, mat: SMOOTH}
     );
-    // face: lowered eyelids (reading), brows, nose, mouth, cheeks
-    for (const s of [-1, 1]) {
-      b.at(s * 0.042, hy - 0.006, 0.101, {ry: s * 0.32}, () => {
-        // a lowered eyelid: a soft dark crescent curving down, lashes falling from it
-        b.geo(torus(0.017, 0.0034, PI), INK, 0, 0.004, 0, {rz: PI, sy: 0.75, mat: SMOOTH});
-        for (let k = 0; k < 3; k++) {
-          const a = PI * (1.15 + k * 0.18 + (s > 0 ? 0.0 : 0.0)),
-            x = Math.cos(a) * 0.017 * s * -1,
-            y = 0.004 + Math.sin(a) * 0.017 * 0.75;
-          limb(b, INK, [x, y, 0.001], [x * 1.25, y - 0.008, 0.004], 0.0014);
-        }
-      });
-      limb(b, L.hair, [s * 0.02, hy + 0.035, 0.103], [s * 0.06, hy + 0.04, 0.094], 0.0035);
-      E(b, CHEEK, s * 0.058, hy - 0.035, 0.083, 0.02, 0.012, 0.008, {mat: {rough: 0.9}});
-    }
+    eyes(b, hy, open);
     E(b, 0xecc4ae, 0, hy - 0.024, 0.11, 0.0075, 0.01, 0.008);
     b.geo(torus(0.011, 0.0022, PI * 0.7), 0xb0685e, 0, hy - 0.056, 0.097, {rz: PI * 1.15, mat: SMOOTH});
-    if (look === 'c')
-      for (const s of [-1, 1]) {
-        b.geo(torus(0.026, 0.0028), 0x8a6a3a, s * 0.042, hy - 0.004, 0.112, {mat: {metal: 0.6, rough: 0.35}});
-        limb(b, 0x8a6a3a, [s * 0.068, hy, 0.108], [s * 0.1, hy + 0.004, 0.02], 0.0025, {mat: {metal: 0.6}});
-      }
-    hair(b, L, look, hy);
+    // round glasses
+    for (const s of [-1, 1]) {
+      b.geo(torus(0.026, 0.0026), C.frame, s * 0.042, hy - 0.004, 0.113, {mat: {metal: 0.6, rough: 0.35}});
+      limb(b, C.frame, [s * 0.068, hy, 0.108], [s * 0.103, hy + 0.004, 0.02], 0.0024, {mat: {metal: 0.6}});
+    }
+    limb(b, C.frame, [-0.016, hy + 0.002, 0.116], [0.016, hy + 0.002, 0.116], 0.0022, {mat: {metal: 0.6}});
+    hair(b, hy);
   });
 }
 
-function hair(b, L, look, hy) {
-  const c = L.hair,
-    o = {mat: SMOOTH},
+function hair(b, hy) {
+  const o = {mat: HAIRM},
     R = [0.124, 0.139, 0.13];
   // crown down to the hairline, and the back/sides down to the jaw (the face stays open)
-  b.geo(partial(0, PI * 2, 0, PI * 0.4), c, 0, hy + 0.003, -0.004, {sx: R[0], sy: R[1], sz: R[2], ...o});
-  b.geo(partial(PI * 0.78, PI * 1.44, 0, PI * 0.78), c, 0, hy + 0.003, -0.004, {
+  b.geo(partial(0, PI * 2, 0, PI * 0.4), C.hair, 0, hy + 0.003, -0.004, {sx: R[0], sy: R[1], sz: R[2], ...o});
+  b.geo(partial(PI * 0.78, PI * 1.44, 0, PI * 0.78), C.hair, 0, hy + 0.003, -0.004, {
     sx: R[0],
     sy: R[1],
     sz: R[2],
     ...o
   });
-  // fringe: a band over the forehead with a few soft tips breaking its edge
-  const fr = look === 'b' ? 0.47 : 0.44;
-  b.geo(partial(PI * 0.12, PI * 0.76, PI * 0.18, PI * (fr - 0.18)), c, 0, hy + 0.002, 0.0, {
+  // a clean fringe band
+  b.geo(partial(PI * 0.12, PI * 0.76, PI * 0.18, PI * 0.26), C.hair, 0, hy + 0.002, 0.0, {
     sx: 0.128,
     sy: 0.141,
     sz: 0.134,
     ...o
   });
-  if (look === 'a') E(b, c, -0.045, hy + 0.045, 0.106, 0.05, 0.022, 0.012, {rz: 0.35, rx: -0.3}); // swept lock
-  if (look === 'a') {
-    // locks framing the face, and a low braid over the right shoulder
-    for (const s of [-1, 1]) E(b, c, s * 0.1, hy - 0.06, 0.035, 0.024, 0.08, 0.026, {rz: s * 0.12});
-    E(b, c, 0, hy - 0.1, -0.07, 0.085, 0.07, 0.05);
-    const braid = [
-      [0.07, hy - 0.14, -0.035],
-      [0.1, hy - 0.2, 0.005],
-      [0.118, hy - 0.26, 0.045],
-      [0.126, hy - 0.32, 0.072],
-      [0.127, hy - 0.375, 0.086],
-      [0.124, hy - 0.425, 0.09],
-      [0.12, hy - 0.47, 0.09]
-    ];
-    braid.forEach(([x, y, z], i) =>
-      E(b, c, x, y, z, 0.027 - i * 0.0018, 0.034, 0.024, {rz: (i % 2 ? 1 : -1) * 0.45})
+  // locks framing the face: three strands each side
+  for (const s of [-1, 1])
+    for (let k = 0; k < 3; k++)
+      E(
+        b,
+        [C.hair, C.hair2, C.hair3][k],
+        s * (0.096 + k * 0.006),
+        hy - 0.1 - k * 0.012,
+        0.03 - k * 0.022,
+        0.014,
+        0.13 - k * 0.012,
+        0.022,
+        {rz: s * (0.04 + k * 0.03), mat: HAIRM}
+      );
+  // long hair falling down the back: a fan of strands over a base layer
+  E(b, C.hair, 0, hy - 0.2, -0.085, 0.12, 0.25, 0.058, {rx: 0.1, mat: HAIRM});
+  for (let i = 0; i < 9; i++) {
+    const u = i / 8 - 0.5;
+    E(
+      b,
+      i % 3 === 0 ? C.hair2 : i % 3 === 1 ? C.hair3 : C.hair,
+      u * 0.2,
+      hy - 0.22 - Math.abs(u) * 0.04,
+      -0.105 + Math.abs(u) * 0.04,
+      0.034,
+      0.25,
+      0.02,
+      {rz: u * 0.22, rx: 0.1, mat: HAIRM}
     );
-    E(b, L.scarf, 0.12, hy - 0.505, 0.09, 0.019, 0.012, 0.019);
-    E(b, c, 0.12, hy - 0.545, 0.09, 0.017, 0.035, 0.014);
-  } else if (look === 'b') {
-    // bob: fuller sides that curl in at the jaw
-    b.geo(partial(PI * 0.8, PI * 1.4, PI * 0.3, PI * 0.42), c, 0, hy - 0.004, -0.004, {
-      sx: 0.136,
-      sy: 0.142,
-      sz: 0.132,
-      ...o
-    });
-  } else {
-    // long hair down the back, half tied up with a ribbon
-    for (const s of [-1, 1]) E(b, c, s * 0.1, hy - 0.11, 0.015, 0.02, 0.13, 0.034, {rz: s * 0.05});
-    E(b, c, 0, hy - 0.22, -0.08, 0.12, 0.25, 0.05, {rx: 0.1});
-    E(b, c, 0, hy + 0.03, -0.115, 0.042, 0.038, 0.032);
-    for (const s of [-1, 1]) E(b, L.ribbon, s * 0.04, hy + 0.035, -0.135, 0.034, 0.02, 0.01, {rz: s * 0.4});
-    E(b, L.ribbon, 0, hy + 0.035, -0.14, 0.013, 0.013, 0.011);
-    for (const s of [-1, 1]) E(b, L.ribbon, s * 0.022, hy - 0.02, -0.15, 0.008, 0.05, 0.004, {rz: s * 0.3});
   }
+  // half tied up with a blue ribbon
+  E(b, C.hair, 0, hy + 0.03, -0.115, 0.042, 0.038, 0.032, {mat: HAIRM});
+  for (const s of [-1, 1]) E(b, C.ribbon, s * 0.04, hy + 0.035, -0.135, 0.034, 0.02, 0.01, {rz: s * 0.4});
+  E(b, C.ribbon, 0, hy + 0.035, -0.14, 0.013, 0.013, 0.011);
+  for (const s of [-1, 1]) E(b, C.ribbon, s * 0.022, hy - 0.02, -0.15, 0.008, 0.05, 0.004, {rz: s * 0.3});
 }
 
-// torso from the hips (origin) up; returns nothing, builds sweater/dress, neck and collar
-function torso(b, L, look) {
+/* ---------- body ---------- */
+// torso from the hips (origin) up: lavender-grey cardigan open over a white blouse
+function torso(b) {
   b.geo(
     lathe('torso', [
       [0.0, 0],
@@ -204,122 +211,175 @@ function torso(b, L, look) {
       [0.05, 0.52],
       [0, 0.52]
     ]),
-    L.top,
+    C.cardigan,
     0,
     0,
     0,
-    {sz: 0.7, mat: SMOOTH}
+    {sz: 0.7, mat: {...SMOOTH, rough: 0.92}}
   );
-  // knit ribbing / buttons
-  if (look === 'a') {
-    for (const x of [-0.05, 0, 0.05]) limb(b, 0xddcfb5, [x, 0.08, 0.1], [x, 0.4, 0.1], 0.008);
-  } else if (look === 'c') {
-    limb(b, L.collar, [0, 0.12, 0.085], [0, 0.48, 0.07], 0.035); // blouse showing under the cardigan
-    for (let k = 0; k < 4; k++) E(b, 0xe8e2d6, 0.035, 0.14 + k * 0.08, 0.1, 0.008, 0.008, 0.005);
-  } else {
-    for (let k = 0; k < 4; k++) E(b, 0xd9d4c8, 0, 0.12 + k * 0.08, 0.105, 0.007, 0.007, 0.005);
-  }
-  limb(b, SKIN, [0, 0.49, 0], [0, 0.56, 0.006], 0.04); // neck
-  if (look === 'a') {
-    b.geo(torus(0.062, 0.024), L.scarf, 0, 0.52, 0.01, {rx: H - 0.1, mat: SMOOTH});
-    E(b, L.scarf, 0.05, 0.42, 0.105, 0.035, 0.11, 0.014, {rz: -0.12, rx: -0.15});
-    E(b, L.scarf, 0.0, 0.44, 0.112, 0.03, 0.09, 0.013, {rz: 0.06, rx: -0.15});
-  } else {
-    // round collar
-    for (const s of [-1, 1])
-      E(b, L.collar || L.top, s * 0.045, 0.505, 0.06, 0.055, 0.016, 0.04, {rz: s * -0.25});
-    if (look === 'b') {
-      b.geo(torus(0.058, 0.018), L.scarf, 0, 0.515, 0.0, {rx: H - 0.15, mat: SMOOTH});
-      limb(b, L.scarf, [-0.03, 0.51, 0.06], [-0.05, 0.36, 0.1], 0.02);
-    }
-  }
+  // blouse showing down the front, the cardigan's edges either side, buttons on the right edge
+  // a narrow blouse placket down the front, the cardigan's edges beside it
+  limb(b, C.blouse, [0, 0.16, 0.098], [0, 0.47, 0.084], 0.026, {sz: 0.5});
+  for (const s of [-1, 1]) limb(b, C.cardEdge, [s * 0.034, 0.05, 0.103], [s * 0.03, 0.47, 0.088], 0.011);
+  for (let k = 0; k < 4; k++) E(b, 0xe8e2d6, 0.05, 0.11 + k * 0.085, 0.108, 0.007, 0.007, 0.004);
+  for (let k = 0; k < 3; k++) E(b, 0xd9d2c6, 0, 0.26 + k * 0.065, 0.11, 0.0045, 0.0045, 0.003);
+  // patch pockets
+  for (const s of [-1, 1]) b.box(0.06, 0.05, 0.008, C.cardEdge, s * 0.085, 0.07, 0.096, {ry: s * 0.3});
+  // ribbed hem
+  b.geo(torus(0.142, 0.01), C.cardEdge, 0, 0.012, 0, {rx: H, sz: 0.7, mat: SMOOTH});
+  limb(b, C.skin, [0, 0.49, 0], [0, 0.56, 0.006], 0.04); // neck
+  // rounded blouse collar
+  for (const s of [-1, 1]) E(b, C.blouse, s * 0.045, 0.505, 0.06, 0.055, 0.016, 0.04, {rz: s * -0.25});
 }
 
-function arm(b, L, s, sh, el, wr) {
-  limb(b, L.top, sh, el, 0.048);
-  limb(b, L.top, el, wr, 0.042);
-  const w = new THREE.Vector3(...wr),
-    d = w
-      .clone()
-      .sub(new THREE.Vector3(...el))
-      .normalize();
-  b.geo(torus(0.04, 0.012), L.top, w.x, w.y, w.z, {mat: SMOOTH, ...cuffRot(d)}); // cuff
-  const h = w.clone().addScaledVector(d, 0.05);
-  E(b, SKIN, h.x, h.y, h.z, 0.026, 0.018, 0.045, cuffRot(d));
+// arm from shoulder to wrist (sleeve tapers), cuff, and a hand pointing along the forearm with the
+// palm facing `palm`; curl 0 = flat fingers, 1 = curled
+function arm(b, sh, el, wr, {palm, curl = 0.5, spread = 1} = {}) {
+  const [S, Eb, W] = [V(...sh), V(...el), V(...wr)];
+  E(b, C.cardigan, S.x, S.y, S.z, 0.055, 0.05, 0.055, {mat: {rough: 0.92}});
+  limb(b, C.cardigan, S, Eb, 0.047, {mat: {rough: 0.92}});
+  limb(b, C.cardigan, Eb, W, 0.04, {mat: {rough: 0.92}});
+  const d = W.clone().sub(Eb).normalize();
+  b.geo(torus(0.037, 0.011), C.cardEdge, W.x, W.y, W.z, {mat: SMOOTH, ...aim(d, V(0, 0, 1))});
+  hand(b, W.clone().addScaledVector(d, 0.012), d, palm ? V(...palm).normalize() : V(0, -1, 0), curl, spread);
 }
-function cuffRot(d) {
-  _q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d);
-  _e.setFromQuaternion(_q, 'YXZ');
+function hand(b, w, d, n, curl, spread) {
+  // frame: d forward along the hand, nn out of the palm, side across the knuckles
+  const side = d.clone().cross(n).normalize(),
+    nn = side.clone().cross(d).normalize(),
+    pc = w.clone().addScaledVector(d, 0.03);
+  b.geo(SPH(), C.skin, pc.x, pc.y, pc.z, {
+    ...frameRot(side, nn, d),
+    sx: 0.025,
+    sy: 0.011,
+    sz: 0.032,
+    mat: SMOOTH
+  });
+  for (let i = 0; i < 4; i++) {
+    const off = (i - 1.5) * 0.0125 * spread,
+      len = [0.03, 0.035, 0.033, 0.026][i],
+      base = pc.clone().addScaledVector(d, 0.026).addScaledVector(side, off),
+      mid = base
+        .clone()
+        .addScaledVector(d, len * 0.55)
+        .addScaledVector(nn, -len * 0.3 * curl),
+      tip = mid
+        .clone()
+        .addScaledVector(d, len * 0.45 * (1 - curl * 0.6))
+        .addScaledVector(nn, -len * 0.55 * curl);
+    limb(b, C.skin, base, mid, 0.0062);
+    limb(b, C.skin, mid, tip, 0.0058);
+  }
+  const tb = pc.clone().addScaledVector(side, 0.022).addScaledVector(d, -0.008),
+    tt = tb.clone().addScaledVector(d, 0.03).addScaledVector(side, 0.012).addScaledVector(nn, -0.012);
+  limb(b, C.skin, tb, tt, 0.0072);
+}
+function frameRot(x, y, z) {
+  _e.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z), 'YXZ');
   return {rx: _e.x, ry: _e.y, rz: _e.z};
 }
 
-function book(b, x, y, z, rx) {
-  b.at(x, y, z, {rx}, () => {
-    for (const s of [-1, 1]) {
-      b.box(0.13, 0.008, 0.18, 0xf3eddc, s * 0.068, 0.006, 0, {rz: s * -0.12});
-      b.box(0.135, 0.006, 0.185, 0x7a4a46, s * 0.068, 0, 0, {rz: s * -0.12});
-    }
+function maryJane(b, x, y, z, ry = 0) {
+  b.at(x, y, z, {ry}, () => {
+    E(b, C.shoe, 0, 0.028, 0.035, 0.038, 0.028, 0.075, {mat: {smooth: 1, rough: 0.45}});
+    E(b, 0x2e241e, 0, 0.006, 0.035, 0.04, 0.008, 0.077);
+    b.geo(torus(0.034, 0.005, PI), C.shoe, 0, 0.045, 0.03, {ry: H, sx: 1.1, mat: SMOOTH});
   });
 }
 
-export function companionModel(b, {look = 'a', pose = 'read'} = {}) {
-  const L = LOOKS[look];
-  if (pose === 'stand') {
-    // legs and skirt
+function book(b, x, y, z, o = {}, turning = false) {
+  b.at(x, y, z, o, () => {
     for (const s of [-1, 1]) {
-      limb(b, L.sock, [s * 0.06, 0.06, 0], [s * 0.065, 0.5, 0], 0.035);
-      E(b, L.shoe, s * 0.06, 0.03, 0.03, 0.04, 0.03, 0.075);
+      // pages (a little thickness) and the hardcover, slightly opened
+      b.box(0.125, 0.014, 0.17, 0xf3eddc, s * 0.066, 0.008, 0, {rz: s * -0.1});
+      b.box(0.132, 0.006, 0.178, 0x5a6f8c, s * 0.068, 0, 0, {rz: s * -0.1});
+    }
+    E(b, 0x4a5d78, 0, -0.002, 0, 0.012, 0.01, 0.089);
+    if (turning) b.box(0.12, 0.003, 0.165, 0xfbf6e8, 0.0, 0.06, 0, {rz: -1.2}); // a page mid-turn
+  });
+}
+
+/* ---------- poses ---------- */
+const HIP = 0.46;
+function seatedLegs(b) {
+  for (const s of [-1, 1]) {
+    limb(b, C.stock, [s * 0.07, HIP - 0.04, 0.36], [s * 0.074, 0.1, 0.42], 0.033);
+    maryJane(b, s * 0.075, 0.0, 0.43);
+  }
+  // the skirt over both thighs as one soft mass, folds over the knees, then a short drape
+  E(b, C.skirt, 0, HIP + 0.005, 0.17, 0.172, 0.074, 0.24, {mat: CLOTH});
+  E(b, C.skirt, 0, HIP + 0.008, 0.36, 0.168, 0.058, 0.07, {mat: CLOTH});
+  b.geo(
+    lathe('drape', [
+      [0.158, -0.2],
+      [0.155, -0.18],
+      [0.147, -0.1],
+      [0.14, 0.0]
+    ]),
+    C.skirt,
+    0,
+    HIP + 0.02,
+    0.385,
+    {sz: 0.42, mat: CLOTH}
+  );
+  for (const x of [-0.08, -0.01, 0.07])
+    limb(b, 0x40404e, [x, HIP - 0.01, 0.445], [x * 1.1, HIP - 0.17, 0.452], 0.009, {mat: CLOTH});
+}
+
+export function companionModel(b, {pose = 'read'} = {}) {
+  if (pose === 'tea') {
+    // standing by the desk, pouring tea into the reader's cup in front of her (+z)
+    for (const s of [-1, 1]) {
+      limb(b, C.stock, [s * 0.06, 0.06, 0], [s * 0.065, 0.5, 0], 0.034);
+      maryJane(b, s * 0.06, 0, 0.0);
     }
     b.geo(
-      lathe(`skirt-${look}`, [
-        [0.255, 0.16],
-        [0.25, 0.2],
+      lathe('skirt', [
+        [0.25, 0.22],
+        [0.245, 0.26],
         [0.21, 0.55],
         [0.165, 0.85],
         [0.15, 0.95]
       ]),
-      L.skirt,
+      C.skirt,
       0,
       0,
       0,
       {sz: 0.8, mat: CLOTH}
     );
-    b.at(0, 0.86, 0, () => {
-      torso(b, L, look);
-      for (const s of [-1, 1])
-        arm(b, L, s, [s * 0.16, 0.44, 0], [s * 0.2, 0.18, 0.03], [s * 0.21, -0.04, 0.07]);
-      b.at(0, 0.555, 0.006, () => head(b, L, look, 0.05));
+    b.at(0, 0.86, 0, {rx: 0.12}, () => {
+      torso(b);
+      // right hand holds the teapot out over the cup, left hand steadies its lid
+      arm(b, [0.16, 0.44, 0], [0.21, 0.27, 0.2], [0.12, 0.26, 0.42], {palm: [-1, 0, 0], curl: 0.8});
+      arm(b, [-0.16, 0.44, 0], [-0.18, 0.27, 0.19], [-0.03, 0.33, 0.43], {palm: [0, -1, 0], curl: 0.3});
+      b.at(0.05, 0.29, 0.53, {rz: -0.55}, () => {
+        E(b, C.pot, 0, 0, 0, 0.07, 0.06, 0.07, {mat: {smooth: 1, rough: 0.3}});
+        E(b, C.pot, 0, 0.055, 0, 0.03, 0.012, 0.03, {mat: {smooth: 1, rough: 0.3}});
+        limb(b, C.pot, [-0.06, 0.0, 0], [-0.11, 0.05, 0], 0.012, {mat: {rough: 0.3}});
+        b.geo(torus(0.035, 0.008, PI), C.pot, 0.07, 0.0, 0, {rz: -H, mat: SMOOTH});
+        b.geo(torus(0.04, 0.004), C.ribbon, 0, 0.0, 0, {rx: H, mat: SMOOTH}); // a blue band
+      });
+      b.at(0, 0.555, 0.008, () => head(b, {tilt: 0.38}));
     });
     return;
   }
-  // reading in the armchair: hips on the seat (seat top ≈ 0.42), knees forward, book in both hands
-  const hip = 0.46;
-  for (const s of [-1, 1]) {
-    limb(b, L.sock, [s * 0.07, hip - 0.02, 0.36], [s * 0.075, 0.09, 0.42], 0.034);
-    E(b, L.shoe, s * 0.075, 0.035, 0.46, 0.04, 0.03, 0.075);
-  }
-  // lap and the skirt draped over the knees
-  // the skirt lies over both thighs as one soft mass, then falls from the knees
-  E(b, L.skirt, 0, hip + 0.005, 0.17, 0.175, 0.075, 0.24);
-  E(b, L.skirt, 0, hip + 0.01, 0.36, 0.17, 0.06, 0.07);
-  b.geo(
-    lathe(`drape-${look}`, [
-      [0.165, -0.27],
-      [0.16, -0.24],
-      [0.15, -0.12],
-      [0.14, 0.0]
-    ]),
-    L.skirt,
-    0,
-    hip + 0.02,
-    0.38,
-    {sz: 0.5, mat: CLOTH}
-  );
-  b.at(0, hip - 0.02, -0.02, {rx: -0.12}, () => {
-    torso(b, L, look);
-    // both hands hold the open book in front of her
-    for (const s of [-1, 1]) arm(b, L, s, [s * 0.16, 0.44, 0], [s * 0.2, 0.22, 0.12], [s * 0.1, 0.27, 0.3]);
-    book(b, 0, 0.29, 0.36, -0.75);
-    b.at(0, 0.555, 0.01, () => head(b, L, look, 0.42));
+  seatedLegs(b);
+  b.at(0, HIP - 0.02, -0.02, {rx: pose === 'look' ? -0.05 : -0.12}, () => {
+    torso(b);
+    if (pose === 'look') {
+      // book resting on her lap under the left hand, right hand on the armrest
+      book(b, -0.02, 0.06, 0.26, {rx: -0.05, ry: 0.15});
+      arm(b, [-0.16, 0.44, 0], [-0.19, 0.22, 0.08], [-0.1, 0.1, 0.24], {palm: [0, -1, 0], curl: 0.2});
+      arm(b, [0.16, 0.44, 0], [0.24, 0.22, 0.02], [0.27, 0.07, 0.17], {palm: [0, -1, 0], curl: 0.4});
+      b.at(0, 0.555, 0.01, () => head(b, {tilt: -0.08, turn: -0.32, open: true}));
+      return;
+    }
+    // reading: both hands hold the open book up in front of her; 'turn' lifts a page
+    book(b, 0, 0.29, 0.36, {rx: -0.75}, pose === 'turn');
+    arm(b, [-0.16, 0.44, 0], [-0.2, 0.22, 0.12], [-0.12, 0.26, 0.29], {palm: [0.6, 0.3, 0.4], curl: 0.55});
+    if (pose === 'turn')
+      arm(b, [0.16, 0.44, 0], [0.2, 0.25, 0.14], [0.02, 0.36, 0.33], {palm: [-0.3, -0.6, 0.4], curl: 0.2});
+    else arm(b, [0.16, 0.44, 0], [0.2, 0.22, 0.12], [0.12, 0.26, 0.29], {palm: [-0.6, 0.3, 0.4], curl: 0.55});
+    b.at(0, 0.555, 0.01, () => head(b, {tilt: 0.42}));
   });
 }
