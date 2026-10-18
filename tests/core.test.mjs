@@ -510,7 +510,7 @@ test('地貌编辑：涂刷、抬升、降低、还原为海、占用限制', ()
   assert.throws(() => C.editTerrain(s, 'f', 10, 15), /移走/);
   const d = C.defaultDecor()[0];
   assert.throws(() => C.editTerrain(s, 'g', d.x, d.z), /移走/);
-  assert.equal(C.TERRAIN_TOOLS.length, 10);
+  assert.equal(C.TERRAIN_TOOLS.length, 11);
   assert.deepEqual(C.validateState(s), s);
 });
 test('v2 校验拒绝重叠、坏地形、孤立布局、未知装饰与重复 id', () => {
@@ -621,4 +621,41 @@ test('新收藏品加入各稀有度奖池', () => {
     }
   for (const id of ['acorn', 'teacup', 'hourglass', 'scroll', 'koi', 'globe', 'bonsai', 'phoenix'])
     assert.ok(seen.has(id), id);
+});
+test('平整：抬升到目标高度按 raise 逐级计费，降低免费', () => {
+  const s = rich(),
+    free = find(s, (q, x, z) => q.t === 'g' && q.h === 1 && !C.objectAt(s, x, z));
+  const i = C.tileIndex(free.x, free.z);
+  s.island.height = s.island.height.slice(0, i) + '0' + s.island.height.slice(i + 1);
+  const st0 = s.resources.stone;
+  assert.deepEqual(C.terrainCost(s, 'level', free.x, free.z, {target: 3}), {stone: 4 + 8 + 12});
+  assert.deepEqual(C.terrainCost(s, 'level', free.x, free.z, {target: 1}), {stone: 4});
+  C.editTerrain(s, 'level', free.x, free.z, {target: 2});
+  assert.equal(C.tileAt(s, free.x, free.z).h, 2);
+  assert.equal(s.resources.stone, st0 - 12);
+  const st1 = s.resources.stone;
+  assert.deepEqual(C.terrainCost(s, 'level', free.x, free.z, {target: 0}), {});
+  C.editTerrain(s, 'level', free.x, free.z, {target: 0});
+  assert.equal(C.tileAt(s, free.x, free.z).h, 0);
+  assert.equal(s.resources.stone, st1);
+  assert.throws(() => C.editTerrain(s, 'level', free.x, free.z, {target: 0}), /已经/);
+  assert.throws(() => C.editTerrain(s, 'level', free.x, free.z, {target: 4}), /无效/);
+  assert.throws(() => C.editTerrain(s, 'level', free.x, free.z), /无效/);
+  assert.deepEqual(C.validateState(s), s);
+});
+test('平整：海与被占用的地块抛错且不扣费，材料不足不改动', () => {
+  const s = rich(),
+    sea = find(s, q => q.t === '.'),
+    occ = find(s, (q, x, z) => q.t !== '.' && C.objectAt(s, x, z));
+  const before = JSON.stringify(s);
+  assert.throws(() => C.editTerrain(s, 'level', sea.x, sea.z, {target: 1}), /海|占用|建筑/);
+  assert.throws(() => C.editTerrain(s, 'level', occ.x, occ.z, {target: 3}), /建筑|装饰/);
+  assert.equal(JSON.stringify(s), before);
+  const poor = rich(),
+    g = find(poor, (q, x, z) => q.t === 'g' && q.h === 1 && !C.objectAt(poor, x, z));
+  poor.resources.stone = 10;
+  assert.throws(() => C.editTerrain(poor, 'level', g.x, g.z, {target: 3}), /建材/);
+  assert.equal(poor.resources.stone, 10);
+  assert.equal(C.tileAt(poor, g.x, g.z).h, 1);
+  assert.ok(C.TERRAIN_TOOLS.some(t => t.id === 'level'));
 });

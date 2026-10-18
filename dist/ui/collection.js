@@ -1,5 +1,5 @@
 // Wonders: the cabinet (奇物柜), the item viewer and stardust wishes (星砂寻宝) with their animation.
-import * as C from '../core.js?v=5';
+import * as C from '../core.js?v=6';
 import * as A from '../alerts.js?v=6';
 import {
   $,

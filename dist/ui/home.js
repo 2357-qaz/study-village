@@ -1,5 +1,5 @@
 // Village home screen: weekly stats, residents, resources and building production.
-import * as C from '../core.js?v=5';
+import * as C from '../core.js?v=6';
 import {
   $,
   icon,

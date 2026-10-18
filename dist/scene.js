@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
-import * as C from './core.js?v=5';
+import * as C from './core.js?v=6';
 import {
   Builder,
   LiveSink,
@@ -885,7 +885,13 @@ export function createVillage(container, onSelect) {
   const el = renderer.domElement,
     pointers = new Map();
   let drag = null,
-    pinch = null;
+    pinch = null,
+    paintMode = false;
+  // Painting is a one-pointer gesture; mouse right-drag / Shift+drag still rotates the camera.
+  const endPaint = () => {
+    if (drag?.painting) village.onPaint?.(null, 'end');
+    if (drag) drag.paint = drag.painting = false;
+  };
   const clampAll = () => {
     radius = THREE.MathUtils.clamp(radius, 6, 46);
     elevation = THREE.MathUtils.clamp(elevation, 0.28, 1.3);
@@ -914,12 +920,17 @@ export function createVillage(container, onSelect) {
         sy: e.clientY,
         moved: false,
         pan: e.button === 2 || e.shiftKey,
-        touch: e.pointerType === 'touch'
+        touch: e.pointerType === 'touch',
+        paint: paintMode && buildMode && e.button !== 2 && !e.shiftKey,
+        painting: false
       };
     else if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
       pinch = {d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2};
-      if (drag) drag.moved = true;
+      if (drag) {
+        endPaint();
+        drag.moved = true;
+      }
     }
   });
   el.addEventListener('pointermove', e => {
@@ -953,8 +964,26 @@ export function createVillage(container, onSelect) {
     if (!drag.moved && Math.hypot(tx, ty) > 6) {
       drag.moved = true;
       drag.vertical = Math.abs(ty) > Math.abs(tx) * 1.2;
+      if (drag.paint) {
+        drag.painting = true;
+        const h0 = pick(drag.sx, drag.sy);
+        if (h0) village.onPaint?.(h0, 'start');
+      }
     }
     if (!drag.moved) return;
+    if (drag.paint) {
+      // sample along the segment so fast drags don't leave gaps between tiles
+      const fx = drag.px ?? drag.sx,
+        fy = drag.py ?? drag.sy,
+        n = Math.min(24, Math.ceil(Math.hypot(e.clientX - fx, e.clientY - fy) / 8));
+      for (let k = 1; k <= n; k++) {
+        const h = pick(fx + ((e.clientX - fx) * k) / n, fy + ((e.clientY - fy) * k) / n);
+        if (h) village.onPaint?.(h, 'move');
+      }
+      drag.px = e.clientX;
+      drag.py = e.clientY;
+      return;
+    }
     drag.x = e.clientX;
     drag.y = e.clientY;
     if (drag.pan) {
@@ -967,6 +996,7 @@ export function createVillage(container, onSelect) {
     clampAll();
   });
   const end = e => {
+    endPaint();
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
     if (e.type === 'pointerup' && drag && !drag.moved && pointers.size === 0) {
@@ -1153,8 +1183,17 @@ export function createVillage(container, onSelect) {
     update,
     reset,
     onTile: null,
+    onPaint: null,
+    setPaint(on) {
+      paintMode = !!on;
+      if (!paintMode) endPaint();
+    },
     setBuildMode(on) {
       buildMode = !!on;
+      if (!buildMode) {
+        paintMode = false;
+        endPaint();
+      }
       gridLines.visible = buildMode;
       el.style.touchAction = buildMode ? 'none' : '';
       if (!buildMode) {

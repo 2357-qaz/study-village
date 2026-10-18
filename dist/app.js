@@ -1,6 +1,6 @@
 // Entry point: loads the save (ui/store.js), wires every feature module, then starts timers,
 // the 3D village and the optional WebMCP status tool.
-import * as C from './core.js?v=5';
+import * as C from './core.js?v=6';
 import {
   $,
   KEY,
@@ -24,7 +24,7 @@ import {renderCollections} from './ui/collection.js?v=10';
 import {hydrateThumbs} from './ui/thumbs.js?v=10';
 import {renderBackup} from './ui/save.js?v=11';
 import './offline.js?v=1';
-import {buildEntryState, onTile} from './ui/build.js?v=10';
+import {buildEntryState, onTile} from './ui/build.js?v=11';
 import './ui/story.js?v=1';
 window.addEventListener('storage', e => {
   if (e.key === KEY && e.newValue) {
@@ -67,7 +67,7 @@ import('./items3d.js?v=5')
     hydrateThumbs($('#draw-results'));
   })
   .catch(() => {});
-import('./scene.js?v=5')
+import('./scene.js?v=6')
   .then(m => {
     try {
       setVillage(

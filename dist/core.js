@@ -560,6 +560,7 @@ export const TERRAIN_TOOLS = [
   {id: 'w', name: '池塘', icon: 'droplets'},
   {id: 'raise', name: '抬升', icon: 'arrow-up'},
   {id: 'lower', name: '降低', icon: 'arrow-down'},
+  {id: 'level', name: '平整', icon: 'equal'},
   {id: 'sea', name: '还原为海', icon: 'eraser'}
 ];
 const LAYOUT = {
@@ -593,6 +594,7 @@ export function tileAt(s, x, z) {
   const i = tileIndex(x, z);
   return {t: s.island.terrain[i], h: +s.island.height[i]};
 }
+export const NOMAT_MSG = NOMAT;
 export function landCount(s) {
   let n = 0;
   for (const c of s.island.terrain) if (c !== '.') n++;
@@ -849,16 +851,23 @@ export function migrate(v1) {
   s.version = 2;
   return s;
 }
-export function terrainCost(s, tool, x, z) {
+// 平整: raising to `target` costs what the single-step `raise` would, level by level; lowering is free.
+function levelCost(h, target) {
+  let stone = 0;
+  for (let k = h; k < target; k++) stone += 4 * (k + 1);
+  return stone ? {stone} : {};
+}
+export function terrainCost(s, tool, x, z, opts) {
   if (tool === 'reclaim') {
     const n = Math.max(0, landCount(s) - BASE_LAND);
     return {stone: 6 + Math.floor(n / 12), wood: 4 + Math.floor(n / 20), food: 2 + Math.floor(n / 30)};
   }
   if (tool === 'raise') return {stone: 4 * ((tileAt(s, x, z)?.h || 0) + 1)};
+  if (tool === 'level') return levelCost(tileAt(s, x, z)?.h || 0, opts?.target);
   if (!Object.hasOwn(TCOST, tool)) throw Error('未知的地貌工具');
   return {...TCOST[tool]};
 }
-export function editTerrain(s, tool, x, z) {
+export function editTerrain(s, tool, x, z, opts) {
   if (!TERRAIN_TOOLS.some(t => t.id === tool)) throw Error('未知的地貌工具');
   const q = tileAt(s, x, z);
   if (!q) throw Error('超出岛屿范围');
@@ -885,6 +894,11 @@ export function editTerrain(s, tool, x, z) {
     } else if (tool === 'lower') {
       if (h <= 0) throw Error('已经是最低的地势');
       h--;
+    } else if (tool === 'level') {
+      const g = opts?.target;
+      if (!Number.isInteger(g) || g < 0 || g > 3) throw Error('平整的目标高度无效');
+      if (h === g) throw Error('已经是这个高度');
+      h = g;
     } else if (tool === 'sea') {
       if (h !== 0) throw Error('请先把地势降到最低');
       c = '.';
@@ -893,7 +907,7 @@ export function editTerrain(s, tool, x, z) {
       c = tool;
     }
   }
-  const cost = terrainCost(s, tool, x, z);
+  const cost = terrainCost(s, tool, x, z, opts);
   if (Object.entries(cost).some(([k, v]) => s.resources[k] < v)) throw Error(NOMAT);
   for (const [k, v] of Object.entries(cost)) s.resources[k] -= v;
   const i = tileIndex(x, z),
