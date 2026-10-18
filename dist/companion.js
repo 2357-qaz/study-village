@@ -1,8 +1,11 @@
-// 书屋守灯人: the quiet companion who reads with you. Unlike the low-poly villagers she is built
-// from smooth, higher-resolution shapes (own geometry with smooth normals, marked {smooth}).
-// companionModel(b, {pose}) — pose: 'read' | 'turn' | 'look' (seated in the armchair, origin on
-// the floor under the seat, facing +z) or 'tea' (standing, pouring tea towards +z).
+// 书屋守灯人: the quiet companion who reads with you. Her body, clothes and hair are sculpted as
+// smooth volumes offline (tools/sculpt-companion.mjs, loaded by sculpt-loader.js); small details —
+// glasses, irises, the ribbon, the book and the teapot — are added here. If the sculpted parts
+// can't be loaded she is assembled from simple smooth shapes instead.
+// companionModel(b, {pose, parts}) — pose: 'read' | 'turn' | 'look' (seated in the armchair, origin
+// on the floor under the seat, facing +z) or 'tea' (standing, pouring tea towards +z).
 import * as THREE from './vendor/three.module.min.js';
+import {POSES, NECK} from './companion-poses.js?v=1';
 
 const PI = Math.PI,
   H = PI / 2;
@@ -326,7 +329,62 @@ function seatedLegs(b) {
     limb(b, 0x40404e, [x, HIP - 0.01, 0.445], [x * 1.1, HIP - 0.17, 0.452], 0.009, {mat: CLOTH});
 }
 
-export function companionModel(b, {pose = 'read'} = {}) {
+/* ---------- sculpted ---------- */
+const SCULPT = {mat: {smooth: 1, vc: 1, rough: 0.82}};
+// details on the sculpted head (its frame: origin at the neck top, face towards +z)
+function sculptedHeadDetails(b, open) {
+  for (const s of [-1, 1]) {
+    if (open)
+      b.at(s * 0.041, 0.102, 0.0995, {ry: s * 0.25}, () => {
+        E(b, 0x4a5568, 0, 0, 0, 0.0088, 0.0108, 0.0028);
+        E(b, 0x22252c, 0, -0.0006, 0.0018, 0.0048, 0.006, 0.0016);
+        E(b, 0xffffff, s * -0.0028, 0.0038, 0.0034, 0.0022, 0.0022, 0.0008);
+      });
+    b.geo(torus(0.025, 0.0022), C.frame, s * 0.041, 0.104, 0.117, {
+      mat: {smooth: 1, metal: 0.6, rough: 0.35}
+    });
+    limb(b, C.frame, [s * 0.066, 0.106, 0.113], [s * 0.106, 0.11, 0.0], 0.0022, {mat: {metal: 0.6}});
+  }
+  limb(b, C.frame, [-0.016, 0.106, 0.117], [0.016, 0.106, 0.117], 0.002, {mat: {metal: 0.6}});
+  // the blue ribbon around the half-up knot
+  for (const s of [-1, 1]) E(b, C.ribbon, s * 0.036, 0.158, -0.158, 0.03, 0.018, 0.009, {rz: s * 0.4});
+  E(b, C.ribbon, 0, 0.157, -0.161, 0.012, 0.012, 0.01);
+  for (const s of [-1, 1])
+    E(b, C.ribbon, s * 0.02, 0.11, -0.163, 0.007, 0.045, 0.0035, {rx: -0.15, rz: s * 0.3});
+}
+function sculpted(b, pose, parts) {
+  const P = POSES[pose],
+    g = name => b.geo(parts[name], 0xffffff, 0, 0, 0, SCULPT);
+  g(P.legs === 'seated' ? 'lapSeated' : 'lowerStand');
+  b.at(0, P.torso.y, P.torso.z, {rx: P.torso.rx}, () => {
+    g(`upper_${pose}`);
+    g(`hands_${pose}`);
+    props(b, pose);
+    b.at(...NECK, {rx: P.head.tilt, ry: P.head.turn}, () => {
+      g(P.head.open ? 'headOpen' : 'head');
+      g('hair');
+      sculptedHeadDetails(b, P.head.open);
+    });
+  });
+}
+// what she holds, in the torso frame
+function props(b, pose) {
+  if (pose === 'tea')
+    b.at(0.05, 0.29, 0.53, {rz: -0.55}, () => {
+      E(b, C.pot, 0, 0, 0, 0.07, 0.06, 0.07, {mat: {smooth: 1, rough: 0.3}});
+      E(b, C.pot, 0, 0.055, 0, 0.03, 0.012, 0.03, {mat: {smooth: 1, rough: 0.3}});
+      limb(b, C.pot, [-0.06, 0.0, 0], [-0.11, 0.05, 0], 0.012, {mat: {rough: 0.3}});
+      b.geo(torus(0.035, 0.008, PI), C.pot, 0.07, 0.0, 0, {rz: -H, mat: SMOOTH});
+      b.geo(torus(0.04, 0.004), C.ribbon, 0, 0.0, 0, {rx: H, mat: SMOOTH}); // a blue band
+    });
+  else if (pose === 'look')
+    book(b, -0.02, 0.115, 0.27, {rx: -0.12, ry: 0.15}); // resting on the sculpted lap
+  else book(b, 0, 0.29, 0.36, {rx: -0.75}, pose === 'turn');
+}
+
+export function companionModel(b, {pose = 'read', parts = null} = {}) {
+  if (parts) return sculpted(b, pose, parts);
+
   if (pose === 'tea') {
     // standing by the desk, pouring tea into the reader's cup in front of her (+z)
     for (const s of [-1, 1]) {

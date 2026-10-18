@@ -3,7 +3,8 @@
 // top of it, using the projected positions this module returns.
 import * as THREE from './vendor/three.module.min.js';
 import {Builder, LiveSink, P, shade} from './models.js?v=5';
-import {companionModel} from './companion.js?v=1';
+import {companionModel} from './companion.js?v=2';
+import {loadSculpt} from './sculpt-loader.js?v=1';
 
 const PI = Math.PI,
   H = PI / 2;
@@ -25,7 +26,8 @@ function mat(color, o = {}) {
       m.metal,
       m.basic ? 1 : 0,
       m.smooth ? 1 : 0,
-      m.double ? 1 : 0
+      m.double ? 1 : 0,
+      m.vc ? 1 : 0
     ].join('|');
   let x = mats.get(key);
   if (!x) {
@@ -36,6 +38,7 @@ function mat(color, o = {}) {
           roughness: m.rough ?? 0.82,
           metalness: m.metal ?? 0,
           flatShading: !m.smooth,
+          vertexColors: !!m.vc,
           side: m.double ? THREE.DoubleSide : THREE.FrontSide
         });
     if (m.emissive || o.glow) {
@@ -415,6 +418,12 @@ export function renderRoom(opts) {
 }
 
 const occluder = new THREE.MeshBasicMaterial({colorWrite: false});
+// The companion's sculpted parts; resolves to null (simple shapes are used) if they can't load.
+let sculpt = null;
+export async function loadCompanion() {
+  sculpt = await loadSculpt().catch(() => null);
+  return !!sculpt;
+}
 function teaThings(b) {
   // the reader's cup and saucer on the desk, and a soft shadow at her feet
   b.at(CUP.x, CUP.y, CUP.z, () => {
@@ -427,7 +436,7 @@ function teaThings(b) {
 // The room is still in the scene but only writes depth, so the armchair and desk hide her properly.
 export function renderCompanion(opts, pose) {
   const B = build(opts),
-    key = B.key + '|' + pose;
+    key = `${B.key}|${pose}|${sculpt ? 's' : 'p'}`;
   if (cache.has(key)) return cache.get(key);
   if (!cache.has(B.key)) renderRoom(opts);
   setup(B.w, B.h);
@@ -441,7 +450,7 @@ export function renderCompanion(opts, pose) {
   const actor = new THREE.Group(),
     b = new Builder(new LiveSink(actor, mat)),
     at = pose === 'tea' ? TEA : CHAIR;
-  b.at(at.x, 0, at.z, {ry: at.ry}, () => companionModel(b, {pose}));
+  b.at(at.x, 0, at.z, {ry: at.ry}, () => companionModel(b, {pose, parts: sculpt}));
   if (pose === 'tea') teaThings(b);
   actor.traverse(o => {
     if (o.isMesh) {

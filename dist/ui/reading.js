@@ -12,6 +12,7 @@ const room = $('#reading-room'),
   pager = $('#home-pages'),
   motion = matchMedia('(prefers-reduced-motion: reduce)');
 let mod = null,
+  sculptReady = null,
   lastKey = '',
   lastOpts = null,
   pose = '',
@@ -51,7 +52,8 @@ async function paintRoom() {
   if (key === lastKey) return;
   lastKey = key;
   try {
-    mod ??= await import('../reading-room.js?v=2');
+    mod ??= await import('../reading-room.js?v=3');
+    sculptReady ??= mod.loadCompanion();
     const r = mod.renderRoom(opts);
     if (key !== lastKey) return; // a newer size arrived meanwhile
     const [sx, sy] = r.points.shell,
@@ -69,6 +71,8 @@ async function paintRoom() {
     room.dataset.daypart = r.daypart;
     img.src = r.url;
     room.classList.add('ready');
+    await sculptReady; // her sculpted parts (or, failing that, the simple shapes)
+    if (key !== lastKey) return;
     lastOpts = opts;
     pose = '';
     showPose();
