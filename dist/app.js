@@ -17,12 +17,13 @@ import {
 } from './ui/store.js?v=9';
 import {setPage} from './ui/nav.js?v=10';
 import {renderStats, updateLast, renderProduction} from './ui/home.js?v=9';
-import {updateTimer} from './ui/timer.js?v=9';
+import {updateTimer} from './ui/timer.js?v=10';
 import {renderBuildings} from './ui/buildings.js?v=9';
 import './ui/journal.js?v=9';
 import {renderCollections} from './ui/collection.js?v=9';
 import {hydrateThumbs} from './ui/thumbs.js?v=9';
-import {renderBackup} from './ui/save.js?v=9';
+import {renderBackup} from './ui/save.js?v=10';
+import './offline.js?v=1';
 import {buildEntryState, onTile} from './ui/build.js?v=9';
 window.addEventListener('storage', e => {
   if (e.key === KEY && e.newValue) {

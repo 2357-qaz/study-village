@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="theme-color" content="#153f35" />
+    <meta name="theme-color" content="#153f35" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111513" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="用专注与休息，养成一座属于你的 3D 学习村庄。" />
     <title>时光村落 · 让专注慢慢生长</title>
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32-v1.png" />
@@ -13,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=13" />
+    <link rel="stylesheet" href="./style.css?v=15" />
     <script src="./vendor/lucide-icons.js?v=3" defer></script>
-    <script type="module" src="./app.js?v=11"></script>
+    <script type="module" src="./app.js?v=12"></script>
   </head>
   <body>
     <main>
@@ -233,6 +234,7 @@
         <span id="backup-last">尚未导出过存档</span>
         <label>备份提醒<select id="backup-every"></select></label>
       </div>
+      <p id="storage-status" class="subtle"></p>
     </dialog>
     <dialog id="wish-stage" class="wish-stage" aria-label="寻宝动画"></dialog>
     <dialog id="item-dialog">

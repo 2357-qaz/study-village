@@ -1,6 +1,7 @@
 // Save management: export / import, the backup reminder and the settings dialog.
 import * as C from '../core.js?v=4';
 import * as A from '../alerts.js?v=5';
+import {requestPersist, storageStatus} from '../offline.js?v=1';
 import {
   $,
   KEY,
@@ -28,6 +29,14 @@ export function renderBackup() {
       `${due.never ? '至今' : '上次备份后'}已学习 ${duration(due.newStudy)}。存档只在这个浏览器里，导出一份，换设备或清理浏览器也不怕。`;
   }
   $('#backup-last').textContent = A.describeLastExport(prefs);
+  storageStatus().then(status => {
+    const el = $('#storage-status');
+    el.hidden = status === 'unsupported';
+    el.textContent =
+      status === 'persisted'
+        ? '浏览器已批准持久化存储，可降低自动清理风险；仍建议定期导出备份。'
+        : '浏览器可能清理本机存档；建议定期导出到其他位置，添加到主屏幕也不能代替备份。';
+  });
   $('#backup-every').innerHTML = A.BACKUP_INTERVALS.map(
     o => `<option value="${o.days}" ${o.days === prefs.backupEvery ? 'selected' : ''}>${o.label}</option>`
   ).join('');
@@ -46,6 +55,7 @@ async function exportSave() {
   }
   if (!(await A.saveBackupFile(text, `timegrove-${new Date().toISOString().slice(0, 10)}.json`))) return;
   A.savePrefs({lastExportAt: Date.now(), lastExportStudy: C.studySeconds(state), snoozeUntil: 0});
+  requestPersist().then(renderBackup);
   renderBackup();
   toast('存档已导出，记得放在网盘或其他安全的地方。');
 }

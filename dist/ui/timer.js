@@ -1,6 +1,7 @@
 // Focus / rest timer, manual study entries and timer alert toggles.
 import * as C from '../core.js?v=4';
 import * as A from '../alerts.js?v=5';
+import {requestPersist} from '../offline.js?v=1';
 import {
   $,
   $$,
@@ -130,6 +131,7 @@ $('#pause-button').onclick = safe(() => {
 $('#finish-button').onclick = safe(async () => {
   const before = C.population(state);
   const r = await transact(s => C.finishTimer(s));
+  requestPersist();
   toast(`打卡成功！${rewardText(r)}${C.population(state) > before ? ' · 新居民搬来了！' : ''}`);
 });
 $('#cancel-timer').onclick = safe(async () => {
@@ -148,6 +150,7 @@ $('#manual-form').onsubmit = async e => {
       C.manualStudy(s, Number(data.get('minutes')), +new Date(data.get('end')), data.get('topic'))
     );
     $('#manual-dialog').close();
+    requestPersist();
     toast(`学习已记下！${rewardText(r)}`);
   } catch (error) {
     $('#manual-error').textContent = error.message;
