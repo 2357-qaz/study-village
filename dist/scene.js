@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
-import * as C from './core.js?v=6';
+import * as C from './core.js?v=7';
 import {
   Builder,
   LiveSink,
@@ -816,7 +816,7 @@ export function createVillage(container, onSelect) {
   // ---------- state sync ----------
   function update(s) {
     state = s;
-    const w = warmthOf(s);
+    const w = C.warmth(s);
     if (Math.abs(w - warmth) > 0.005) {
       warmth = w;
       applySky();
@@ -1262,11 +1262,6 @@ export function createVillage(container, onSelect) {
       col.getHSL(_hsl);
       return col.setHSL(_hsl.h + (0.58 - _hsl.h) * 0.5 * c, _hsl.s * (1 - 0.7 * c), _hsl.l);
     };
-  function warmthOf(s) {
-    const levels = Object.values(s.buildings).reduce((a, b) => a + (b | 0), 0),
-      p = levels + C.population(s) / 4 + (s.decor?.length || 0) / 10;
-    return Math.sqrt(Math.min(1, Math.max(0, (p - 2.75) / 40)));
-  }
   function applySky() {
     const d = new Date(),
       hour =
@@ -1279,15 +1274,8 @@ export function createVillage(container, onSelect) {
     chill(k.sun, cold * 0.7);
     coldU.value = cold * 1.15;
     // Snow lies thick on a young town and melts away as it grows; it still snows now and then.
-    snowU.value = Math.max(0, Math.min(0.85, (1 - warmth) * 1.1 - 0.12));
-    const forcedSnow = new URLSearchParams(location.search).get('snow'),
-      chance = 0.22 + 0.73 * Math.pow(1 - warmth, 1.3);
-    snowTarget =
-      forcedSnow !== null
-        ? +forcedSnow
-        : hash(Math.floor(Date.now() / 1.8e6), 77) < chance
-          ? 0.6 + 0.4 * (1 - warmth)
-          : 0;
+    snowU.value = C.snowCover(warmth);
+    snowTarget = C.snowfall(warmth);
     mistU.uColor.value.copy(k.bottom).lerp(new THREE.Color(0xffffff), 0.25);
     mistU.uOpacity.value = 0.3 + 0.9 * cold;
     chill(pondMat.color.set(0x8fd0c8), cold);

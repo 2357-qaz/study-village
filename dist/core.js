@@ -998,3 +998,23 @@ function validateV2(x, fail) {
     mark(tileIndex(d.x, d.z));
   }
 }
+
+/* ---------- the town's weather (shared by the village scene and the reading room) ---------- */
+// Warmth 0..1: a newcomer's town is cold and misty; building, residents and decor warm it up.
+export function warmth(s) {
+  const levels = Object.values(s.buildings).reduce((a, b) => a + (b | 0), 0),
+    p = levels + population(s) / 4 + (s.decor?.length || 0) / 10;
+  return Math.sqrt(Math.min(1, Math.max(0, (p - 2.75) / 40)));
+}
+// How much of the ground lies under snow: thick early on, melted once the town is warm.
+export const snowCover = w => Math.max(0, Math.min(0.85, (1 - w) * 1.1 - 0.12));
+// Snowfall intensity right now (0 = none). The weather changes every half hour; a cold town
+// sees snow most of the time, a warm one only now and then. ?snow=0|1 in the URL forces it.
+export function snowfall(w, now = Date.now()) {
+  const forced = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('snow') : null;
+  if (forced !== null) return +forced;
+  let n = (Math.floor(now / 1.8e6) * 374761393 + 77 * 668265263) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  const r = ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+  return r < 0.22 + 0.73 * Math.pow(1 - w, 1.3) ? 0.6 + 0.4 * (1 - w) : 0;
+}

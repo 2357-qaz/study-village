@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <body style="margin: 0; background: #888; display: flex; gap: 8px; flex-wrap: wrap">
+    <script type="module">
+      import {renderRoom} from './reading-room.js';
+      const q = new URLSearchParams(location.search);
+      const out = [];
+      for (const [w, h, hour, snow] of JSON.parse(q.get('cfg'))) {
+        const r = renderRoom({width: w, height: h, hour, snow, warmth: +q.get('w') || 0.2, cover: +q.get('c') || 0.7});
+        const d = document.createElement('div');
+        d.style.cssText = `position:relative;width:${w}px;height:${h}px`;
+        d.innerHTML = `<img src="${r.url}" style="width:100%;height:100%;display:block">`;
+        for (const [k, [x, y]] of Object.entries(r.points))
+          d.innerHTML += `<i style="position:absolute;left:${x * 100}%;top:${y * 100}%;width:10px;height:10px;margin:-5px;border-radius:50%;background:red" title="${k}"></i>`;
+        document.body.append(d);
+        out.push(r.points);
+      }
+      window.done = JSON.stringify(out);
+    </script>
+  </body>
+</html>

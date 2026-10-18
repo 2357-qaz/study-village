@@ -1,6 +1,6 @@
 // The town's story: three cards shown once per device (also to existing players after this update),
 // replayable from the settings sheet. Device preference only; the save file is untouched.
-import {$, icons} from './store.js?v=9';
+import {$, icons} from './store.js?v=11';
 import * as A from '../alerts.js?v=6';
 const PAGES = [
   {

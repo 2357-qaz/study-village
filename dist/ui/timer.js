@@ -1,5 +1,5 @@
 // Focus / rest timer, manual study entries and timer alert toggles.
-import * as C from '../core.js?v=6';
+import * as C from '../core.js?v=7';
 import * as A from '../alerts.js?v=6';
 import {requestPersist} from '../offline.js?v=1';
 import {
@@ -13,7 +13,7 @@ import {
   onRender,
   state,
   broken
-} from './store.js?v=10';
+} from './store.js?v=11';
 let mode = 'study',
   minutes = 25,
   readyNotified = false;

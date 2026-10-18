@@ -1,6 +1,6 @@
 // Entry point: loads the save (ui/store.js), wires every feature module, then starts timers,
 // the 3D village and the optional WebMCP status tool.
-import * as C from './core.js?v=6';
+import * as C from './core.js?v=7';
 import {
   $,
   KEY,
@@ -14,18 +14,19 @@ import {
   weekData,
   inBuild,
   state
-} from './ui/store.js?v=10';
-import {setPage} from './ui/nav.js?v=11';
-import {renderStats, updateLast, renderProduction} from './ui/home.js?v=10';
-import {updateTimer} from './ui/timer.js?v=11';
-import {renderBuildings} from './ui/buildings.js?v=10';
-import './ui/journal.js?v=10';
-import {renderCollections} from './ui/collection.js?v=10';
-import {hydrateThumbs} from './ui/thumbs.js?v=10';
-import {renderBackup} from './ui/save.js?v=11';
+} from './ui/store.js?v=11';
+import {setPage} from './ui/nav.js?v=12';
+import {renderStats, updateLast, renderProduction} from './ui/home.js?v=11';
+import {updateTimer} from './ui/timer.js?v=12';
+import {renderBuildings} from './ui/buildings.js?v=11';
+import './ui/journal.js?v=11';
+import {renderCollections} from './ui/collection.js?v=11';
+import {hydrateThumbs} from './ui/thumbs.js?v=11';
+import {renderBackup} from './ui/save.js?v=12';
 import './offline.js?v=1';
-import {buildEntryState, onTile} from './ui/build.js?v=11';
-import './ui/story.js?v=1';
+import {buildEntryState, onTile} from './ui/build.js?v=12';
+import './ui/story.js?v=2';
+import './ui/reading.js?v=1';
 window.addEventListener('storage', e => {
   if (e.key === KEY && e.newValue) {
     try {
@@ -67,7 +68,7 @@ import('./items3d.js?v=5')
     hydrateThumbs($('#draw-results'));
   })
   .catch(() => {});
-import('./scene.js?v=6')
+import('./scene.js?v=7')
   .then(m => {
     try {
       setVillage(
