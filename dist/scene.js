@@ -143,6 +143,20 @@ export function createVillage(container, onSelect) {
   scene.fog = new THREE.Fog(0xf2f3df, 60, 120);
   // ---------- materials ----------
   const solidMat = new THREE.MeshStandardMaterial({vertexColors: true, roughness: 0.88, flatShading: true});
+  // Terrain and sea get their own copies that can be desaturated towards a misty blue-grey while
+  // the town is young (see warmth below); buildings, trees and villagers stay in full colour.
+  const coldU = {value: 0},
+    chillShader = sh => {
+      sh.uniforms.uCold = coldU;
+      sh.fragmentShader =
+        'uniform float uCold;\n' +
+        sh.fragmentShader.replace(
+          '#include <color_fragment>',
+          '#include <color_fragment>\n  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114))) * vec3(0.92, 0.98, 1.07), uCold);'
+        );
+    },
+    terrainMat = solidMat.clone();
+  terrainMat.onBeforeCompile = chillShader;
   const glowMat = new THREE.MeshStandardMaterial({
     vertexColors: true,
     roughness: 0.5,
@@ -166,6 +180,7 @@ export function createVillage(container, onSelect) {
     opacity: 0.86,
     flatShading: true
   });
+  seaMat.onBeforeCompile = chillShader;
   const live = new Map(),
     liveGlow = new Set();
   let glowLevel = 0;
@@ -329,7 +344,7 @@ export function createVillage(container, onSelect) {
     col.needsUpdate = true;
   }
   // ---------- baked layers ----------
-  const terrainMesh = new THREE.Mesh(new THREE.BufferGeometry(), solidMat),
+  const terrainMesh = new THREE.Mesh(new THREE.BufferGeometry(), terrainMat),
     objMesh = new THREE.Mesh(new THREE.BufferGeometry(), solidMat),
     glowMesh = new THREE.Mesh(new THREE.BufferGeometry(), glowMat),
     pondMesh = new THREE.Mesh(new THREE.BufferGeometry(), pondMat);
@@ -781,6 +796,11 @@ export function createVillage(container, onSelect) {
   // ---------- state sync ----------
   function update(s) {
     state = s;
+    const w = warmthOf(s);
+    if (Math.abs(w - warmth) > 0.005) {
+      warmth = w;
+      applySky();
+    }
     const islandSig = s.island.terrain + s.island.height,
       sig = islandSig + JSON.stringify([s.buildings, s.layout, s.decor]) + C.population(s);
     if (sig === lastSig) return;
@@ -979,13 +999,33 @@ export function createVillage(container, onSelect) {
   const tag = document.querySelector('.scene-tag'),
     forced = Number(new URLSearchParams(location.search).get('hour'));
   let skyKey = '';
+  // Warmth: a newcomer's town is cold and misty; building and new residents bring the colour back.
+  // Only sky, light, sea and mist are chilled; buildings and lamplight keep their warm colours.
+  let warmth = 1;
+  const _hsl = {h: 0, s: 0, l: 0},
+    chill = (col, c) => {
+      col.getHSL(_hsl);
+      return col.setHSL(_hsl.h + (0.58 - _hsl.h) * 0.5 * c, _hsl.s * (1 - 0.7 * c), _hsl.l);
+    };
+  function warmthOf(s) {
+    const levels = Object.values(s.buildings).reduce((a, b) => a + (b | 0), 0),
+      p = levels + C.population(s) / 4 + (s.decor?.length || 0) / 10;
+    return Math.sqrt(Math.min(1, Math.max(0, (p - 2.75) / 40)));
+  }
   function applySky() {
     const d = new Date(),
       hour =
         Number.isFinite(forced) && new URLSearchParams(location.search).has('hour')
           ? forced
           : d.getHours() + d.getMinutes() / 60,
-      k = skyAt(hour);
+      k = skyAt(hour),
+      cold = 0.55 * (1 - warmth);
+    for (const key of ['top', 'bottom', 'hs', 'hg']) chill(k[key], cold);
+    chill(k.sun, cold * 0.7);
+    coldU.value = cold * 1.15;
+    chill(pondMat.color.set(0x8fd0c8), cold);
+    scene.fog.near = 60 - 80 * cold;
+    scene.fog.far = 120 - 85 * cold;
     hemi.color.copy(k.hs);
     hemi.groundColor.copy(k.hg);
     hemi.intensity = k.hi;
