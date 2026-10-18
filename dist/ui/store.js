@@ -1,6 +1,6 @@
 // Shared state and helpers. The save, the 3D scene handle and the current page are exported as live
 // bindings: other modules read them directly, but only this module reassigns them (via the setters).
-import * as C from '../core.js?v=4';
+import * as C from '../core.js?v=5';
 export const KEY = 'timegrove-save-v1',
   BACKUP = KEY + '-previous',
   V1BAK = 'timegrove-save-v1-backup-before-v2';

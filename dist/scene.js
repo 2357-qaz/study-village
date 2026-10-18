@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
-import * as C from './core.js?v=4';
+import * as C from './core.js?v=5';
 import {
   Builder,
   LiveSink,
@@ -9,7 +9,7 @@ import {
   decorModel,
   villagerModel,
   shade
-} from './models.js?v=4';
+} from './models.js?v=5';
 const PI = Math.PI,
   H = PI / 2,
   N = C.GRID,
@@ -40,7 +40,7 @@ const SKY = {
     si: 1.1,
     el: 0.9,
     glow: 1,
-    tag: '夜色 · 灯火为你而亮'
+    tag: '夜 · 雾里只剩书屋的灯'
   },
   dawn: {
     top: 0x9fb7d9,
@@ -52,7 +52,7 @@ const SKY = {
     si: 2.2,
     el: 0.38,
     glow: 0.45,
-    tag: '清晨 · 新的一页'
+    tag: '清晨 · 雾正慢慢散开'
   },
   day: {
     top: 0xa7d5ea,
@@ -64,7 +64,7 @@ const SKY = {
     si: 2.9,
     el: 1,
     glow: 0,
-    tag: '晴 · 适合专注的一天'
+    tag: '晴 · 适合读梦的一天'
   },
   dusk: {
     top: 0x8c90c9,
@@ -76,7 +76,7 @@ const SKY = {
     si: 2.3,
     el: 0.3,
     glow: 0.45,
-    tag: '黄昏 · 慢下来也很好'
+    tag: '黄昏 · 钟声快要停了'
   },
   evening: {
     top: 0x39426f,
@@ -88,7 +88,7 @@ const SKY = {
     si: 1.4,
     el: 0.25,
     glow: 0.85,
-    tag: '入夜 · 收好今天的努力'
+    tag: '入夜 · 把今天的梦收好'
   }
 };
 const KEYS = [
@@ -169,6 +169,8 @@ export function createVillage(container, onSelect) {
   const live = new Map(),
     liveGlow = new Set();
   let glowLevel = 0;
+  let dreamH = null,
+    dreamM = 0; // 旧梦书屋's clock: frozen unless someone is reading (a study timer is running)
   function liveMat(color, o = {}) {
     const m = o.mat || {},
       key = [color, o.glow ? 1 : 0, m.metal, m.rough, m.emissive, m.opacity, m.smooth].join('|');
@@ -1043,9 +1045,14 @@ export function createVillage(container, onSelect) {
     const now = new Date(),
       hh = (now.getHours() % 12) + now.getMinutes() / 60,
       mm = now.getMinutes() + now.getSeconds() / 60;
+    if ((state?.timer?.kind === 'study' && state.timer.runningSince != null) || dreamH === null) {
+      dreamH = hh;
+      dreamM = mm;
+    }
     for (const {o, a, ph} of anims) {
-      if (a.type === 'clock') {
-        o.rotation.z = -(a.hand === 'h' ? hh / 12 : mm / 60) * PI * 2;
+      if (a.type === 'clock' || a.type === 'dreamclock') {
+        const [h, m] = a.type === 'clock' ? [hh, mm] : [dreamH, dreamM];
+        o.rotation.z = -(a.hand === 'h' ? h / 12 : m / 60) * PI * 2;
         continue;
       }
       if (motion.matches) continue;

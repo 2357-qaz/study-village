@@ -9,9 +9,9 @@ export const RESOURCES = {
 export const BUILDINGS = [
   {
     id: 'cottage',
-    name: '林间书屋',
+    name: '旧梦书屋',
     icon: 'book-open',
-    desc: '让每一页书，都有回响。',
+    desc: '雾里唯一亮着的灯，旧梦在这里被读出。',
     resource: 'stars',
     rate: 2,
     cost: {wood: 60, stone: 30, food: 10},
@@ -154,7 +154,7 @@ export const BUILDINGS = [
     id: 'library',
     name: '星辉图书馆',
     icon: 'library',
-    desc: '每本书都是一扇窗，通向更大的世界。',
+    desc: '读过的梦都被好好收在这里，不会再被雾带走。',
     resource: 'stars',
     rate: 7,
     cost: {wood: 300, stone: 240, food: 90},

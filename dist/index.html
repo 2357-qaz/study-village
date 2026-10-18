@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=15" />
-    <script src="./vendor/lucide-icons.js?v=3" defer></script>
-    <script type="module" src="./app.js?v=12"></script>
+    <link rel="stylesheet" href="./style.css?v=16" />
+    <script src="./vendor/lucide-icons.js?v=4" defer></script>
+    <script type="module" src="./app.js?v=13"></script>
   </head>
   <body>
     <main>
@@ -37,7 +37,7 @@
         <div aria-label="村庄" id="page-village" class="home-screen village-screen">
           <div class="screen-heading">
             <div>
-              <span class="eyebrow">YOUR LITTLE WORLD</span>
+              <span class="eyebrow">A TOWN IN THE MIST</span>
               <span class="date-line" data-date></span>
               <h1>我的村庄</h1>
             </div>
@@ -92,7 +92,7 @@
           <section class="village-panel">
             <div class="panel-heading">
               <div>
-                <h2><span class="live-dot"></span>林间的家</h2>
+                <h2><span class="live-dot"></span>雾中的小镇</h2>
                 <span>每一份专注，都在让这里变得不同</span>
               </div>
               <div class="panel-tools">
@@ -101,7 +101,7 @@
             </div>
             <div id="scene" aria-label="可拖动旋转的 3D 村庄">
               <div class="scene-loading" id="scene-loading">正在种下第一棵树…</div>
-              <div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合专注的一天</div>
+              <div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合读梦的一天</div>
               <button class="build-entry" id="build-button" disabled title="3D 场景加载中…">
                 <span class="build-entry-icon"><i data-lucide="hammer"></i></span>建造
               </button>
@@ -188,12 +188,28 @@
         <h2>让生长有迹可循</h2>
         <button data-close="settings-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
       </div>
+      <h3>小镇的故事</h3>
+      <div class="story-card">
+        <p>
+          海中央有一座被雾围住的小镇。你是新来的读梦人：每一段安静的专注，就是在旧梦书屋里读完一个梦。梦里的光会散进小镇，化成建造用的材料。
+        </p>
+        <button id="story-button" class="secondary-button"><i data-lucide="book-open"></i>重温小镇的故事</button>
+      </div>
       <h3>村庄生活指南</h3>
       <div class="rules-list">
-        <p><strong>专注学习</strong><span>每分钟获得 2 木材、1 石料、0.4 星砂。累计每学习 60 分钟增加 1 位居民。</span></p>
-        <p><strong>适当休息</strong><span>每学习 5 分钟解锁 1 分钟可奖励休息。每分钟休息获得 2 补给、0.2 星砂，单次最多 15 分钟。</span></p>
+        <p>
+          <strong>专注学习 · 读梦</strong
+          ><span>每专注 1 分钟，读出的梦光化成 2 木材、1 石料、0.4 星砂。累计每学习 60 分钟，就会有 1 位居民愿意留下。</span>
+        </p>
+        <p>
+          <strong>适当休息 · 散步</strong
+          ><span>每学习 5 分钟解锁 1 分钟可奖励休息。散步时海风带回补给：每分钟 2 补给、0.2 星砂，单次最多 15 分钟。</span>
+        </p>
         <p><strong>建筑产出</strong><span>关闭网页也会按时间产出，最多储存 24 小时。领取后可继续储存；升级立即提升产速。</span></p>
-        <p><strong>星砂寻宝</strong><span>每次 30 星砂，无付费入口。连续 19 次未出史诗或传说，第 20 次至少史诗；出货后重新计数。</span></p>
+        <p>
+          <strong>星砂寻宝</strong
+          ><span>星砂是读梦时落下的碎光。每次 30 星砂，无付费入口。连续 19 次未出史诗或传说，第 20 次至少史诗；出货后重新计数。</span>
+        </p>
         <p>
           <strong>计时与周统计</strong
           ><span>计时刷新后保留，到点停止累计，需要手动打卡领奖。暂停时间不计入学习；本周按设备本地时区从周一 00:00 开始。</span>
@@ -251,6 +267,15 @@
       <p id="confirm-text"></p>
       <div class="backup-buttons">
         <button id="confirm-no" class="secondary-button">取消</button><button id="confirm-yes" class="primary-button">确认</button>
+      </div>
+    </dialog>
+    <dialog id="story-dialog" class="story-dialog" aria-labelledby="story-title" autofocus>
+      <div class="story-art" id="story-art" aria-hidden="true"></div>
+      <h2 id="story-title"></h2>
+      <p id="story-text"></p>
+      <div class="story-dots" id="story-dots" aria-hidden="true"></div>
+      <div class="story-actions">
+        <button id="story-skip" class="text-button">跳过</button><button id="story-next" class="primary-button">继续</button>
       </div>
     </dialog>
     <dialog id="result-dialog">
@@ -316,7 +341,7 @@
           <div class="wish-copy">
             <span class="eyebrow">STARDUST WISH · 常驻寻宝</span>
             <h2>星海寻宝</h2>
-            <p>把专注攒下的星砂撒向夜空，<span class="nowrap">看看今晚会落下什么。</span></p>
+            <p>把读梦落下的星砂撒向夜空，<span class="nowrap">看看今晚会落下什么。</span></p>
             <div class="wish-rates">
               <span class="r-legendary">传说 2%</span><span class="r-epic">史诗 10%</span><span class="r-rare">稀有 28%</span
               ><span class="r-common">寻常 60%</span>

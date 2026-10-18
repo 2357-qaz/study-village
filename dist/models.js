@@ -428,72 +428,126 @@ function stars(b, lv, y, z = 0.8) {
 
 /* ---------- buildings (footprint centred at origin, front facing +z) ---------- */
 const BUILD = {
+  // 旧梦书屋: cold stone and slate outside, warm lamplight inside; the tower clock only runs while
+  // someone is reading (see 'dreamclock' in scene.js). The pale spiral horn is a nod to the golden beasts.
   cottage(b, lv) {
-    b.at(-0.24, 0, 0.2, () => {
-      plinth(b, 1.24, 0.94);
-      b.box(1.12, 0.72, 0.84, P.wall, 0, 0.48, 0);
-      frame(b, 1.12, 0.72, 0.84, 0.12);
-      braces(b, 1.12, 0.62, 0.15, 0.425);
-      win(b, -0.32, 0.52, 0.43, 0, 0.22, 0.26, lv >= 2);
-      win(b, 0.32, 0.52, 0.43, 0, 0.22, 0.26, lv >= 2);
-      door(b, 0, 0.12, 0.43);
-      win(b, -0.57, 0.5, 0, -H);
-      win(b, 0.57, 0.5, 0, H);
-      gable(b, 1.12, 0.84, 0.56, P.roofR, 0.84);
-      chimney(b, 0.3, 0.98, -0.18, 0.46, lv >= 2);
+    const wallC = 0xdcd8cc,
+      quoin = 0xc4bfb1,
+      slate = 0x6a7a8e,
+      dream = 0xd9e4ff;
+    b.at(-0.22, 0, 0.18, () => {
+      plinth(b, 1.28, 0.98, 0.14, 0xa9a69c);
+      b.box(1.14, 0.8, 0.86, wallC, 0, 0.54, 0);
+      // stone quoins and a string course instead of timber framing
+      for (const sx of [-1, 1])
+        for (const sz of [-1, 1])
+          for (let k = 0; k < 4; k++)
+            b.box(0.1, 0.12, 0.1, k % 2 ? quoin : shade(quoin, 0.04), sx * 0.555, 0.22 + k * 0.2, sz * 0.415);
+      b.box(1.18, 0.05, 0.9, quoin, 0, 0.94, 0);
+      // tall arched reading windows, lit from within
+      arched(b, -0.33, 0.56, 0.435, 0, 0.2, 0.42);
+      arched(b, 0.33, 0.56, 0.435, 0, 0.2, 0.42);
+      arched(b, -0.58, 0.56, 0, -H, 0.18, 0.38);
+      arched(b, 0.58, 0.56, 0, H, 0.18, 0.38);
+      door(b, 0, 0.14, 0.435, 0, 0.24, 0.42, 0x5a4636);
+      // open-book sign over the door
+      b.at(0, 0.7, 0.47, () => {
+        b.box(0.26, 0.12, 0.03, P.dark, 0, 0, 0);
+        for (const sx of [-1, 1]) b.box(0.1, 0.08, 0.02, 0xf4efe2, sx * 0.055, 0, 0.02, {ry: sx * -0.25});
+      });
+      gable(b, 1.14, 0.86, 0.7, slate, 0.96, {wall: wallC});
+      chimney(b, 0.32, 1.06, -0.2, 0.42, lv >= 2);
+      // horn finial on the front gable
+      b.at(0, 1.72, 0.47, {rx: 0.35}, () => {
+        b.cone(0.035, 0.26, 0xf2ecdc, 0, 0.13, 0, 8);
+        for (let i = 0; i < 3; i++)
+          b.tor(0.03 - i * 0.008, 0.006, 0xd9cfb6, 0, 0.04 + i * 0.07, 0, {rx: H, m: 10});
+      });
       if (lv >= 4) {
-        b.at(-0.28, 1.08, 0.27, () => {
-          b.box(0.3, 0.26, 0.3, P.wall, 0, 0.13, 0);
-          win(b, 0, 0.13, 0.155, 0, 0.15, 0.15);
-          gable(b, 0.3, 0.3, 0.18, P.roofR, 0.26, {oh: 0.05});
+        b.at(-0.3, 1.16, 0.28, () => {
+          b.box(0.3, 0.26, 0.3, wallC, 0, 0.13, 0);
+          arched(b, 0, 0.12, 0.155, 0, 0.12, 0.17);
+          gable(b, 0.3, 0.3, 0.2, slate, 0.26, {oh: 0.05, wall: wallC});
         });
       }
-      b.box(0.5, 0.03, 0.18, 0xe4d6b0, 0, 0.135, 0.6);
     });
     b.at(0.52, 0, -0.46, () => {
-      const th = 1.32 + (lv >= 3 ? 0.3 : 0);
-      b.cyl(0.38, 0.42, 0.14, P.plinth, 0, 0.07, 0, 12);
-      b.cyl(0.31, 0.34, th, P.wall2, 0, 0.14 + th / 2, 0, 12);
-      for (const f of [0.33, 0.66]) b.cyl(0.335, 0.335, 0.05, P.timber, 0, 0.14 + th * f, 0, 12);
-      b.at(0, 0.14 + th * 0.82, 0.3, () => {
-        b.cyl(0.14, 0.14, 0.04, P.white, 0, 0, 0, 18, {rx: H});
-        b.cyl(0.155, 0.155, 0.03, P.timber, 0, 0, -0.012, 18, {rx: H});
-        b.dyn({type: 'clock', hand: 'h'}, s => s.box(0.022, 0.08, 0.012, P.dark, 0, 0.035, 0), 0, 0, 0.03);
-        b.dyn({type: 'clock', hand: 'm'}, s => s.box(0.016, 0.11, 0.012, P.dark, 0, 0.05, 0), 0, 0, 0.04);
+      const th = 1.38 + (lv >= 3 ? 0.3 : 0);
+      b.cyl(0.38, 0.42, 0.16, 0xa9a69c, 0, 0.08, 0, 12);
+      b.cyl(0.31, 0.34, th, wallC, 0, 0.16 + th / 2, 0, 12);
+      for (const f of [0.33, 0.66]) b.cyl(0.335, 0.335, 0.05, quoin, 0, 0.16 + th * f, 0, 12);
+      b.at(0, 0.16 + th * 0.82, 0.3, () => {
+        b.cyl(0.14, 0.14, 0.04, 0xf4f1e8, 0, 0, 0, 18, {rx: H});
+        b.cyl(0.155, 0.155, 0.03, P.dark, 0, 0, -0.012, 18, {rx: H});
+        b.dyn(
+          {type: 'dreamclock', hand: 'h'},
+          s => s.box(0.022, 0.08, 0.012, P.dark, 0, 0.035, 0),
+          0,
+          0,
+          0.03
+        );
+        b.dyn(
+          {type: 'dreamclock', hand: 'm'},
+          s => s.box(0.016, 0.11, 0.012, P.dark, 0, 0.05, 0),
+          0,
+          0,
+          0.04
+        );
       });
-      arched(b, 0, 0.14 + th * 0.48, 0.31, 0, 0.13, 0.24);
+      arched(b, 0, 0.16 + th * 0.48, 0.31, 0, 0.13, 0.26);
       if (lv >= 4) {
-        b.cyl(0.43, 0.43, 0.04, P.timber, 0, 0.14 + th, 0, 12);
+        b.cyl(0.43, 0.43, 0.04, P.dark, 0, 0.16 + th, 0, 12);
         for (let i = 0; i < 10; i++) {
           const a = (i / 10) * PI * 2;
-          b.box(0.03, 0.14, 0.03, P.timber, Math.cos(a) * 0.41, 0.14 + th + 0.08, Math.sin(a) * 0.41);
+          b.box(0.025, 0.14, 0.025, P.dark, Math.cos(a) * 0.41, 0.16 + th + 0.08, Math.sin(a) * 0.41);
         }
-        b.tor(0.41, 0.012, P.timber, 0, 0.14 + th + 0.15, 0, {rx: H, m: 20});
+        b.tor(0.41, 0.012, P.dark, 0, 0.16 + th + 0.15, 0, {rx: H, m: 20});
       }
-      b.cyl(0, 0.45, 0.62, P.roofP, 0, 0.14 + th + 0.31, 0, 12);
-      b.cyl(0.47, 0.47, 0.03, shade(P.roofP, -0.12), 0, 0.14 + th + 0.01, 0, 12);
-      flag(b, 0, 0.14 + th + 0.58, 0, lv >= 5 ? P.gold : 0xe7a34d, 0.42);
+      b.cyl(0, 0.45, 0.7, slate, 0, 0.16 + th + 0.35, 0, 12);
+      b.cyl(0.47, 0.47, 0.03, shade(slate, -0.1), 0, 0.16 + th + 0.01, 0, 12);
+      // spiral horn instead of a flag
+      b.at(0, 0.16 + th + 0.68, 0, () => {
+        b.cone(0.05, 0.42, 0xf2ecdc, 0, 0.21, 0, 8);
+        for (let i = 0; i < 4; i++)
+          b.tor(0.044 - i * 0.01, 0.008, 0xd9cfb6, 0, 0.05 + i * 0.09, 0, {rx: H, m: 10});
+        if (lv >= 5) b.ball(0.06, P.gold, 0, 0.47, 0, {glow: 1});
+      });
+      // dream light drifting out of the tower window
+      if (lv >= 3)
+        for (let i = 0; i < 3; i++)
+          b.dyn(
+            {type: 'bob'},
+            s => s.ball(0.035 - i * 0.007, dream, 0, 0, 0, {mat: {emissive: 0.9}, noShadow: 1, detail: 1}),
+            0.12 + i * 0.13,
+            0.16 + th * 0.55 + i * 0.16,
+            0.42 + i * 0.05
+          );
     });
-    // reading corner: book piles and bench
+    // reading corner: book piles and a basket of pale dream shells
     b.at(0.42, 0, 0.55, () => {
-      const cs = [0xb5544a, 0x4f7aa3, 0xd8b04f, 0x6c9a63, 0x8c6bb0];
+      const cs = [0x7a4a46, 0x4b6584, 0xb59a5a, 0x587a5c, 0x6f5d8c];
       for (let i = 0; i < 5; i++)
         b.box(0.2 - 0.012 * i, 0.045, 0.15, cs[i], 0, 0.025 + i * 0.047, 0, {ry: i * 0.25});
     });
+    b.at(0.78, 0, 0.3, () => {
+      b.cyl(0.11, 0.09, 0.1, 0x8a7356, 0, 0.05, 0, 10);
+      for (let i = 0; i < 4; i++)
+        b.ball(0.045, dream, Math.cos(i * 1.7) * 0.05, 0.11 + (i % 2) * 0.03, Math.sin(i * 1.7) * 0.05, {
+          mat: {emissive: 0.5},
+          detail: 1
+        });
+    });
     if (lv >= 3) {
-      b.at(-0.68, 0, -0.48, () => {
-        plinth(b, 0.6, 0.5);
-        b.box(0.52, 0.46, 0.42, P.wall3, 0, 0.35, 0);
-        frame(b, 0.52, 0.46, 0.42, 0.12);
-        win(b, 0, 0.38, 0.215, 0, 0.18, 0.18);
-        gable(b, 0.52, 0.42, 0.3, P.roofR, 0.58, {oh: 0.07});
+      // archive wing
+      b.at(-0.7, 0, -0.5, () => {
+        plinth(b, 0.6, 0.5, 0.12, 0xa9a69c);
+        b.box(0.52, 0.5, 0.42, wallC, 0, 0.37, 0);
+        arched(b, 0, 0.38, 0.215, 0, 0.14, 0.24);
+        gable(b, 0.52, 0.42, 0.32, slate, 0.62, {oh: 0.07, wall: wallC});
       });
     }
-    if (lv >= 2) lantern(b, 0.05, 0, 0.82);
-    if (lv >= 5) {
-      bench(b, -0.6, 0, 0.82);
-      b.ball(0.07, P.gold, 0.52, 2.62, -0.46, {glow: 1});
-    }
+    if (lv >= 2) lantern(b, 0.05, 0, 0.84);
+    if (lv >= 5) bench(b, -0.6, 0, 0.84);
     stars(b, lv, 0.06, 0.9);
   },
   sawmill(b, lv) {

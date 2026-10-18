@@ -155,8 +155,8 @@ export function timerFinished(kind, prefs = loadPrefs()) {
   }
   if (prefs.notify && notificationsSupported() && Notification.permission === 'granted' && document.hidden)
     showNotification(
-      study ? '专注完成啦' : '休息结束',
-      study ? '回到时光村落打卡，领取这段时间的奖励吧。' : '休息好了吗？村庄在等你回来。'
+      study ? '这个旧梦读完了' : '散步结束',
+      study ? '回到书屋打卡，把梦里的光带回小镇吧。' : '休息好了吗？书屋的灯还为你亮着。'
     );
 }
 

@@ -1,5 +1,5 @@
 // Page navigation: the two swipeable home screens and the secondary pages in a dialog.
-import {$, $$, render, safe, setCurrentPage} from './store.js?v=9';
+import {$, $$, render, safe, setCurrentPage} from './store.js?v=10';
 // Bottom navigation: which dock item represents each page.
 const DOCK = {
   village: 'village',

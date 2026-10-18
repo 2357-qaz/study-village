@@ -6304,3 +6304,138 @@ button:not(:disabled):active {
     color: var(--ios-label-3);
   }
 }
+
+/* ---------- the town's story (first launch, replayable from settings) ---------- */
+.story-dialog {
+  max-width: min(400px, calc(100vw - 32px));
+  padding: 28px 24px 20px;
+  text-align: center;
+}
+.story-art {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  margin: 6px auto 18px;
+  border-radius: 36px;
+  background: radial-gradient(circle at 50% 30%, #ffffff, #e4e9ec 58%, #cbd4da);
+  color: #566676;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 12px 30px #4a5a6a2e;
+  transition: background 0.5s ease;
+}
+.story-art.warm {
+  background: radial-gradient(circle at 50% 30%, #fffaf0, #f6e6c4 58%, #e9cf98);
+  color: #9a6a2a;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 12px 34px #d4952a40;
+}
+.story-art svg {
+  width: 54px;
+  height: 54px;
+  stroke-width: 1.4;
+}
+.story-dialog h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+}
+.story-dialog > p {
+  margin: 0 auto;
+  max-width: 320px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #4d5a52;
+}
+.story-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 20px 0 16px;
+}
+.story-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #3c4a4133;
+  transition: width 0.3s ease;
+}
+.story-dots i.on {
+  width: 18px;
+  background: var(--forest);
+}
+.story-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.story-actions .primary-button {
+  flex: 1;
+  min-height: 50px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.story-actions .text-button {
+  min-height: 50px;
+  padding: 0 14px;
+  color: #6b766f;
+}
+.story-actions .text-button[hidden] {
+  display: none;
+}
+.story-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #f4f6f0;
+}
+.story-card p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #5d6b62;
+}
+.story-card .secondary-button {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 999px;
+}
+@media (max-width: 760px) {
+  dialog.story-dialog:modal {
+    padding: 14px 22px calc(18px + env(safe-area-inset-bottom));
+  }
+  #settings-dialog .story-card {
+    background: var(--ios-card);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .story-art {
+    background: radial-gradient(circle at 50% 30%, #3a434b, #252c31 58%, #1a1f23);
+    color: #aebccb;
+    box-shadow:
+      inset 0 1px 0 #ffffff1a,
+      0 12px 30px #00000066;
+  }
+  .story-art.warm {
+    background: radial-gradient(circle at 50% 30%, #5a4826, #3a2f1a 58%, #241d12);
+    color: #f3cc7c;
+  }
+  .story-dialog > p,
+  .story-card p {
+    color: var(--ios-label-2);
+  }
+  .story-dots i {
+    background: #e6eee133;
+  }
+  .story-dots i.on {
+    background: #d2e69c;
+  }
+  .story-card,
+  #settings-dialog .story-card {
+    background: var(--ios-raised);
+  }
+}
