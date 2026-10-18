@@ -6329,3 +6329,313 @@ button:not(:disabled):active {
     box-shadow: 0 10px 30px #142d2333;
   }
 }
+
+/* =====================================================================
+   Dark mode (follows the system setting)
+   Same structure as light: grouped near-black background, raised cards,
+   lime stays the action colour, gold stays legendary-only.
+   ===================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    color: #e8eee6;
+    background: #111513;
+    --ios-bg: #111513;
+    --ios-card: #1b201d;
+    --ios-raised: #232925;
+    --ios-label: #eef2ea;
+    --ios-label-2: #e6eee199;
+    --ios-label-3: #e6eee161;
+    --ios-sep: #e6eee11f;
+    --ios-fill: #7a85782e;
+    --ios-glass: #262c288f;
+    --ios-glass-edge: #ffffff1a;
+    --ios-glass-shadow: inset 0 1px 0 #ffffff14, 0 10px 30px #0000008c, 0 1px 3px #00000066;
+    --border: #2b322e;
+    --muted: #9aa69e;
+  }
+  body,
+  main {
+    background: var(--ios-bg);
+    color: var(--ios-label);
+  }
+
+  /* --- text that was hard-coded dark --- */
+  h1,
+  h2,
+  h3,
+  h4,
+  dialog,
+  .backup-nudge strong,
+  .wish-balance b,
+  .wish-pity-head b,
+  .wish-history-head h3,
+  .wish-log-row b,
+  .cabinet-progress strong,
+  .cabinet-progress #cabinet-count,
+  .collectible h3,
+  .resource-item,
+  .session-topic,
+  .bh-card,
+  .bh-card h4 {
+    color: var(--ios-label);
+  }
+  .wish-balance > span,
+  .wish-pity-head span,
+  .wish-pity p,
+  .wish-log-row time,
+  .cabinet-progress span,
+  .collectible p,
+  .collectible.unowned h3,
+  .empty-state,
+  .draw-balance,
+  .cab-filter small,
+  .bh-note,
+  .bh-card p,
+  .subtle,
+  .section-heading p,
+  .chart-value {
+    color: var(--ios-label-2);
+  }
+
+  /* --- surfaces --- */
+  dialog,
+  .stat,
+  .village-panel,
+  .focus-panel,
+  .white-panel,
+  .building-card,
+  .wish-status,
+  .wish-history,
+  .harvest-strip,
+  .backup-nudge,
+  .resource-bar,
+  .cab-filter,
+  .bh-card {
+    border-color: var(--ios-sep);
+    background: var(--ios-card);
+  }
+  .wish-log-row,
+  .bh-note,
+  .bh-lv,
+  .building-icon,
+  .level-badge,
+  .collectible.unowned,
+  .secondary-button {
+    border-color: transparent;
+    background: var(--ios-raised);
+  }
+  .secondary-button {
+    color: var(--ios-label);
+  }
+  .collectible.unowned .item-art {
+    background: transparent;
+  }
+  .cabinet-progress circle {
+    stroke: var(--ios-fill);
+  }
+  .cabinet-progress #cabinet-ring {
+    stroke: var(--r-legendary);
+  }
+  .item-viewer {
+    background: radial-gradient(ellipse at 50% 55%, #2c342f, #171b19);
+  }
+  .chart-bar {
+    background: #3d4a37;
+  }
+  dialog::backdrop {
+    background: #000000a6;
+  }
+
+  /* --- iOS layer pieces that used white --- */
+  .focus-panel .mode-tabs .selected,
+  #secondary-dialog .page-switch button[aria-selected='true'],
+  .page-switch button[aria-selected='true'] {
+    background: #5b635d;
+    color: var(--ios-label);
+    box-shadow: 0 3px 8px #00000059;
+  }
+  #secondary-dialog .page-switch,
+  .page-switch {
+    background: var(--ios-fill);
+  }
+  .ios-switch::after {
+    background: #fff;
+  }
+  [aria-pressed='false'] > .ios-switch {
+    background: #7a857852;
+  }
+  #reset-camera {
+    background: var(--ios-fill);
+  }
+  .resource-item strong {
+    color: var(--ios-label);
+  }
+  .bh-ic,
+  .stat-icon {
+    background: var(--ios-raised);
+  }
+  .cabinet-grid .collectible.unowned {
+    background: var(--ios-card);
+  }
+  .cabinet-grid .collectible.unowned .item-art {
+    background: linear-gradient(160deg, #2a312c, #1f2421);
+  }
+  .cabinet-grid .collectible.unowned .item-art svg,
+  .cabinet-grid .collectible.unowned .item-art img {
+    opacity: 0.55;
+  }
+  .cab-filter[aria-selected='true'] small {
+    color: inherit;
+  }
+  /* desktop pieces */
+  .secondary-dialog > .dialog-heading {
+    background: var(--ios-card);
+  }
+  .building-card.locked,
+  .cabinet-grid .collectible,
+  .collectible,
+  .village-badge,
+  .wish-btn,
+  .alert-chip,
+  .duration-options button,
+  .topic-field input,
+  .icon-button:not(.panel-tools .icon-button) {
+    border-color: var(--ios-sep);
+    background: var(--ios-raised);
+    color: var(--ios-label);
+  }
+  .mode-tabs {
+    background: var(--ios-fill);
+  }
+  .mode-tabs .selected {
+    background: #5b635d;
+    color: var(--ios-label);
+  }
+  .duration-options button.selected,
+  .alert-chip[aria-pressed='true'] {
+    border-color: transparent;
+    background: #d2e69c;
+    color: #173b2b;
+  }
+  .wish-btn.gold {
+    border-color: transparent;
+    background: linear-gradient(#e2f0bb, #d2e69c);
+    color: #1f4630;
+  }
+  .timer-ring {
+    background: conic-gradient(#8cc063 var(--progress, 0%), #7a85782e 0);
+  }
+  .timer-ring > div {
+    border-color: var(--ios-card);
+    background: var(--ios-card);
+    box-shadow: none;
+  }
+  .stat-icon,
+  .building-card.locked .building-icon {
+    background: var(--ios-raised);
+  }
+}
+@media (prefers-color-scheme: dark) and (max-width: 760px) {
+  .screen-dock {
+    border-color: var(--ios-glass-edge);
+    background: #1e2420b8;
+  }
+  .screen-dock button,
+  .screen-dock .dock-core,
+  .screen-dock .dock-minor {
+    color: #d3dcd3;
+  }
+  .screen-dock button.selected,
+  .screen-dock button[aria-current='page'] {
+    color: #173b2b;
+  }
+  #secondary-dialog:not(:modal) > .dialog-heading {
+    background: #111513cc;
+  }
+  #secondary-dialog .page-switch {
+    background: #262c28;
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) {
+    border-color: var(--ios-glass-edge);
+    background: #1c211ef2;
+    box-shadow:
+      inset 0 1px 0 #ffffff14,
+      0 20px 60px #000000a6;
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog)::before {
+    background: #e6eee140;
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .dialog-heading .icon-button {
+    border-color: var(--ios-glass-edge);
+    background: var(--ios-fill);
+    color: var(--ios-label);
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) input:not([type='file']),
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) select,
+  dialog:modal .rules-list,
+  #settings-dialog .backup-pref,
+  .menu-grid.ios-list,
+  .focus-panel .alert-toggles,
+  .focus-panel .topic-field input {
+    background: var(--ios-raised);
+  }
+  dialog:modal:not(.wish-stage):not(.secondary-dialog) .secondary-button {
+    background: var(--ios-raised);
+  }
+  .screen-heading .village-badge {
+    border-color: var(--ios-glass-edge);
+    background: var(--ios-card);
+  }
+  .screen-heading .village-badge > svg {
+    background: #2f3f2a;
+    color: #cfe3a0;
+  }
+  #build-hud .bh-top,
+  #build-hud .bh-sheet,
+  #build-hud .bh-action {
+    background: #1c211ec7;
+  }
+  #build-hud .bh-tabs button[data-tab] {
+    color: var(--ios-label);
+  }
+  #build-hud .bh-tabs button[data-tab].selected {
+    background: #d2e69c;
+    color: #173b2b;
+  }
+  #build-hud .bh-card {
+    background: var(--ios-raised);
+  }
+  #build-hud .bh-res svg {
+    color: #b9d77f;
+  }
+  .focus-panel .duration-options button.selected,
+  #secondary-dialog .cab-filter[aria-selected='true'] {
+    background: #d2e69c;
+    color: #173b2b;
+  }
+  .focus-panel #manual-button,
+  .focus-panel #cancel-timer,
+  .focus-panel #manual-button svg {
+    color: #9fd08a;
+  }
+  #secondary-dialog .collectible.unowned {
+    background: var(--ios-card);
+  }
+  #secondary-dialog .building-icon,
+  #secondary-dialog .session-icon {
+    background-color: var(--ios-raised);
+  }
+  #secondary-dialog .session-icon {
+    background: linear-gradient(#4f9a68, #357d52);
+  }
+  .village-panel .scene-tag,
+  .village-panel .build-entry {
+    background: #1c211e9e;
+  }
+  #secondary-dialog .primary-button:disabled,
+  #secondary-dialog .secondary-button:disabled {
+    background: var(--ios-raised);
+    color: var(--ios-label-3);
+  }
+}
