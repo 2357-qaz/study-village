@@ -197,9 +197,13 @@ async function syncWake() {
       wake = lock;
     } catch {
       wake = null;
+      // A denied or unavailable wake lock must not trigger an immediate retry loop.
+      // The next user action or page/visibility change may request it again.
+      return;
     } finally {
       wakeBusy = false;
     }
+    // Recheck on success: the user may have left the room while permission was pending.
     syncWake();
   } else if (!wantWake() && wake) {
     const lock = wake;
