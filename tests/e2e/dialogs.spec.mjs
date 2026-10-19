@@ -4,6 +4,7 @@ import {test, expect} from '@playwright/test';
 import {prefs, openWithSave, dock, save, collectErrors, revealRoom, tapAt} from './helpers.mjs';
 
 test('the item viewer frees its canvas when closed', async ({page}) => {
+  test.setTimeout(180_000); // the 3D viewer under frosted glass is slow in the software renderer
   const errors = collectErrors(page);
   await prefs(page);
   await openWithSave(page, {days: 1, collection: {whale: 1}});

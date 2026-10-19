@@ -124,9 +124,9 @@ function outsideTexture({daypart, snow, warmth, cover}) {
   return t;
 }
 
-function shell(b, x, y, z, s = 1, glow = 0.35) {
+function shell(b, x, y, z, s = 1, glow = 0.35, color = C_SHELL) {
   b.at(x, y, z, {s}, () => {
-    b.ball(0.13, C_SHELL, 0, 0.09, 0, {
+    b.ball(0.13, color, 0, 0.09, 0, {
       sx: 1.15,
       sy: 0.75,
       sz: 0.95,
@@ -134,12 +134,24 @@ function shell(b, x, y, z, s = 1, glow = 0.35) {
       mat: {emissive: glow, rough: 0.4}
     });
     for (let i = 0; i < 4; i++)
-      b.tor(0.11 - i * 0.022, 0.008, shade(C_SHELL, -0.06), 0, 0.12 + i * 0.012, 0, {rx: H, m: 14});
+      b.tor(0.11 - i * 0.022, 0.008, shade(color, -0.06), 0, 0.12 + i * 0.012, 0, {rx: H, m: 14});
   });
 }
 
 // Builds the room. Returns the world positions the page needs to animate.
-function room(b, {snowTex, skyTop}) {
+// Dream shells on the shelf: pale until read. Every finished study session lights one, from eye level
+// outwards; longer sessions glow a little brighter and the newest brightest. `dreams` holds the
+// recent sessions' lengths in minutes, oldest first (only as many as there are shells).
+const SHELL_SLOTS = 12; // ui/reading.js sends at most this many
+const SHELL_LIT = 0xffc77a,
+  SHELL_PALE = 0xa9a8b6;
+function shellLight(dreams, rank) {
+  if (rank >= dreams.length) return null;
+  const min = dreams[rank],
+    newest = rank === dreams.length - 1;
+  return newest ? 1.6 : min >= 45 ? 1.15 : min >= 25 ? 0.9 : 0.7;
+}
+function room(b, {snowTex, skyTop, dreams = []}) {
   // floor planks and rug
   for (let i = 0; i < 12; i++)
     b.box(0.5, 0.06, 6, i % 2 ? C_WOOD : shade(C_WOOD, -0.05), -3 + i * 0.5 + 0.25, -0.03, 0.4);
@@ -188,21 +200,32 @@ function room(b, {snowTex, skyTop}) {
       {rz: -a}
     );
   }
-  // tall bookshelf on the right, with pale dream shells among the books
+  // tall bookshelf on the right, with dream shells among the books
+  const slots = [];
   b.at(1.75, 0, -2.0, () => {
     b.box(1.5, 2.9, 0.42, C_WOOD2, 0, 1.45, 0);
     b.box(1.38, 2.75, 0.04, shade(C_WOOD2, -0.12), 0, 1.45, -0.17);
     const cs = [0x7a4a46, 0x4b6584, 0xb59a5a, 0x587a5c, 0x6f5d8c, 0x9a5a3e, 0x3f5a6e, 0xc9b184];
+    // where each shelf leaves room for a shell (2 + 2 + 3 + 3 + 2 = SHELL_SLOTS)
+    const gaps = [
+      [-0.55, 0.1],
+      [-0.2, 0.3],
+      [-0.62, -0.08, 0.3],
+      [-0.45, 0.02, 0.32],
+      [-0.6, 0]
+    ];
     let n = 0;
     for (let r = 0; r < 5; r++) {
       const y = 0.18 + r * 0.56;
       b.box(1.38, 0.04, 0.38, C_WOOD, 0, y, 0.04);
-      let x = -0.64;
+      let x = -0.64,
+        g = 0;
       while (x < 0.6) {
         n++;
-        if (n % 7 === 3) {
-          shell(b, x + 0.11, y + 0.02, 0.06, 0.85, 0.45);
+        if (g < gaps[r].length && x >= gaps[r][g]) {
+          slots.push({x: x + 0.11, y: y + 0.02, r});
           x += 0.26;
+          g++;
           continue;
         }
         const w = 0.06 + ((n * 37) % 5) * 0.012,
@@ -212,6 +235,17 @@ function room(b, {snowTex, skyTop}) {
         x += w + 0.008 + lean * 0.12;
       }
     }
+    // read ones fill from eye level (the middle shelf) outwards, right to left so tall phone views,
+    // which only see the shelf's right end, see them too
+    const order = [2, 3, 1, 4, 0];
+    slots
+      .sort((p, q) => order.indexOf(p.r) - order.indexOf(q.r) || q.x - p.x)
+      .forEach((p, i) => {
+        const g = shellLight(dreams, i);
+        // at the front edge of the shelf, clear of the book spines
+        if (g === null) shell(b, p.x, p.y, 0.13, 0.95, 0.04, SHELL_PALE);
+        else shell(b, p.x, p.y, 0.13, 0.95, g, SHELL_LIT);
+      });
   });
   // ladder leaning on the shelf
   b.at(2.25, 0, -1.55, {rx: -0.22}, () => {
@@ -330,7 +364,8 @@ function sceneKey(opts, w, h) {
     daypartOf(opts.hour),
     opts.snow > 0 ? 1 : 0,
     Math.round(opts.warmth * 4),
-    Math.round(opts.cover * 4)
+    Math.round(opts.cover * 4),
+    (opts.dreams || []).join(',')
   ].join('|');
 }
 // Frees what one build owns. Geometries from the shared builders and the companion's parts are
@@ -379,7 +414,11 @@ function build(opts) {
     snowTex = outsideTexture({daypart, snow: opts.snow, warmth: opts.warmth, cover: opts.cover}),
     grp = new THREE.Group(),
     own = [],
-    pts = room(new Builder(new TexSink(grp, mat, own)), {snowTex, skyTop: SKY_TOP[daypart]});
+    pts = room(new Builder(new TexSink(grp, mat, own)), {
+      snowTex,
+      skyTop: SKY_TOP[daypart],
+      dreams: opts.dreams || []
+    });
   grp.traverse(o => {
     if (o.isMesh) {
       o.castShadow = !(o.material instanceof THREE.MeshBasicMaterial);

@@ -1321,16 +1321,24 @@ export function createVillage(container, onSelect) {
   };
   new ResizeObserver(resize).observe(container);
   resize();
-  let active = true;
+  let active = true,
+    covered = false;
   document.addEventListener('visibilitychange', () => {
     active = !document.hidden;
+  });
+  // while a sheet or dialog covers the town it stays still: the frosted glass would otherwise
+  // re-blur a moving picture every frame
+  new MutationObserver(() => (covered = !!document.querySelector('dialog[open]'))).observe(document.body, {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['open']
   });
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   let lastFrame = 0,
     prevT = 0;
   function frame(ms) {
     requestAnimationFrame(frame);
-    if (!active || !container.clientWidth || ms - lastFrame < 32) return;
+    if (!active || covered || !container.clientWidth || ms - lastFrame < 32) return;
     const dt = Math.min(0.1, (ms - (prevT || ms)) / 1000);
     prevT = ms;
     lastFrame = ms;

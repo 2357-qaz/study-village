@@ -7904,3 +7904,9 @@ body:has(#home-pages[data-screen='focus']) .dock-divider {
 #secondary-dialog .wish-copy h2 {
   color: #fff;
 }
+/* a dream read: its shell glows warm in the journal as on the shelf */
+#secondary-dialog .session-row.dream .session-icon {
+  background: rgba(255, 226, 176, 0.55);
+  color: #8a5a1a;
+  box-shadow: 0 0 14px rgba(255, 200, 120, 0.35);
+}
