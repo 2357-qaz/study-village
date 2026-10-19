@@ -5,7 +5,6 @@ import {test, expect} from '@playwright/test';
 import {prefs, save, collectErrors} from './helpers.mjs';
 
 test('reclaiming, levelling and raising by dragging', async ({page}, testInfo) => {
-  test.setTimeout(80_000);
   const errors = collectErrors(page);
   const touch = testInfo.project.name === 'phone';
   const {width, height} = page.viewportSize();

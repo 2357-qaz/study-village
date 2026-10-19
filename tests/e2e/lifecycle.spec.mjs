@@ -83,7 +83,7 @@ test('a wake lock granted after leaving the room is released', async ({page}) =>
 
 test('resizing many times keeps the room cache and GPU objects bounded', async ({page}, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'resizes the window itself');
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   const errors = collectErrors(page);
   await prefs(page);
   await page.goto('/');

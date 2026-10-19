@@ -4,7 +4,6 @@ import {test, expect} from '@playwright/test';
 import {prefs, openWithSave, save, collectErrors} from './helpers.mjs';
 
 test('building, decorating, terrain and moving in build mode', async ({page}, testInfo) => {
-  test.setTimeout(80_000);
   const errors = collectErrors(page);
   const touch = testInfo.project.name === 'phone';
   const height = page.viewportSize().height;
