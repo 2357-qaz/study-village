@@ -4,7 +4,8 @@ import {defineConfig, devices} from '@playwright/test';
 const PORT = 4174;
 export default defineConfig({
   testDir: 'tests/e2e',
-  timeout: 90_000,
+  // the 3D scenes render in software (SwiftShader); a shared CI runner can be several times slower
+  timeout: 150_000,
   // rendering the room and loading her model is slow in the software renderer, more so under load
   expect: {timeout: 30_000},
   fullyParallel: true,
