@@ -50,6 +50,16 @@ python3 -m http.server 4173 --directory dist
 
 打开 `http://localhost:4173`。请使用 HTTP 服务运行，不要直接双击 HTML（浏览器会限制本地 ES 模块）。运行单元验证：`npm test`；格式化：`npm run format`（Prettier 3.3.3，按需通过 npx 下载），只需 Node.js 18+，无需安装依赖。
 
+浏览器测试（真实页面上的建造、书屋、提醒、弹窗与资源回收，手机与桌面两种尺寸）：
+
+```sh
+npm ci
+npx playwright install chromium   # 首次需要
+npm run test:e2e
+```
+
+测试位于 `tests/e2e/`，用 SwiftShader 在无显卡环境渲染 3D，全部跑完约 5 分钟；推送到 `main` 或 `claude/**` 分支时 CI 会自动运行，失败时可在 Actions 里下载报告。
+
 ## GitHub Pages 部署
 
 1. 将完整项目上传到 `study-village` 仓库的 `main` 分支。
