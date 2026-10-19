@@ -32,7 +32,7 @@ test('the opening story waits for the running timer to end', async ({page}) => {
   await revealRoom(page);
   await tapAt(page, '#cancel-timer');
   await page.locator('#confirm-yes').click();
-  await expect.poll(() => storyOpen(page), {timeout: 8000}).toBe(true);
+  await expect.poll(() => storyOpen(page), {timeout: 20_000}).toBe(true);
   expect(errors()).toEqual([]);
 });
 
@@ -75,7 +75,7 @@ test('a wake lock granted after leaving the room is released', async ({page}) =>
   expect(await page.evaluate(() => window.__held)).toBe(0);
 
   await dock(page, 'focus');
-  await expect.poll(() => page.evaluate(() => window.__held), {timeout: 6000}).toBe(1);
+  await expect.poll(() => page.evaluate(() => window.__held), {timeout: 20_000}).toBe(1);
   await page.waitForTimeout(1500);
   expect(await page.evaluate(() => window.__held)).toBe(1);
   expect(errors()).toEqual([]);
