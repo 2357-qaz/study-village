@@ -23,6 +23,10 @@ let mod = null,
   greeted = false,
   revealTimer = 0,
   wake = null,
+  wakeBusy = false,
+  fails = 0,
+  retryTimer = 0,
+  poseFailedAt = 0,
   clockAt = new Date();
 
 const onFocus = () => pager.dataset.screen === 'focus';
@@ -71,14 +75,25 @@ async function paintRoom() {
     room.dataset.daypart = r.daypart;
     img.src = r.url;
     room.classList.add('ready');
+    room.classList.remove('no-room');
+    fails = 0;
     await sculptReady; // her sculpted parts (or, failing that, the simple shapes)
     if (key !== lastKey) return;
     lastOpts = opts;
     pose = '';
+    poseFailedAt = 0;
     showPose();
     warmPoses();
   } catch {
-    room.classList.add('no-room'); // no WebGL: the timer still works on a plain panel
+    // no WebGL right now (blocked, lost or out of memory): the timer works on a plain panel, and the
+    // room is tried again a few times with growing pauses, and on any later resize or visit
+    room.classList.add('no-room');
+    lastKey = '';
+    if (!retryTimer && fails < 4)
+      retryTimer = setTimeout(() => {
+        retryTimer = 0;
+        paintRoom();
+      }, [2000, 6000, 20000, 60000][fails++]);
   }
 }
 
@@ -94,14 +109,15 @@ function poseNow(now = Date.now()) {
 function showPose() {
   if (!mod || !lastOpts) return;
   const want = poseNow();
-  if (want === pose) return;
-  pose = want;
+  if (want === pose || Date.now() - poseFailedAt < 15000) return;
   let layer;
   try {
     layer = mod.renderCompanion(lastOpts, want);
   } catch {
+    poseFailedAt = Date.now(); // try again later instead of every tick
     return;
   }
+  pose = want;
   const [on, off] = faces[0].classList.contains('on') ? faces : [faces[1], faces[0]];
   off.onload = () => {
     off.classList.add('on');
@@ -166,18 +182,29 @@ function tick() {
   room.classList.toggle('resting', (t?.kind || '') === 'rest');
 }
 
+// One request at a time; when it settles the state is checked again, so leaving the room while the
+// browser is still deciding releases the lock it then grants.
+const wantWake = () => reading() && A.loadPrefs().wakeLock && !document.hidden && 'wakeLock' in navigator;
 async function syncWake() {
-  const want = reading() && A.loadPrefs().wakeLock && !document.hidden && 'wakeLock' in navigator;
-  if (want && !wake) {
+  if (wakeBusy) return;
+  if (wantWake() && !wake) {
+    wakeBusy = true;
     try {
-      wake = await navigator.wakeLock.request('screen');
-      wake.addEventListener('release', () => (wake = null));
+      const lock = await navigator.wakeLock.request('screen');
+      lock.addEventListener('release', () => {
+        if (wake === lock) wake = null;
+      });
+      wake = lock;
     } catch {
       wake = null;
+    } finally {
+      wakeBusy = false;
     }
-  } else if (!want && wake) {
-    wake.release().catch(() => {});
+    syncWake();
+  } else if (!wantWake() && wake) {
+    const lock = wake;
     wake = null;
+    lock.release().catch(() => {});
   }
 }
 

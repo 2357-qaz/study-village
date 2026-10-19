@@ -25,7 +25,7 @@ import {hydrateThumbs} from './ui/thumbs.js?v=11';
 import {renderBackup} from './ui/save.js?v=12';
 import './offline.js?v=1';
 import {buildEntryState, onTile} from './ui/build.js?v=13';
-import './ui/story.js?v=2';
+import './ui/story.js?v=3';
 import './ui/reading.js?v=4';
 window.addEventListener('storage', e => {
   if (e.key === KEY && e.newValue) {

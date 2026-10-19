@@ -1,6 +1,6 @@
 // The town's story: three cards shown once per device (also to existing players after this update),
 // replayable from the settings sheet. Device preference only; the save file is untouched.
-import {$, icons} from './store.js?v=11';
+import {$, icons, onRender, state} from './store.js?v=11';
 import * as A from '../alerts.js?v=6';
 const PAGES = [
   {
@@ -57,4 +57,23 @@ $('#story-button').onclick = () => {
   $('#settings-dialog').close();
   openStory();
 };
-if (!A.loadPrefs().storySeen) setTimeout(openStory, 400);
+// First visit on this device: tell the story only at a quiet moment — never over a running timer,
+// another sheet or build mode. Until then it waits and is tried again on the next update or return.
+let storyWait = 0;
+function storyWhenQuiet() {
+  if (storyWait || A.loadPrefs().storySeen) return;
+  storyWait = setTimeout(() => {
+    storyWait = 0;
+    const busy =
+      state.timer ||
+      document.hidden ||
+      document.querySelector('dialog[open]') ||
+      document.body.classList.contains('build-mode') ||
+      document.body.classList.contains('reading-mode');
+    if (!busy && !A.loadPrefs().storySeen) openStory();
+  }, 400);
+}
+onRender(storyWhenQuiet);
+document.addEventListener('visibilitychange', storyWhenQuiet);
+document.addEventListener('close', storyWhenQuiet, true); // another sheet just closed
+storyWhenQuiet();

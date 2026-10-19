@@ -273,15 +273,19 @@ function room(b, {snowTex, skyTop}) {
   };
 }
 
-// LiveSink with texture support for the window pane.
-// (shared model geometry carries no UVs, so textured parts get their own plane)
+// LiveSink with texture support for the window pane. Shared model geometry carries no UVs, so
+// textured parts get their own plane and material, listed in `own` to be freed with the build.
 class TexSink extends LiveSink {
+  constructor(root, matFn, own) {
+    super(root, matFn);
+    this.own = own;
+  }
   add(g, c, m, o) {
     if (!o.tex) return super.add(g, c, m, o);
-    const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshBasicMaterial({map: o.tex, toneMapped: false})
-    );
+    const geo = new THREE.PlaneGeometry(1, 1),
+      mt = new THREE.MeshBasicMaterial({map: o.tex, toneMapped: false}),
+      mesh = new THREE.Mesh(geo, mt);
+    this.own.push(geo, mt);
     mesh.applyMatrix4(m);
     this.root.add(mesh);
   }
@@ -302,7 +306,22 @@ const CHAIR = {x: 1.0, z: -0.85, ry: -0.5},
 
 let renderer = null,
   built = null;
-const cache = new Map();
+// Rendered images (data URLs), least recently used first. One screen shape needs the room and up to
+// four poses; a little headroom covers rotating the phone back and forth.
+const CACHE_MAX = 7,
+  cache = new Map();
+function cached(key) {
+  const v = cache.get(key);
+  if (v !== undefined) {
+    cache.delete(key);
+    cache.set(key, v);
+  }
+  return v;
+}
+function remember(key, v) {
+  cache.set(key, v);
+  while (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+}
 
 function sceneKey(opts, w, h) {
   return [
@@ -314,7 +333,29 @@ function sceneKey(opts, w, h) {
     Math.round(opts.cover * 4)
   ].join('|');
 }
+// Frees what one build owns. Geometries from the shared builders and the companion's parts are
+// cached for the whole page and are not touched.
+function disposeActor(B) {
+  if (!B?.actor) return;
+  B.scene.remove(B.actor);
+  for (const r of B.actor.userData.own || []) r.dispose();
+  B.actor = null;
+}
+function disposeBuilt(B) {
+  if (!B) return;
+  disposeActor(B);
+  B.snowTex.dispose();
+  for (const r of B.own) r.dispose();
+  B.scene.traverse(o => o.isLight && o.dispose?.()); // shadow maps
+}
 function setup(w, h) {
+  // a lost context (GPU reset, memory pressure) cannot be drawn with again: start over
+  if (renderer?.getContext().isContextLost()) {
+    renderer.dispose();
+    renderer = null;
+    disposeBuilt(built);
+    built = null;
+  }
   renderer ??= new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true, alpha: true});
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(w, h, false);
@@ -330,13 +371,15 @@ function build(opts) {
     h = Math.max(200, Math.round(opts.height)),
     key = sceneKey(opts, w, h);
   if (built?.key === key) return built;
-  built?.snowTex.dispose();
+  disposeBuilt(built);
+  built = null;
   const daypart = daypartOf(opts.hour),
     night = daypart === 'night',
     scene = new THREE.Scene(),
     snowTex = outsideTexture({daypart, snow: opts.snow, warmth: opts.warmth, cover: opts.cover}),
     grp = new THREE.Group(),
-    pts = room(new Builder(new TexSink(grp, mat)), {snowTex, skyTop: SKY_TOP[daypart]});
+    own = [],
+    pts = room(new Builder(new TexSink(grp, mat, own)), {snowTex, skyTop: SKY_TOP[daypart]});
   grp.traverse(o => {
     if (o.isMesh) {
       o.castShadow = !(o.material instanceof THREE.MeshBasicMaterial);
@@ -349,6 +392,7 @@ function build(opts) {
     new THREE.PlaneGeometry(6, 6),
     new THREE.MeshStandardMaterial({color: shade(C_STONE, -0.12), roughness: 0.9})
   );
+  own.push(ceil.geometry, ceil.material);
   ceil.rotation.x = PI / 2;
   ceil.position.set(0, 3.6, 0.4);
   grp.add(ceil);
@@ -386,17 +430,36 @@ function build(opts) {
   const sp = pts.shell.clone().project(cam),
     ty = aspect > 1 ? 0.6 : aspect < 0.62 ? 0.3 : 0.38; // tall views keep the lower half for the time and controls
   cam.setViewOffset(w, h, ((sp.x + 1) / 2 - 0.5) * w, ((1 - sp.y) / 2 - ty) * h, w, h);
-  built = {key, w, h, aspect, daypart, night, scene, grp, cam, pts, snowTex, occluding: false, actor: null};
+  built = {
+    key,
+    w,
+    h,
+    aspect,
+    daypart,
+    night,
+    scene,
+    grp,
+    cam,
+    pts,
+    snowTex,
+    own,
+    occluding: false,
+    actor: null
+  };
   return built;
 }
 
 // opts: {width, height, hour, snow (0..1), warmth (0..1), cover (0..1)}
 // Returns {url, daypart, points: {shell, clock, lamp, window: [x, y]} in 0..1 of the image, clockR}.
 export function renderRoom(opts) {
+  const w = Math.max(200, Math.round(opts.width)),
+    h = Math.max(200, Math.round(opts.height)),
+    hit = cached(sceneKey(opts, w, h));
+  if (hit) return hit;
+  setup(w, h);
   const B = build(opts);
-  if (cache.has(B.key)) return cache.get(B.key);
-  setup(B.w, B.h);
-  if (B.occluding) throw Error('room already turned into occluders'); // layers are rendered after
+  occlude(B, false);
+  disposeActor(B);
   B.scene.background = new THREE.Color(B.night ? 0x1a1d22 : 0xcfd2cc);
   renderer.toneMappingExposure = B.night ? 0.95 : 1.05;
   renderer.render(B.scene, B.cam);
@@ -413,7 +476,7 @@ export function renderRoom(opts) {
       points: {shell: proj(B.pts.shell), clock: c, lamp: proj(B.pts.lamp), window: proj(B.pts.window)},
       clockR: Math.hypot(edge[0] - c[0], (edge[1] - c[1]) / B.aspect)
     };
-  cache.set(B.key, result);
+  remember(B.key, result);
   return result;
 }
 
@@ -434,19 +497,28 @@ function teaThings(b) {
 }
 // A transparent layer with her in the given pose, drawn over renderRoom's image for the same opts.
 // The room is still in the scene but only writes depth, so the armchair and desk hide her properly.
+// The room only writes depth while her layers are drawn; its own materials come back for the room image.
+function occlude(B, on) {
+  if (B.occluding === on) return;
+  B.grp.traverse(o => {
+    if (!o.isMesh) return;
+    if (on) {
+      o.userData.mat = o.material;
+      o.material = occluder;
+    } else o.material = o.userData.mat;
+  });
+  B.occluding = on;
+}
 export function renderCompanion(opts, pose) {
-  const B = build(opts),
-    key = `${B.key}|${pose}|${sculpt ? 's' : 'p'}`;
-  if (cache.has(key)) return cache.get(key);
-  if (!cache.has(B.key)) renderRoom(opts);
-  setup(B.w, B.h);
-  if (!B.occluding) {
-    B.grp.traverse(o => {
-      if (o.isMesh) o.material = occluder;
-    });
-    B.occluding = true;
-  }
-  if (B.actor) B.scene.remove(B.actor);
+  const w = Math.max(200, Math.round(opts.width)),
+    h = Math.max(200, Math.round(opts.height)),
+    key = `${sceneKey(opts, w, h)}|${pose}|${sculpt ? 's' : 'p'}`,
+    hit = cached(key);
+  if (hit) return hit;
+  setup(w, h);
+  const B = build(opts);
+  occlude(B, true);
+  disposeActor(B);
   const actor = new THREE.Group(),
     b = new Builder(new LiveSink(actor, mat)),
     at = pose === 'tea' ? TEA : CHAIR;
@@ -465,6 +537,7 @@ export function renderCompanion(opts, pose) {
     );
     blob.position.set(TEA.x, 0.012, TEA.z);
     actor.add(blob);
+    actor.userData.own = [blob.geometry, blob.material];
   }
   B.scene.add(actor);
   B.actor = actor;
@@ -472,6 +545,8 @@ export function renderCompanion(opts, pose) {
   renderer.setClearColor(0x000000, 0);
   renderer.render(B.scene, B.cam);
   const result = {url: renderer.domElement.toDataURL('image/png')};
-  cache.set(key, result);
+  remember(key, result);
   return result;
 }
+// for tests: how many images are kept and what the renderer holds on the GPU
+export const debug = () => ({cache: cache.size, memory: renderer && {...renderer.info.memory}});
