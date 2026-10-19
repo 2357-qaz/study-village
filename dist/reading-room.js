@@ -124,9 +124,9 @@ function outsideTexture({daypart, snow, warmth, cover}) {
   return t;
 }
 
-function shell(b, x, y, z, s = 1, glow = 0.35, color = C_SHELL) {
+function shell(b, x, y, z, s = 1, glow = 0.35) {
   b.at(x, y, z, {s}, () => {
-    b.ball(0.13, color, 0, 0.09, 0, {
+    b.ball(0.13, C_SHELL, 0, 0.09, 0, {
       sx: 1.15,
       sy: 0.75,
       sz: 0.95,
@@ -134,22 +134,39 @@ function shell(b, x, y, z, s = 1, glow = 0.35, color = C_SHELL) {
       mat: {emissive: glow, rough: 0.4}
     });
     for (let i = 0; i < 4; i++)
-      b.tor(0.11 - i * 0.022, 0.008, shade(color, -0.06), 0, 0.12 + i * 0.012, 0, {rx: H, m: 14});
+      b.tor(0.11 - i * 0.022, 0.008, shade(C_SHELL, -0.06), 0, 0.12 + i * 0.012, 0, {rx: H, m: 14});
   });
 }
 
 // Builds the room. Returns the world positions the page needs to animate.
-// Dream shells on the shelf: pale until read. Every finished study session lights one, from eye level
-// outwards; longer sessions glow a little brighter and the newest brightest. `dreams` holds the
-// recent sessions' lengths in minutes, oldest first (only as many as there are shells).
-const SHELL_SLOTS = 12; // ui/reading.js sends at most this many
-const SHELL_LIT = 0xffc77a,
-  SHELL_PALE = 0xa9a8b6;
-function shellLight(dreams, rank) {
-  if (rank >= dreams.length) return null;
+// Dreams read, as points of light along the bookshelf: every finished study session lights one, from
+// eye level outwards; longer sessions glow a little larger and the newest brightest. Unread places
+// keep only a faint cool glint. `dreams` holds the recent sessions' lengths in minutes, oldest first
+// (only as many as there are places).
+const LIGHT_SLOTS = 12; // ui/reading.js sends at most this many
+function dreamLight(dreams, rank) {
+  if (rank >= Math.min(dreams.length, LIGHT_SLOTS)) return null;
   const min = dreams[rank],
     newest = rank === dreams.length - 1;
-  return newest ? 1.6 : min >= 45 ? 1.15 : min >= 25 ? 0.9 : 0.7;
+  return newest ? 1.35 : min >= 45 ? 1.1 : min >= 25 ? 0.95 : 0.8;
+}
+// a soft round glow, drawn once and shared by every point of light
+let glowTex = null;
+function glowTexture() {
+  if (glowTex) return glowTex;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'),
+    grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grd.addColorStop(0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.18, 'rgba(255,255,255,0.85)');
+  grd.addColorStop(0.45, 'rgba(255,255,255,0.22)');
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 64, 64);
+  glowTex = new THREE.CanvasTexture(c);
+  glowTex.colorSpace = THREE.SRGBColorSpace;
+  return glowTex;
 }
 function room(b, {snowTex, skyTop, dreams = []}) {
   // floor planks and rug
@@ -200,14 +217,14 @@ function room(b, {snowTex, skyTop, dreams = []}) {
       {rz: -a}
     );
   }
-  // tall bookshelf on the right, with dream shells among the books
+  // tall bookshelf on the right; points of light hang in front of the books
   const slots = [];
   b.at(1.75, 0, -2.0, () => {
     b.box(1.5, 2.9, 0.42, C_WOOD2, 0, 1.45, 0);
     b.box(1.38, 2.75, 0.04, shade(C_WOOD2, -0.12), 0, 1.45, -0.17);
     const cs = [0x7a4a46, 0x4b6584, 0xb59a5a, 0x587a5c, 0x6f5d8c, 0x9a5a3e, 0x3f5a6e, 0xc9b184];
-    // where each shelf leaves room for a shell (2 + 2 + 3 + 3 + 2 = SHELL_SLOTS)
-    const gaps = [
+    // where each shelf has a point of light (2 + 2 + 3 + 3 + 2 = LIGHT_SLOTS)
+    const spots = [
       [-0.55, 0.1],
       [-0.2, 0.3],
       [-0.62, -0.08, 0.3],
@@ -218,16 +235,10 @@ function room(b, {snowTex, skyTop, dreams = []}) {
     for (let r = 0; r < 5; r++) {
       const y = 0.18 + r * 0.56;
       b.box(1.38, 0.04, 0.38, C_WOOD, 0, y, 0.04);
-      let x = -0.64,
-        g = 0;
+      for (const x of spots[r]) slots.push({x: x + 0.11, y, r});
+      let x = -0.64;
       while (x < 0.6) {
         n++;
-        if (g < gaps[r].length && x >= gaps[r][g]) {
-          slots.push({x: x + 0.11, y: y + 0.02, r});
-          x += 0.26;
-          g++;
-          continue;
-        }
         const w = 0.06 + ((n * 37) % 5) * 0.012,
           h = 0.3 + ((n * 53) % 7) * 0.03,
           lean = n % 9 === 0 ? 0.25 : 0;
@@ -238,15 +249,13 @@ function room(b, {snowTex, skyTop, dreams = []}) {
     // read ones fill from eye level (the middle shelf) outwards, right to left so tall phone views,
     // which only see the shelf's right end, see them too
     const order = [2, 3, 1, 4, 0];
-    slots
-      .sort((p, q) => order.indexOf(p.r) - order.indexOf(q.r) || q.x - p.x)
-      .forEach((p, i) => {
-        const g = shellLight(dreams, i);
-        // at the front edge of the shelf, clear of the book spines
-        if (g === null) shell(b, p.x, p.y, 0.13, 0.95, 0.04, SHELL_PALE);
-        else shell(b, p.x, p.y, 0.13, 0.95, g, SHELL_LIT);
-      });
+    slots.sort((p, q) => order.indexOf(p.r) - order.indexOf(q.r) || q.x - p.x);
   });
+  // placed in the world (the shelf stands at 1.75, -2.0), a little in front of the book spines
+  const lights = slots.map((p, i) => ({
+    at: new THREE.Vector3(1.75 + p.x, p.y + 0.2, -2.0 + 0.25),
+    glow: dreamLight(dreams, i)
+  }));
   // ladder leaning on the shelf
   b.at(2.25, 0, -1.55, {rx: -0.22}, () => {
     for (const s of [-1, 1]) b.box(0.05, 2.6, 0.05, C_WOOD, s * 0.2, 1.3, 0);
@@ -300,6 +309,7 @@ function room(b, {snowTex, skyTop, dreams = []}) {
     b.box(0.52, 0.18, 0.04, C_WOOD, 0, 1.0, 0.23);
   });
   return {
+    lights,
     shell: shellAt.clone().add(new THREE.Vector3(0, 0.12, 0)),
     clock,
     lamp: new THREE.Vector3(desk.x - 0.6, desk.y + 0.47, desk.z - 0.15),
@@ -435,6 +445,23 @@ function build(opts) {
   ceil.rotation.x = PI / 2;
   ceil.position.set(0, 3.6, 0.4);
   grp.add(ceil);
+  // the dreams read: warm points of light along the shelf (unread places only a faint cool glint)
+  for (const {at, glow} of pts.lights) {
+    const lit = glow !== null,
+      m = new THREE.SpriteMaterial({
+        map: glowTexture(),
+        color: lit ? 0xffd28a : 0xc8d2ff,
+        opacity: lit ? Math.min(1, 0.55 + glow * 0.35) : 0.16,
+        transparent: true,
+        depthWrite: false,
+        toneMapped: false
+      }),
+      sprite = new THREE.Sprite(m);
+    sprite.position.copy(at);
+    sprite.scale.setScalar(lit ? 0.12 + glow * 0.08 : 0.06);
+    own.push(m);
+    grp.add(sprite);
+  }
   const coolSky = {day: 0xcdd9e4, dawn: 0xd9d2d6, dusk: 0xd6c6c4, night: 0x56607a}[daypart];
   scene.add(new THREE.HemisphereLight(coolSky, 0x4d4038, night ? 1.1 : 1.35));
   scene.add(new THREE.AmbientLight(night ? 0x4a4560 : 0x8a8478, night ? 1.4 : 0.6));
@@ -540,6 +567,7 @@ function teaThings(b) {
 function occlude(B, on) {
   if (B.occluding === on) return;
   B.grp.traverse(o => {
+    if (o.isSprite) o.visible = !on; // the lights belong to the room image, not her layer
     if (!o.isMesh) return;
     if (on) {
       o.userData.mat = o.material;

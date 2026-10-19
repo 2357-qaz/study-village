@@ -39,14 +39,14 @@ function hourNow() {
   return d.getHours() + d.getMinutes() / 60;
 }
 
-// The dreams read so far, for the shells on the shelf: the most recent ones' lengths, oldest first,
-// rounded to the steps that change how brightly a shell glows.
-const SHELL_SLOTS = 12;
+// The dreams read so far, for the points of light on the shelf: the most recent ones' lengths, oldest first,
+// rounded to the steps that change how brightly a light glows.
+const LIGHT_SLOTS = 12;
 function dreamsRead() {
   return state.sessions
     .filter(x => x.kind === 'study')
     .sort((a, b) => a.endedAt - b.endedAt)
-    .slice(-SHELL_SLOTS)
+    .slice(-LIGHT_SLOTS)
     .map(x => (x.seconds >= 45 * 60 ? 45 : x.seconds >= 25 * 60 ? 25 : 10));
 }
 
