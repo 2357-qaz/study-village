@@ -3,12 +3,15 @@ import {expect} from '@playwright/test';
 
 // A device that has already seen the opening story, plus any other prefs.
 export async function prefs(page, extra = {}) {
-  await page.addInitScript(p => {
-    if (!sessionStorage.getItem('e2e-prefs')) {
-      sessionStorage.setItem('e2e-prefs', '1');
-      localStorage.setItem('timegrove-prefs', JSON.stringify(p));
-    }
-  }, {storySeen: 1, ...extra});
+  await page.addInitScript(
+    p => {
+      if (!sessionStorage.getItem('e2e-prefs')) {
+        sessionStorage.setItem('e2e-prefs', '1');
+        localStorage.setItem('timegrove-prefs', JSON.stringify(p));
+      }
+    },
+    {storySeen: 1, ...extra}
+  );
 }
 
 // Opens the app with a save built in the page: `days` past study sessions of `minutes` each, plus
@@ -45,7 +48,8 @@ export function collectErrors(page) {
 // The reading room's controls ignore taps until revealed; reveal them like a person would.
 export async function revealRoom(page) {
   const room = page.locator('#reading-room');
-  if (!(await room.evaluate(r => r.classList.contains('reveal')))) await room.click({position: {x: 40, y: 200}});
+  if (!(await room.evaluate(r => r.classList.contains('reveal'))))
+    await room.click({position: {x: 40, y: 200}});
   await expect(room).toHaveClass(/reveal/);
 }
 // Fixed full-screen layers confuse Playwright's "is it covered" check; click where a finger would.
