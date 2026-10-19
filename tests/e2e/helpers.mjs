@@ -45,12 +45,15 @@ export function collectErrors(page) {
   return () => errs.filter(e => !/WebGL/.test(e));
 }
 
-// The reading room's controls ignore taps until revealed; reveal them like a person would.
+// The reading room's controls ignore taps until revealed, and hide again after 3.5s; a tap on the room
+// toggles them. Tap until they show (a slow machine can race the timer), like a person would.
 export async function revealRoom(page) {
   const room = page.locator('#reading-room');
-  if (!(await room.evaluate(r => r.classList.contains('reveal'))))
-    await room.click({position: {x: 40, y: 200}});
-  await expect(room).toHaveClass(/reveal/);
+  await expect(async () => {
+    if (!(await room.evaluate(r => r.classList.contains('reveal'))))
+      await room.click({position: {x: 40, y: 200}});
+    await expect(room).toHaveClass(/reveal/, {timeout: 1000});
+  }).toPass({timeout: 20_000});
 }
 // Fixed full-screen layers confuse Playwright's "is it covered" check; click where a finger would.
 export async function tapAt(page, selector) {
