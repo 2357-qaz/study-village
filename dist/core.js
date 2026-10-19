@@ -360,7 +360,40 @@ export function timerSegments(t, now = Date.now()) {
 export function timerElapsed(t, now = Date.now()) {
   return timerSegments(t, now).reduce((v, p) => v + (p.end - p.start) / 1000, 0);
 }
-export function startTimer(s, kind, minutes, topic, now = Date.now()) {
+// A plan for one focus session: a few things to get done, checked off while the timer runs.
+// Optional on the timer and on the session it becomes; saves without it stay valid.
+export const PLAN_MAX = 8,
+  PLAN_TEXT = 60;
+export function cleanPlan(items) {
+  return (Array.isArray(items) ? items : [])
+    .map(x =>
+      typeof x === 'string' ? {text: x, done: false} : {text: String(x?.text ?? ''), done: !!x?.done}
+    )
+    .map(x => ({text: x.text.trim().slice(0, PLAN_TEXT), done: x.done}))
+    .filter(x => x.text)
+    .slice(0, PLAN_MAX);
+}
+const validPlan = p =>
+  p === undefined ||
+  (Array.isArray(p) &&
+    p.length <= PLAN_MAX &&
+    p.every(
+      x =>
+        x && typeof x.text === 'string' && x.text && x.text.length <= PLAN_TEXT && typeof x.done === 'boolean'
+    ));
+export function togglePlan(s, i) {
+  const item = s.timer?.plan?.[i];
+  if (!item) throw Error('没有这一项计划');
+  item.done = !item.done;
+}
+export function addPlanItem(s, text) {
+  if (!s.timer || s.timer.kind !== 'study') throw Error('开始专注后才能补充计划');
+  const [item] = cleanPlan([text]);
+  if (!item) throw Error('写点什么再添加吧');
+  if ((s.timer.plan?.length || 0) >= PLAN_MAX) throw Error(`一次最多 ${PLAN_MAX} 项计划`);
+  (s.timer.plan ??= []).push(item);
+}
+export function startTimer(s, kind, minutes, topic, now = Date.now(), plan = []) {
   if (s.timer) throw Error('请先完成当前计时');
   if (
     !['study', 'rest'].includes(kind) ||
@@ -381,6 +414,8 @@ export function startTimer(s, kind, minutes, topic, now = Date.now()) {
     segments: [],
     runningSince: now
   };
+  const p = kind === 'study' ? cleanPlan(plan) : [];
+  if (p.length) s.timer.plan = p;
 }
 export function pauseTimer(s, now = Date.now()) {
   if (!s.timer) throw Error('还没有开始计时');
@@ -392,7 +427,7 @@ export function resumeTimer(s, now = Date.now()) {
   if (timerElapsed(s.timer, now) >= s.timer.goal) throw Error('本次计时已经完成，请领取奖励');
   if (s.timer.runningSince === null) s.timer.runningSince = now;
 }
-export function addSession(s, kind, segments, topic, now = Date.now(), manual = false) {
+export function addSession(s, kind, segments, topic, now = Date.now(), manual = false, plan = null) {
   const seconds = segments.reduce((n, p) => n + (p.end - p.start) / 1000, 0);
   if (seconds < 60) throw Error('至少完成 1 分钟再打卡吧');
   if (kind === 'rest' && seconds > restCredit(s) + 0.001) throw Error('可奖励的休息时间不足');
@@ -424,14 +459,15 @@ export function addSession(s, kind, segments, topic, now = Date.now(), manual = 
     seconds,
     endedAt: segments.at(-1).end,
     recordedAt: now,
-    manual
+    manual,
+    ...(plan?.length ? {plan: cleanPlan(plan)} : {})
   });
   return reward;
 }
 export function finishTimer(s, now = Date.now()) {
   if (!s.timer) throw Error('还没有开始计时');
   const t = s.timer;
-  const reward = addSession(s, t.kind, timerSegments(t, now), t.topic, now);
+  const reward = addSession(s, t.kind, timerSegments(t, now), t.topic, now, false, t.plan);
   s.timer = null;
   return reward;
 }
@@ -488,7 +524,8 @@ export function validateState(x) {
       !n(a.endedAt, 1e14) ||
       !n(a.recordedAt, 1e14) ||
       !Array.isArray(a.segments) ||
-      !a.segments.length
+      !a.segments.length ||
+      !validPlan(a.plan)
     )
       fail();
     let sum = 0;
@@ -524,7 +561,8 @@ export function validateState(x) {
       !n(t.goal, 10800) ||
       t.goal < 60 ||
       !Array.isArray(t.segments) ||
-      !(t.runningSince === null || n(t.runningSince, 1e14))
+      !(t.runningSince === null || n(t.runningSince, 1e14)) ||
+      !validPlan(t.plan)
     )
       fail();
     let prev = 0;

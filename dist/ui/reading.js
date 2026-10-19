@@ -2,10 +2,10 @@
 // dream shell over it, switches to the immersive reading view while a timer exists on the focus
 // screen, reveals the controls on tap, runs the wall clock only while reading, and keeps the
 // screen awake if asked to.
-import * as C from '../core.js?v=7';
+import * as C from '../core.js?v=8';
 import * as A from '../alerts.js?v=6';
-import {$, onRender, state} from './store.js?v=11';
-import {setPage} from './nav.js?v=13';
+import {$, onRender, state} from './store.js?v=12';
+import {setPage} from './nav.js?v=14';
 
 const room = $('#reading-room'),
   img = $('#room-img'),
@@ -70,7 +70,7 @@ async function paintRoom() {
   if (key === lastKey) return;
   lastKey = key;
   try {
-    mod ??= await import('../reading-room.js?v=5');
+    mod ??= await import('../reading-room.js?v=6');
     sculptReady ??= mod.loadCompanion();
     const r = mod.renderRoom(opts);
     if (key !== lastKey) return; // a newer size arrived meanwhile

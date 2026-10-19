@@ -1,6 +1,6 @@
 // Study journal: totals, weekly chart and session history (study sessions read as dreams).
-import * as C from '../core.js?v=7';
-import {$, icon, esc, duration, weekData, icons, onRender, state} from './store.js?v=11';
+import * as C from '../core.js?v=8';
+import {$, icon, esc, duration, weekData, icons, onRender, state} from './store.js?v=12';
 let historyLimit = 30;
 // Each study session is a dream read in 旧梦书屋 (its shell glows on the shelf); `nth` counts them.
 function sessionHTML(x, nth) {
@@ -12,7 +12,8 @@ function sessionHTML(x, nth) {
       minute: '2-digit'
     }),
     how = x.manual ? '补记' : dream ? '专注' : '休息打卡';
-  return `<div class="session-row${dream ? ' dream' : ''}"><span class="session-icon">${icon(dream ? 'shell' : 'coffee')}</span><div><div class="session-topic">${esc(dream ? x.topic : '好好休息')}</div><div class="session-meta">${dream ? `第 ${nth.get(x)} 个梦 · ` : ''}${when} · ${how}</div></div><span class="session-duration">${duration(x.seconds)}</span></div>`;
+  const plan = x.plan?.length ? ` · 计划 ${x.plan.filter(p => p.done).length}/${x.plan.length}` : '';
+  return `<div class="session-row${dream ? ' dream' : ''}"><span class="session-icon">${icon(dream ? 'shell' : 'coffee')}</span><div><div class="session-topic">${esc(dream ? x.topic : '好好休息')}</div><div class="session-meta">${dream ? `第 ${nth.get(x)} 个梦 · ` : ''}${when} · ${how}${plan}</div></div><span class="session-duration">${duration(x.seconds)}</span></div>`;
 }
 function renderJournal() {
   const sessions = [...state.sessions].sort((a, b) => b.endedAt - a.endedAt),

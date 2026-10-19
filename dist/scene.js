@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
-import * as C from './core.js?v=7';
+import * as C from './core.js?v=8';
 import {
   Builder,
   LiveSink,

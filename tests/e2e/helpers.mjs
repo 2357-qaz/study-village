@@ -34,7 +34,17 @@ export async function openWithSave(page, {days = 4, minutes = 90, resources = 0,
   await expect(page.locator('#home-pages')).toHaveAttribute('data-screen', 'village');
 }
 
-export const dock = (page, key) => page.locator(`.screen-dock [data-dock="${key}"]`).click();
+// Go to a screen through the tab bar (a reload may already have reopened it with no sheet on top: then
+// there is nothing to tap, and in the reading view the tab bar is hidden anyway).
+export async function dock(page, key) {
+  if (
+    ['village', 'focus'].includes(key) &&
+    (await page.locator('#home-pages').getAttribute('data-screen')) === key &&
+    !(await page.evaluate(() => document.querySelector('#secondary-dialog')?.open))
+  )
+    return;
+  await page.locator(`.screen-dock [data-dock="${key}"]`).click();
+}
 export const save = page => page.evaluate(() => JSON.parse(localStorage.getItem('timegrove-save-v1')));
 export const bodyHas = (page, cls) => page.evaluate(c => document.body.classList.contains(c), cls);
 

@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=21" />
+    <link rel="stylesheet" href="./style.css?v=22" />
     <script src="./vendor/lucide-icons.js?v=7" defer></script>
-    <script type="module" src="./app.js?v=19"></script>
+    <script type="module" src="./app.js?v=20"></script>
   </head>
   <body>
     <main>
@@ -162,11 +162,25 @@
                   <div class="duration-options" id="durations"></div>
                   <label class="topic-field"
                     ><i data-lucide="pencil-line"></i
-                    ><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容" /></label
-                  ><button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button>
+                    ><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容"
+                  /></label>
+                  <div class="plan-edit" id="plan-edit">
+                    <ul id="plan-draft" class="plan-draft" aria-label="本次计划"></ul>
+                    <label class="plan-add"
+                      ><i data-lucide="plus"></i
+                      ><input
+                        id="plan-input"
+                        maxlength="60"
+                        enterkeyhint="enter"
+                        aria-label="添加一项计划"
+                        placeholder="这段时间要完成的事，回车添加"
+                    /></label>
+                  </div>
+                  <button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button>
                   <div class="focus-reward" id="focus-reward"></div>
                   <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button>
                 </div>
+                <ul id="plan-run" class="plan-run" hidden aria-label="本次计划"></ul>
                 <div class="room-controls">
                   <div class="timer-actions" hidden id="timer-actions">
                     <button id="pause-button" class="secondary-button">暂停</button
@@ -255,6 +269,13 @@
         <p>
           <strong>书屋的守灯人</strong
           ><span>书屋里有一位安静的守灯人，她在扶手椅里陪你读梦：你开始时她会抬头看你一眼，读完了她会给你倒一杯茶。她几乎不说话。</span>
+        </p>
+        <p>
+          <strong>专注计划</strong
+          ><span
+            >开始专注前，可以写下这段时间要完成的几件事（最多 8
+            项，回车添加）。读梦时它们浮在时间下方，完成一项就轻点勾上；打卡后手记会记下完成了几项。</span
+          >
         </p>
         <p>
           <strong>读过的梦</strong
