@@ -7731,3 +7731,176 @@ body:has(#home-pages[data-screen='focus']) .screen-dock button[aria-current='pag
 body:has(#home-pages[data-screen='focus']) .dock-divider {
   background: rgba(255, 244, 226, 0.18);
 }
+
+/* =====================================================================
+   Secondary pages (手记, 奇物, 建筑, 更多) as frosted mist over the town:
+   the village stays visible behind; figures are plain text, sections are
+   separated by hairlines instead of cards, and tiles are light glass.
+   ===================================================================== */
+:root {
+  --mist-sheet: rgba(244, 245, 240, 0.74);
+  --mist-line: rgba(31, 42, 36, 0.1);
+  --mist-tile: rgba(255, 255, 255, 0.46);
+  --mist-tile-edge: rgba(255, 255, 255, 0.7);
+  --mist-ink: #1f2a24;
+  --mist-ink-2: #1f2a24a6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mist-sheet: rgba(17, 21, 19, 0.74);
+    --mist-line: rgba(255, 255, 255, 0.1);
+    --mist-tile: rgba(255, 255, 255, 0.06);
+    --mist-tile-edge: rgba(255, 255, 255, 0.12);
+    --mist-ink: #eef2ea;
+    --mist-ink-2: #eef2eaa6;
+  }
+}
+#secondary-dialog,
+#menu-dialog {
+  border: 1px solid var(--mist-tile-edge);
+  background: var(--mist-sheet);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  backdrop-filter: blur(30px) saturate(160%);
+  box-shadow: 0 20px 60px rgba(20, 30, 25, 0.18);
+  color: var(--mist-ink);
+}
+#secondary-dialog::backdrop,
+#menu-dialog::backdrop {
+  background: rgba(20, 30, 25, 0.16);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+#secondary-dialog h2,
+#secondary-dialog h3,
+#secondary-dialog strong,
+#menu-dialog h2,
+#menu-dialog strong {
+  color: var(--mist-ink);
+}
+#secondary-dialog .subtle,
+#secondary-dialog .secondary-heading p,
+#secondary-dialog .section-heading p,
+#menu-dialog .ios-section-label,
+#menu-dialog .save-caption {
+  color: var(--mist-ink-2);
+}
+#secondary-dialog .dialog-heading,
+#menu-dialog .dialog-heading {
+  border-bottom-color: var(--mist-line);
+}
+/* tabs and the close button are glass */
+#secondary-dialog .page-switch {
+  border: 1px solid var(--mist-tile-edge);
+  background: var(--mist-tile);
+  box-shadow: none;
+}
+#secondary-dialog .page-switch button:not([aria-selected='true']):not(.selected) {
+  background: none;
+  box-shadow: none;
+}
+#secondary-dialog .dialog-heading .icon-button,
+#menu-dialog .dialog-heading .icon-button {
+  border: 1px solid var(--mist-tile-edge);
+  background: var(--mist-tile);
+}
+/* 手记: the totals are plain figures, the chart and the list sit on the mist */
+#secondary-dialog .journal-summary {
+  margin: 0 0 4px;
+  padding: 6px 2px 18px;
+  border: 0;
+  border-bottom: 1px solid var(--mist-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--mist-ink);
+}
+#secondary-dialog .journal-summary > div {
+  border-color: var(--mist-line);
+}
+#secondary-dialog .journal-summary span {
+  color: var(--mist-ink-2);
+}
+#secondary-dialog .journal-summary strong {
+  color: var(--mist-ink);
+}
+#secondary-dialog .white-panel {
+  margin: 0;
+  padding: 18px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--mist-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+#secondary-dialog .white-panel:last-child {
+  border-bottom: 0;
+}
+#secondary-dialog .session-row {
+  border: 0;
+  border-bottom: 1px solid var(--mist-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+#secondary-dialog .session-row:last-child {
+  border-bottom: 0;
+}
+#secondary-dialog .session-icon {
+  background: var(--mist-tile);
+}
+#secondary-dialog .session-meta,
+#secondary-dialog .chart-value {
+  color: var(--mist-ink-2);
+}
+/* 奇物 and 建筑: status blocks and tiles are light glass */
+#secondary-dialog .wish-status,
+#secondary-dialog .cabinet-head,
+#secondary-dialog .building-card,
+#secondary-dialog .collectible,
+#secondary-dialog .wish-btn:not(.gold),
+#secondary-dialog .secondary-button,
+#secondary-dialog .cab-filter,
+#menu-dialog .ios-list {
+  border: 1px solid var(--mist-tile-edge);
+  background: var(--mist-tile);
+  box-shadow: none;
+}
+#secondary-dialog .cab-filter.selected,
+#secondary-dialog .cab-filter[aria-selected='true'] {
+  border-color: transparent;
+  background: var(--forest);
+  color: #f1f4ee;
+}
+#secondary-dialog .wish-history,
+#secondary-dialog .wish-log-row {
+  border-color: var(--mist-line);
+  background: none;
+  box-shadow: none;
+}
+#menu-dialog .ios-list .ios-row + .ios-row {
+  border-top-color: var(--mist-line);
+}
+/* stronger than the older per-layout rules: phone pages, desktop headers, the more sheet */
+#secondary-dialog.secondary-dialog,
+#secondary-dialog.secondary-dialog:not(:modal),
+#menu-dialog.ios-sheet {
+  background: var(--mist-sheet);
+  color: var(--mist-ink);
+}
+#secondary-dialog.secondary-dialog > .dialog-heading,
+#secondary-dialog.secondary-dialog:not(:modal) > .dialog-heading {
+  position: static;
+  border-bottom: 1px solid var(--mist-line);
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* the title scrolls away like a large title; the 寻宝 / 奇物柜 switch stays pinned */
+#secondary-dialog.secondary-dialog .page-switch {
+  top: 8px;
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+#secondary-dialog .wish-copy h2 {
+  color: #fff;
+}
