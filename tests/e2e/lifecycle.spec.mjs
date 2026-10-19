@@ -106,6 +106,9 @@ test('resizing many times keeps the room cache and GPU objects bounded', async (
     [680, 940],
     [1040, 780]
   ];
+  // her other poses render in idle time and upload their model parts once; let them all arrive
+  // (the room and 4 poses cached) before resizing, so only growth after that counts
+  await expect.poll(async () => (await stats()).cache, {timeout: 60_000}).toBe(5);
   let first = null;
   for (const [i, [w, h]] of sizes.entries()) {
     await page.setViewportSize({width: w, height: h});
