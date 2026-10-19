@@ -7657,3 +7657,77 @@ body.reading-mode .reading-room .room-dock .room-controls {
     padding: 0 22px;
   }
 }
+
+/* --- polish: backup pill spans the row; the reading room's controls are warm glass --- */
+@media (max-width: 760px) {
+  #home-pages .backup-nudge {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+  #home-pages .backup-nudge > div:not(.backup-nudge-actions) {
+    flex: 1;
+    min-width: 0;
+  }
+}
+/* one warm glass recipe for everything that floats in the room */
+.reading-room {
+  --room-glass: linear-gradient(180deg, rgba(255, 248, 236, 0.16), rgba(255, 240, 220, 0.06));
+  --room-glass-edge: rgba(255, 244, 226, 0.26);
+  --room-glass-shine: inset 0 1px 0 rgba(255, 250, 240, 0.32), inset 0 -1px 0 rgba(255, 250, 240, 0.06),
+    0 6px 18px rgba(0, 0, 0, 0.22);
+  --room-warm: linear-gradient(180deg, rgba(250, 238, 210, 0.94), rgba(232, 208, 158, 0.9));
+  --room-warm-shine: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 0 rgba(150, 110, 40, 0.18),
+    0 8px 26px rgba(255, 196, 120, 0.22);
+}
+.reading-room .room-btn,
+.reading-room .room-chip,
+#reading-room .room-setup .duration-options button,
+.reading-room .room-controls #pause-button {
+  border: 1px solid var(--room-glass-edge);
+  background: var(--room-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: var(--room-glass-shine);
+}
+.reading-room .room-btn[aria-pressed='true'],
+#reading-room .room-setup .duration-options button.selected,
+#reading-room .room-setup #start-button,
+.reading-room .room-controls #finish-button {
+  border: 1px solid rgba(255, 250, 236, 0.7);
+  background: var(--room-warm);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: var(--room-warm-shine);
+  color: #3b2a12;
+}
+#reading-room .room-setup .mode-tabs button.selected {
+  border-bottom-color: #ecd9aa;
+}
+#reading-room .room-setup .topic-field:focus-within {
+  border-bottom-color: #ecd9aa;
+}
+/* the tab bar over the room: dark glass, the selected tab in the same warm glass as the buttons */
+body:has(#home-pages[data-screen='focus']) .screen-dock {
+  border-color: rgba(255, 244, 226, 0.18);
+  background: linear-gradient(180deg, rgba(40, 32, 26, 0.5), rgba(20, 16, 14, 0.62));
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 240, 0.14),
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+body:has(#home-pages[data-screen='focus']) .screen-dock button:not(.selected) {
+  color: rgba(255, 244, 226, 0.82);
+}
+body:has(#home-pages[data-screen='focus']) .screen-dock button.selected,
+body:has(#home-pages[data-screen='focus']) .screen-dock button[aria-current='page'] {
+  background: linear-gradient(180deg, #f8efd9, #e8d3a2);
+  color: #3b2a12;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(150, 110, 40, 0.2),
+    0 2px 10px rgba(255, 196, 120, 0.22);
+}
+body:has(#home-pages[data-screen='focus']) .dock-divider {
+  background: rgba(255, 244, 226, 0.18);
+}

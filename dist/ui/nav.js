@@ -74,7 +74,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && sheet.open && !sheet.matches(':modal') && !document.querySelector('dialog:modal'))
     sheet.close();
 });
-$('#menu-button').onclick = () => $('#menu-dialog').showModal();
 $('#dock-more').onclick = () => $('#menu-dialog').showModal();
 // Each gesture selects one complete screen; the two screens never share a scroll position.
 const pager = $('#home-pages');

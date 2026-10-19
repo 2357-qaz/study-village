@@ -15,16 +15,16 @@ import {
   inBuild,
   state
 } from './ui/store.js?v=11';
-import {setPage} from './ui/nav.js?v=12';
+import {setPage} from './ui/nav.js?v=13';
 import {renderStats, updateLast, renderProduction} from './ui/home.js?v=11';
 import {updateTimer} from './ui/timer.js?v=12';
-import {renderBuildings} from './ui/buildings.js?v=11';
+import {renderBuildings} from './ui/buildings.js?v=12';
 import './ui/journal.js?v=11';
 import {renderCollections} from './ui/collection.js?v=11';
 import {hydrateThumbs} from './ui/thumbs.js?v=11';
 import {renderBackup} from './ui/save.js?v=12';
 import './offline.js?v=1';
-import {buildEntryState, onTile} from './ui/build.js?v=12';
+import {buildEntryState, onTile} from './ui/build.js?v=13';
 import './ui/story.js?v=2';
 import './ui/reading.js?v=4';
 window.addEventListener('storage', e => {

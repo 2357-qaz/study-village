@@ -5,7 +5,7 @@
 import * as C from '../core.js?v=7';
 import * as A from '../alerts.js?v=6';
 import {$, onRender, state} from './store.js?v=11';
-import {setPage} from './nav.js?v=12';
+import {setPage} from './nav.js?v=13';
 
 const room = $('#reading-room'),
   img = $('#room-img'),
