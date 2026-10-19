@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=15" />
-    <script src="./vendor/lucide-icons.js?v=3" defer></script>
-    <script type="module" src="./app.js?v=12"></script>
+    <link rel="stylesheet" href="./style.css?v=19" />
+    <script src="./vendor/lucide-icons.js?v=7" defer></script>
+    <script type="module" src="./app.js?v=18"></script>
   </head>
   <body>
     <main>
@@ -26,8 +26,7 @@
           ><span>TIMEGROVE</span></a
         >
         <div class="topbar-end">
-          <span id="date-label"></span
-          ><button id="menu-button" class="icon-button" aria-label="打开村庄菜单" aria-haspopup="dialog"><i data-lucide="menu"></i></button>
+          <span id="date-label"></span>
         </div>
       </header>
 
@@ -37,7 +36,7 @@
         <div aria-label="村庄" id="page-village" class="home-screen village-screen">
           <div class="screen-heading">
             <div>
-              <span class="eyebrow">YOUR LITTLE WORLD</span>
+              <span class="eyebrow">A TOWN IN THE MIST</span>
               <span class="date-line" data-date></span>
               <h1>我的村庄</h1>
             </div>
@@ -89,24 +88,21 @@
               ><button id="backup-nudge-later" class="text-button">稍后</button>
             </div>
           </section>
-          <section class="village-panel">
-            <div class="panel-heading">
-              <div>
-                <h2><span class="live-dot"></span>林间的家</h2>
-                <span>每一份专注，都在让这里变得不同</span>
-              </div>
-              <div class="panel-tools">
-                <button class="icon-button" id="reset-camera" title="重置视角" aria-label="重置 3D 视角"><i data-lucide="scan"></i></button>
-              </div>
-            </div>
+          <section class="village-panel" aria-label="雾中的小镇">
             <div id="scene" aria-label="可拖动旋转的 3D 村庄">
               <div class="scene-loading" id="scene-loading">正在种下第一棵树…</div>
-              <div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合专注的一天</div>
-              <button class="build-entry" id="build-button" disabled title="3D 场景加载中…">
-                <span class="build-entry-icon"><i data-lucide="hammer"></i></span>建造
-              </button>
-              <div class="scene-hint"><i data-lucide="move"></i>拖动旋转 · 滚轮缩放 · 点击建筑</div>
               <div id="building-label" hidden></div>
+            </div>
+          </section>
+          <div class="village-hud">
+            <div class="hud-row">
+              <div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合读梦的一天</div>
+              <div class="panel-tools">
+                <button class="icon-button" id="reset-camera" title="重置视角" aria-label="重置 3D 视角"><i data-lucide="scan"></i></button
+                ><button class="build-entry" id="build-button" disabled title="3D 场景加载中…">
+                  <span class="build-entry-icon"><i data-lucide="hammer"></i></span>建造
+                </button>
+              </div>
             </div>
             <div class="harvest-strip">
               <div>
@@ -120,51 +116,67 @@
                 <i data-lucide="hand-coins"></i><span id="harvest-label">领取产出</span>
               </button>
             </div>
-          </section>
+            <div class="scene-hint"><i data-lucide="move"></i>拖动旋转 · 滚轮缩放 · 点击建筑</div>
+          </div>
           <button class="screen-jump text-button" data-page="focus">上滑进入计时 <i data-lucide="chevron-down"></i></button>
         </div>
         <section id="page-focus" hidden class="home-screen focus-screen" aria-label="计时">
           <button class="screen-jump text-button" data-page="village"><i data-lucide="chevron-up"></i>回到村庄</button>
-          <div class="ios-large-title">
-            <span class="date-line" data-date></span>
-            <h1>计时</h1>
-          </div>
           <section class="focus-panel">
-            <div class="focus-heading">
-              <h2><i data-lucide="timer"></i>留一段时间给自己</h2>
-              <span id="focus-status">准备出发</span>
-            </div>
-            <div class="mode-tabs" role="tablist" aria-label="计时模式">
-              <button id="study-tab" role="tab" aria-selected="true" data-mode="study" class="selected">专注学习</button
-              ><button id="rest-tab" role="tab" aria-selected="false" data-mode="rest">好好休息</button>
-            </div>
-            <div class="timer-ring" id="timer-ring">
-              <div>
-                <span id="timer-kicker">下一块砖，从此刻开始</span><strong id="timer-display" aria-label="剩余时间">25:00</strong
-                ><span id="timer-note">一小步，也算数。</span>
+            <div class="reading-room" id="reading-room">
+              <img id="room-img" alt="" aria-hidden="true" />
+              <img class="companion-img" alt="" aria-hidden="true" /><img class="companion-img" alt="" aria-hidden="true" />
+              <div class="room-light" aria-hidden="true"></div>
+              <div class="room-clock" aria-hidden="true"><i class="hand-h"></i><i class="hand-m"></i></div>
+              <div class="room-shell" aria-hidden="true"><b></b><i></i><i></i><i></i><i></i></div>
+              <div class="timer-ring" id="timer-ring" aria-hidden="true"></div>
+              <div class="room-top">
+                <button id="room-exit" class="room-btn" aria-label="回到村庄，计时继续"><i data-lucide="chevron-left"></i></button
+                ><span id="focus-status" class="room-chip">准备出发</span
+                ><span class="room-tools" role="group" aria-label="读梦设置"
+                  ><button
+                    id="wake-toggle"
+                    class="room-btn"
+                    aria-pressed="false"
+                    aria-label="读梦时保持屏幕常亮"
+                    title="读梦时保持屏幕常亮"
+                  >
+                    <i data-lucide="sun"></i></button
+                  ><button id="alert-sound" class="room-btn" aria-pressed="true" aria-label="提示音与震动" title="提示音与震动">
+                    <i data-lucide="volume-2"></i></button
+                  ><button id="alert-notify" class="room-btn" aria-pressed="false" aria-label="系统通知" title="系统通知">
+                    <i data-lucide="bell"></i></button
+                ></span>
+              </div>
+              <p class="room-say" id="room-say" role="status"></p>
+              <div class="room-dock">
+                <div class="room-time" aria-live="off">
+                  <span id="timer-kicker">书屋的灯已经点亮</span><strong id="timer-display" aria-label="剩余时间">25:00</strong
+                  ><span id="timer-note">读完一个梦，小镇就亮一点。</span>
+                </div>
+                <div class="room-setup">
+                  <div class="mode-tabs" role="tablist" aria-label="计时模式">
+                    <button id="study-tab" role="tab" aria-selected="true" data-mode="study" class="selected">专注学习</button
+                    ><button id="rest-tab" role="tab" aria-selected="false" data-mode="rest">好好休息</button>
+                  </div>
+                  <div class="duration-options" id="durations"></div>
+                  <label class="topic-field"
+                    ><i data-lucide="pencil-line"></i
+                    ><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容" /></label
+                  ><button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button>
+                  <div class="focus-reward" id="focus-reward"></div>
+                  <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button>
+                </div>
+                <div class="room-controls">
+                  <div class="timer-actions" hidden id="timer-actions">
+                    <button id="pause-button" class="secondary-button">暂停</button
+                    ><button id="finish-button" class="primary-button">结束并打卡</button>
+                  </div>
+                  <button id="cancel-timer" class="text-button" hidden>放弃本次计时</button>
+                  <p class="room-hint">轻点画面显示控制</p>
+                </div>
               </div>
             </div>
-            <div class="duration-options" id="durations"></div>
-            <label class="topic-field"
-              ><i data-lucide="pencil-line"></i
-              ><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容" /></label
-            ><button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button>
-            <div class="timer-actions" hidden id="timer-actions">
-              <button id="pause-button" class="secondary-button">暂停</button
-              ><button id="finish-button" class="primary-button">结束并打卡</button>
-            </div>
-            <div class="focus-reward" id="focus-reward"></div>
-            <div class="alert-toggles" role="group" aria-label="到点提醒">
-              <button id="alert-sound" class="alert-chip" aria-pressed="true">
-                <span class="ios-tile tile-pink"><i data-lucide="volume-2"></i></span><span class="alert-label">提示音与震动</span
-                ><span class="ios-switch" aria-hidden="true"></span></button
-              ><button id="alert-notify" class="alert-chip" aria-pressed="false">
-                <span class="ios-tile tile-red"><i data-lucide="bell"></i></span><span class="alert-label">系统通知</span
-                ><span class="ios-switch" aria-hidden="true"></span>
-              </button>
-            </div>
-            <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button
-            ><button id="cancel-timer" class="text-button" hidden>放弃本次计时</button>
           </section>
         </section>
       </div>
@@ -188,12 +200,28 @@
         <h2>让生长有迹可循</h2>
         <button data-close="settings-dialog" class="icon-button" aria-label="关闭"><i data-lucide="x"></i></button>
       </div>
+      <h3>小镇的故事</h3>
+      <div class="story-card">
+        <p>
+          海中央有一座被雾围住的小镇。你是新来的读梦人：每一段安静的专注，就是在旧梦书屋里读完一个梦。梦里的光会散进小镇，化成建造用的材料。
+        </p>
+        <button id="story-button" class="secondary-button"><i data-lucide="book-open"></i>重温小镇的故事</button>
+      </div>
       <h3>村庄生活指南</h3>
       <div class="rules-list">
-        <p><strong>专注学习</strong><span>每分钟获得 2 木材、1 石料、0.4 星砂。累计每学习 60 分钟增加 1 位居民。</span></p>
-        <p><strong>适当休息</strong><span>每学习 5 分钟解锁 1 分钟可奖励休息。每分钟休息获得 2 补给、0.2 星砂，单次最多 15 分钟。</span></p>
+        <p>
+          <strong>专注学习 · 读梦</strong
+          ><span>每专注 1 分钟，读出的梦光化成 2 木材、1 石料、0.4 星砂。累计每学习 60 分钟，就会有 1 位居民愿意留下。</span>
+        </p>
+        <p>
+          <strong>适当休息 · 散步</strong
+          ><span>每学习 5 分钟解锁 1 分钟可奖励休息。散步时海风带回补给：每分钟 2 补给、0.2 星砂，单次最多 15 分钟。</span>
+        </p>
         <p><strong>建筑产出</strong><span>关闭网页也会按时间产出，最多储存 24 小时。领取后可继续储存；升级立即提升产速。</span></p>
-        <p><strong>星砂寻宝</strong><span>每次 30 星砂，无付费入口。连续 19 次未出史诗或传说，第 20 次至少史诗；出货后重新计数。</span></p>
+        <p>
+          <strong>星砂寻宝</strong
+          ><span>星砂是读梦时落下的碎光。每次 30 星砂，无付费入口。连续 19 次未出史诗或传说，第 20 次至少史诗；出货后重新计数。</span>
+        </p>
         <p>
           <strong>计时与周统计</strong
           ><span>计时刷新后保留，到点停止累计，需要手动打卡领奖。暂停时间不计入学习；本周按设备本地时区从周一 00:00 开始。</span>
@@ -209,7 +237,7 @@
           <strong>地貌工具</strong
           ><span
             >填海造地消耗石料、木材与补给（岛越大越贵）；改变地貌：花甸 2 补给、岩地 2 石料、石径 3
-            石料；抬升每级消耗石料；降低、草地、沙滩、池塘与还原为海免费。</span
+            石料；抬升每级消耗石料；平整把涂抹到的地块统一到起点的高度（只收抬升所需石料）；降低、草地、沙滩、池塘与还原为海免费。选好地貌工具后可拖动涂抹多个地块，双指或右键（Shift+拖动）旋转视角。</span
           >
         </p>
         <p>
@@ -217,6 +245,20 @@
           ><span
             >计时页可开关提示音与震动、系统通知；标签页标题会显示倒计时。系统通知需要页面保持在后台打开，iPhone 需先「添加到主屏幕」。</span
           >
+        </p>
+        <p>
+          <strong>雾、雪与颜色</strong
+          ><span
+            >刚来时小镇笼着薄雾、积着雪，颜色淡得像旧照片，雪也下得勤。建造、升级与新居民会让雾散去、积雪融化、颜色回来；繁荣之后，偶尔还会下一场雪。</span
+          >
+        </p>
+        <p>
+          <strong>书屋的守灯人</strong
+          ><span>书屋里有一位安静的守灯人，她在扶手椅里陪你读梦：你开始时她会抬头看你一眼，读完了她会给你倒一杯茶。她几乎不说话。</span>
+        </p>
+        <p>
+          <strong>金色小兽</strong
+          ><span>每当有新居民决定留下，几只金色的小兽会从雾里走出来，绕小镇走一圈再回到雾里。建好守门人小屋后，它们会从小屋旁出发。</span>
         </p>
         <p><strong>装饰</strong><span>装饰按种类消耗资源，拆除不返还资源。收藏品可摆在奇物展台上展示。</span></p>
       </div>
@@ -251,6 +293,14 @@
       <p id="confirm-text"></p>
       <div class="backup-buttons">
         <button id="confirm-no" class="secondary-button">取消</button><button id="confirm-yes" class="primary-button">确认</button>
+      </div>
+    </dialog>
+    <dialog id="story-dialog" class="story-dialog" aria-labelledby="story-title" tabindex="-1">
+      <div class="story-art" id="story-art" aria-hidden="true"></div>
+      <div class="story-pages" id="story-pages"></div>
+      <div class="story-dots" id="story-dots" aria-hidden="true"></div>
+      <div class="story-actions">
+        <button id="story-skip" class="text-button">跳过</button><button id="story-next" class="primary-button">继续</button>
       </div>
     </dialog>
     <dialog id="result-dialog">
@@ -316,7 +366,7 @@
           <div class="wish-copy">
             <span class="eyebrow">STARDUST WISH · 常驻寻宝</span>
             <h2>星海寻宝</h2>
-            <p>把专注攒下的星砂撒向夜空，<span class="nowrap">看看今晚会落下什么。</span></p>
+            <p>把读梦落下的星砂撒向夜空，<span class="nowrap">看看今晚会落下什么。</span></p>
             <div class="wish-rates">
               <span class="r-legendary">传说 2%</span><span class="r-epic">史诗 10%</span><span class="r-rare">稀有 28%</span
               ><span class="r-common">寻常 60%</span>

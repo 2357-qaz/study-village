@@ -1,6 +1,6 @@
 // Wonders: the cabinet (奇物柜), the item viewer and stardust wishes (星砂寻宝) with their animation.
-import * as C from '../core.js?v=4';
-import * as A from '../alerts.js?v=5';
+import * as C from '../core.js?v=7';
+import * as A from '../alerts.js?v=6';
 import {
   $,
   icon,
@@ -13,9 +13,10 @@ import {
   state,
   broken,
   items3d,
-  page
-} from './store.js?v=9';
-import {thumbInner, wantThumb, hydrateThumbs} from './thumbs.js?v=9';
+  page,
+  onDialogClose
+} from './store.js?v=11';
+import {thumbInner, wantThumb, hydrateThumbs} from './thumbs.js?v=11';
 let drawBusy = false,
   viewer = null,
   viewToken = 0;
@@ -149,7 +150,7 @@ function openItem(id) {
     icons();
   }
 }
-$('#item-dialog').addEventListener('close', closeViewer);
+onDialogClose($('#item-dialog'), closeViewer);
 $('#collection-grid').addEventListener('keydown', e => {
   const it = e.target.closest?.('[data-item]');
   if (it && (e.key === 'Enter' || e.key === ' ')) {

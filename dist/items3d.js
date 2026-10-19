@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
-import {Builder, LiveSink, itemModel} from './models.js?v=4';
+import {Builder, LiveSink, itemModel} from './models.js?v=5';
 // Rich-material renderer for collectibles: one shared offscreen renderer for thumbnails, one live viewer at a time.
 const mats = new Map();
 function richMat(color, o = {}) {

@@ -9,9 +9,9 @@ export const RESOURCES = {
 export const BUILDINGS = [
   {
     id: 'cottage',
-    name: '林间书屋',
+    name: '旧梦书屋',
     icon: 'book-open',
-    desc: '让每一页书，都有回响。',
+    desc: '雾里唯一亮着的灯，旧梦在这里被读出。',
     resource: 'stars',
     rate: 2,
     cost: {wood: 60, stone: 30, food: 10},
@@ -138,6 +138,19 @@ export const BUILDINGS = [
     coastal: false
   },
   {
+    id: 'gatekeeper',
+    name: '守门人小屋',
+    icon: 'door-open',
+    desc: '守门人每天清晨吹响号角，唤金色的小兽出门。',
+    resource: 'food',
+    rate: 16,
+    cost: {wood: 150, stone: 180, food: 40},
+    color: '#b8935a',
+    size: 2,
+    pop: 8,
+    coastal: false
+  },
+  {
     id: 'lighthouse',
     name: '海角灯塔',
     icon: 'tower-control',
@@ -154,7 +167,7 @@ export const BUILDINGS = [
     id: 'library',
     name: '星辉图书馆',
     icon: 'library',
-    desc: '每本书都是一扇窗，通向更大的世界。',
+    desc: '读过的梦都被好好收在这里，不会再被雾带走。',
     resource: 'stars',
     rate: 7,
     cost: {wood: 300, stone: 240, food: 90},
@@ -241,7 +254,8 @@ export function initialState(now = Date.now()) {
       teahouse: 0,
       lighthouse: 0,
       library: 0,
-      clocktower: 0
+      clocktower: 0,
+      gatekeeper: 0
     },
     layout: {cottage: {...LAYOUT.cottage}, sawmill: {...LAYOUT.sawmill}},
     island: defaultIsland(),
@@ -445,6 +459,8 @@ export function draw(s, count = 1, rng = Math.random) {
   }
   return results;
 }
+// Buildings added after save format v2 shipped; older v2 saves have no entry for them.
+const LATE_BUILDINGS = new Set(['gatekeeper']);
 export function validateState(x) {
   const fail = () => {
     throw Error('存档格式无效或版本不兼容，原有进度未改动');
@@ -454,8 +470,13 @@ export function validateState(x) {
   if (!x || (v !== 1 && v !== 2) || !n(x.createdAt, 1e14) || !n(x.lastAccrual, 1e14)) fail();
   for (const obj of ['resources', 'pending'])
     for (const k of Object.keys(RESOURCES)) if (!n(x[obj]?.[k])) fail();
+  const late = id => v === 2 && LATE_BUILDINGS.has(id) && x.buildings && x.buildings[id] === undefined;
   for (const b of v === 1 ? BUILDINGS.slice(0, 5) : BUILDINGS)
-    if (!Number.isInteger(x.buildings?.[b.id]) || x.buildings[b.id] < 0 || x.buildings[b.id] > 5) fail();
+    if (
+      !late(b.id) &&
+      (!Number.isInteger(x.buildings?.[b.id]) || x.buildings[b.id] < 0 || x.buildings[b.id] > 5)
+    )
+      fail();
   if (!Array.isArray(x.sessions) || x.sessions.length > 100000) fail();
   const intervals = [];
   for (const a of x.sessions) {
@@ -515,6 +536,7 @@ export function validateState(x) {
   }
   const c = JSON.parse(JSON.stringify(x));
   if (v === 1) return migrate(c);
+  for (const id of LATE_BUILDINGS) c.buildings[id] ??= 0;
   validateV2(c, fail);
   return c;
 }
@@ -546,6 +568,8 @@ export const DECOR = [
   {id: 'campfire', name: '篝火', icon: 'flame-kindling', cost: {wood: 10}, place: 'land'},
   {id: 'tent', name: '帐篷', icon: 'tent', cost: {wood: 6, food: 6}, place: 'land'},
   {id: 'bridge', name: '木桥', icon: 'waves', cost: {wood: 10}, place: 'pond'},
+  {id: 'stonebridge', name: '旧石桥', icon: 'landmark', cost: {stone: 16, wood: 4}, place: 'pond'},
+  {id: 'gate', name: '旧城门', icon: 'castle', cost: {stone: 24, wood: 4}, place: 'land'},
   {id: 'boat', name: '小帆船', icon: 'sailboat', cost: {wood: 20}, place: 'sea'},
   {id: 'statue', name: '星辉雕像', icon: 'star', cost: {stone: 30, stars: 20}, place: 'land'},
   {id: 'display', name: '奇物展台', icon: 'gem', cost: {stone: 12, stars: 10}, place: 'land'}
@@ -560,6 +584,7 @@ export const TERRAIN_TOOLS = [
   {id: 'w', name: '池塘', icon: 'droplets'},
   {id: 'raise', name: '抬升', icon: 'arrow-up'},
   {id: 'lower', name: '降低', icon: 'arrow-down'},
+  {id: 'level', name: '平整', icon: 'equal'},
   {id: 'sea', name: '还原为海', icon: 'eraser'}
 ];
 const LAYOUT = {
@@ -593,6 +618,7 @@ export function tileAt(s, x, z) {
   const i = tileIndex(x, z);
   return {t: s.island.terrain[i], h: +s.island.height[i]};
 }
+export const NOMAT_MSG = NOMAT;
 export function landCount(s) {
   let n = 0;
   for (const c of s.island.terrain) if (c !== '.') n++;
@@ -849,16 +875,23 @@ export function migrate(v1) {
   s.version = 2;
   return s;
 }
-export function terrainCost(s, tool, x, z) {
+// 平整: raising to `target` costs what the single-step `raise` would, level by level; lowering is free.
+function levelCost(h, target) {
+  let stone = 0;
+  for (let k = h; k < target; k++) stone += 4 * (k + 1);
+  return stone ? {stone} : {};
+}
+export function terrainCost(s, tool, x, z, opts) {
   if (tool === 'reclaim') {
     const n = Math.max(0, landCount(s) - BASE_LAND);
     return {stone: 6 + Math.floor(n / 12), wood: 4 + Math.floor(n / 20), food: 2 + Math.floor(n / 30)};
   }
   if (tool === 'raise') return {stone: 4 * ((tileAt(s, x, z)?.h || 0) + 1)};
+  if (tool === 'level') return levelCost(tileAt(s, x, z)?.h || 0, opts?.target);
   if (!Object.hasOwn(TCOST, tool)) throw Error('未知的地貌工具');
   return {...TCOST[tool]};
 }
-export function editTerrain(s, tool, x, z) {
+export function editTerrain(s, tool, x, z, opts) {
   if (!TERRAIN_TOOLS.some(t => t.id === tool)) throw Error('未知的地貌工具');
   const q = tileAt(s, x, z);
   if (!q) throw Error('超出岛屿范围');
@@ -885,6 +918,11 @@ export function editTerrain(s, tool, x, z) {
     } else if (tool === 'lower') {
       if (h <= 0) throw Error('已经是最低的地势');
       h--;
+    } else if (tool === 'level') {
+      const g = opts?.target;
+      if (!Number.isInteger(g) || g < 0 || g > 3) throw Error('平整的目标高度无效');
+      if (h === g) throw Error('已经是这个高度');
+      h = g;
     } else if (tool === 'sea') {
       if (h !== 0) throw Error('请先把地势降到最低');
       c = '.';
@@ -893,7 +931,7 @@ export function editTerrain(s, tool, x, z) {
       c = tool;
     }
   }
-  const cost = terrainCost(s, tool, x, z);
+  const cost = terrainCost(s, tool, x, z, opts);
   if (Object.entries(cost).some(([k, v]) => s.resources[k] < v)) throw Error(NOMAT);
   for (const [k, v] of Object.entries(cost)) s.resources[k] -= v;
   const i = tileIndex(x, z),
@@ -959,4 +997,24 @@ function validateV2(x, fail) {
     if (d.type === 'display' ? !COLLECTIONS.some(c => c.id === d.item) : d.item !== undefined) fail();
     mark(tileIndex(d.x, d.z));
   }
+}
+
+/* ---------- the town's weather (shared by the village scene and the reading room) ---------- */
+// Warmth 0..1: a newcomer's town is cold and misty; building, residents and decor warm it up.
+export function warmth(s) {
+  const levels = Object.values(s.buildings).reduce((a, b) => a + (b | 0), 0),
+    p = levels + population(s) / 4 + (s.decor?.length || 0) / 10;
+  return Math.sqrt(Math.min(1, Math.max(0, (p - 2.75) / 40)));
+}
+// How much of the ground lies under snow: thick early on, melted once the town is warm.
+export const snowCover = w => Math.max(0, Math.min(0.85, (1 - w) * 1.1 - 0.12));
+// Snowfall intensity right now (0 = none). The weather changes every half hour; a cold town
+// sees snow most of the time, a warm one only now and then. ?snow=0|1 in the URL forces it.
+export function snowfall(w, now = Date.now()) {
+  const forced = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('snow') : null;
+  if (forced !== null) return +forced;
+  let n = (Math.floor(now / 1.8e6) * 374761393 + 77 * 668265263) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  const r = ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+  return r < 0.22 + 0.73 * Math.pow(1 - w, 1.3) ? 0.6 + 0.4 * (1 - w) : 0;
 }

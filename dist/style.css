@@ -6304,3 +6304,1430 @@ button:not(:disabled):active {
     color: var(--ios-label-3);
   }
 }
+
+/* ---------- the town's story (first launch, replayable from settings) ---------- */
+.story-dialog {
+  max-width: min(400px, calc(100vw - 32px));
+  padding: 28px 24px 20px;
+  text-align: center;
+}
+.story-art {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  margin: 6px auto 18px;
+  border-radius: 36px;
+  background: radial-gradient(circle at 50% 30%, #ffffff, #e4e9ec 58%, #cbd4da);
+  color: #566676;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 12px 30px #4a5a6a2e;
+  transition: background 0.5s ease;
+}
+.story-art.warm {
+  background: radial-gradient(circle at 50% 30%, #fffaf0, #f6e6c4 58%, #e9cf98);
+  color: #9a6a2a;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 12px 34px #d4952a40;
+}
+.story-art svg {
+  width: 54px;
+  height: 54px;
+  stroke-width: 1.4;
+}
+.story-pages {
+  display: grid;
+}
+.story-page {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.story-page.on {
+  visibility: visible;
+  opacity: 1;
+}
+.story-dialog h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+}
+.story-page p {
+  margin: 0 auto;
+  max-width: 320px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #4d5a52;
+}
+.story-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 20px 0 16px;
+}
+.story-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #3c4a4133;
+  transition: width 0.3s ease;
+}
+.story-dots i.on {
+  width: 18px;
+  background: var(--forest);
+}
+.story-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.story-actions .primary-button {
+  flex: 1;
+  min-height: 50px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.story-actions .text-button {
+  min-height: 50px;
+  padding: 0 14px;
+  color: #6b766f;
+}
+.story-actions .text-button[hidden] {
+  display: none;
+}
+.story-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #f4f6f0;
+}
+.story-card p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #5d6b62;
+}
+.story-card .secondary-button {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 999px;
+}
+@media (max-width: 760px) {
+  dialog.story-dialog:modal {
+    padding: 14px 22px calc(18px + env(safe-area-inset-bottom));
+  }
+  #settings-dialog .story-card {
+    background: var(--ios-card);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .story-art {
+    background: radial-gradient(circle at 50% 30%, #3a434b, #252c31 58%, #1a1f23);
+    color: #aebccb;
+    box-shadow:
+      inset 0 1px 0 #ffffff1a,
+      0 12px 30px #00000066;
+  }
+  .story-art.warm {
+    background: radial-gradient(circle at 50% 30%, #5a4826, #3a2f1a 58%, #241d12);
+    color: #f3cc7c;
+  }
+  .story-page p,
+  .story-card p {
+    color: var(--ios-label-2);
+  }
+  .story-dots i {
+    background: #e6eee133;
+  }
+  .story-dots i.on {
+    background: #d2e69c;
+  }
+  .story-card,
+  #settings-dialog .story-card {
+    background: var(--ios-raised);
+  }
+}
+.story-dialog:focus {
+  outline: none;
+}
+
+/* =====================================================================
+   Reading room: the timer happens inside 旧梦书屋.
+   The room is a still render (reading-room.js); light, clock, dream shell
+   and the progress ring are drawn over it at projected positions
+   (--sx/--sy shell, --cx/--cy clock, --lx/--ly lamp, --wx/--wy window).
+   ===================================================================== */
+.reading-room {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  container-type: size;
+  height: clamp(300px, 46dvh, 440px);
+  margin: 0 0 14px;
+  border-radius: 24px;
+  background: radial-gradient(circle at 50% 60%, #4a3c30, #1e1a17);
+  color: #fff;
+  --sx: 50%;
+  --sy: 60%;
+  --p: 0;
+}
+#room-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.reading-room.ready #room-img {
+  opacity: 1;
+}
+.reading-room::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: 42%;
+  background: linear-gradient(transparent, rgba(12, 10, 12, 0.55));
+  pointer-events: none;
+}
+.room-light {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--lx) var(--ly), rgba(255, 196, 120, 0.3), transparent 24%),
+    radial-gradient(
+      ellipse 62% 46% at var(--sx) var(--sy),
+      transparent,
+      rgba(12, 10, 16, 0.3) 45%,
+      rgba(8, 7, 12, 0.74)
+    );
+  transition: opacity 1.4s ease;
+}
+.room-clock {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: calc(var(--cr, 3%) * 2);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.reading-room:not(.ready) .room-clock {
+  display: none;
+}
+.room-clock i {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  width: 2px;
+  border-radius: 1px;
+  background: #3a2e26;
+  transform-origin: 50% 100%;
+}
+.room-clock .hand-h {
+  height: 27%;
+  transform: translateX(-50%) rotate(var(--ha, 0deg));
+}
+.room-clock .hand-m {
+  width: 1.5px;
+  height: 38%;
+  transform: translateX(-50%) rotate(var(--ma, 0deg));
+}
+.room-shell {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  z-index: 1;
+  pointer-events: none;
+}
+.room-shell b {
+  position: absolute;
+  width: calc(10cqw + 10cqw * var(--p));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(240, 244, 255, 0.95),
+    rgba(200, 214, 255, 0.5) 32%,
+    rgba(170, 190, 255, 0) 70%
+  );
+  opacity: 0.35;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  transition: opacity 1s ease;
+}
+.room-shell i {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  margin: -2px;
+  border-radius: 50%;
+  background: #eef2ff;
+  box-shadow: 0 0 6px 2px rgba(210, 222, 255, 0.8);
+  opacity: 0;
+}
+.reading-room #timer-ring.timer-ring {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  z-index: 1;
+  width: min(36cqw, 48cqh);
+  height: min(36cqw, 48cqh);
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: conic-gradient(rgba(240, 244, 255, 0.95) var(--progress, 0%), rgba(255, 255, 255, 0.18) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.reading-room.resting #timer-ring.timer-ring {
+  background: conic-gradient(rgba(186, 230, 222, 0.95) var(--progress, 0%), rgba(255, 255, 255, 0.18) 0);
+}
+.room-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.3s ease;
+}
+.room-chip {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(28, 24, 22, 0.36);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.room-tools {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.room-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  background: rgba(28, 24, 22, 0.36);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  color: #fff;
+}
+.room-btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.room-btn {
+  position: relative;
+}
+.room-btn svg {
+  width: 17px;
+  height: 17px;
+}
+.room-btn[aria-pressed='true'] {
+  border-color: transparent;
+  background: rgba(255, 234, 186, 0.92);
+  color: #3b2a12;
+}
+.room-btn[hidden],
+#room-exit {
+  display: none;
+}
+.room-time {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+.room-time #timer-display {
+  font-family: var(--ios-rounded, ui-rounded, system-ui, sans-serif);
+  font-size: 50px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+.room-time #timer-kicker,
+.room-time #timer-note {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+}
+.room-time #timer-kicker {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.room-controls {
+  display: none;
+}
+/* wide rooms: she sits on the right, so the time goes bottom-left */
+@container (min-aspect-ratio: 1/1) {
+  .room-time {
+    left: 6%;
+    right: auto;
+    bottom: 9%;
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* --- immersive reading: the room fills the screen; controls appear on tap --- */
+body.reading-mode {
+  overflow: hidden;
+}
+body.reading-mode .reading-room {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+body.reading-mode .screen-dock {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(140%);
+}
+body.reading-mode #toast {
+  z-index: 60;
+}
+body.reading-mode .room-light {
+  opacity: 1;
+}
+body.reading-mode .room-shell b {
+  opacity: calc(0.55 + 0.45 * var(--p));
+  animation: shell-breathe 4.5s ease-in-out infinite;
+}
+body.reading-mode .reading-room:not(.paused):not(.done) .room-shell i {
+  animation: dream-mote 7s linear infinite;
+}
+.room-shell i:nth-child(3) {
+  animation-delay: -1.8s !important;
+  --wob: -2;
+}
+.room-shell i:nth-child(4) {
+  animation-delay: -3.6s !important;
+  --wob: 3;
+}
+.room-shell i:nth-child(5) {
+  animation-delay: -5.4s !important;
+  --wob: -1;
+}
+@keyframes dream-mote {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+  }
+  55% {
+    transform: translate(
+        calc(var(--mdx, -10) * 0.5cqw + var(--wob, 1) * 2cqw),
+        calc(var(--mdy, -30) * 0.45cqh - 4cqh)
+      )
+      scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--mdx, -10) * 1cqw), calc(var(--mdy, -30) * 1cqh)) scale(0.4);
+  }
+}
+@keyframes shell-breathe {
+  50% {
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+body.reading-mode .reading-room #timer-ring.timer-ring {
+  width: min(38cqw, 30cqh);
+  height: min(38cqw, 30cqh);
+}
+body.reading-mode .room-time {
+  bottom: calc(14% + env(safe-area-inset-bottom));
+}
+body.reading-mode .room-time #timer-display {
+  font-size: 72px;
+}
+body.reading-mode .room-top {
+  top: calc(12px + env(safe-area-inset-top));
+  opacity: 0;
+  pointer-events: none;
+}
+body.reading-mode #room-exit {
+  display: grid;
+}
+body.reading-mode .room-controls {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: calc(22px + env(safe-area-inset-bottom));
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.room-controls .timer-actions,
+body.reading-mode .room-controls #cancel-timer {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.room-controls .timer-actions {
+  display: flex;
+  gap: 10px;
+  width: min(100%, 420px);
+}
+.room-controls .timer-actions[hidden] {
+  display: none;
+}
+.room-controls .timer-actions button {
+  flex: 1;
+  min-height: 52px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 600;
+}
+.room-controls #pause-button {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(28, 24, 22, 0.42);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  color: #fff;
+}
+.room-controls #finish-button {
+  background: linear-gradient(#e2f0bb, #d2e69c);
+  color: #1f4630;
+  box-shadow: inset 0 1px 0 #ffffffb3;
+}
+.room-controls #finish-button:disabled,
+.room-controls #pause-button:disabled {
+  opacity: 0.45;
+}
+.room-controls #cancel-timer {
+  min-height: 40px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+}
+.room-hint {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  transition: opacity 0.3s ease;
+}
+.reading-room.reveal .room-top,
+.reading-room.done .room-top,
+.reading-room.reveal .room-controls .timer-actions,
+.reading-room.done .room-controls .timer-actions,
+body.reading-mode .reading-room.reveal .room-controls #cancel-timer {
+  opacity: 1;
+  pointer-events: auto;
+}
+.reading-room.reveal .room-hint,
+.reading-room.done .room-hint {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.reading-mode .room-shell b,
+  body.reading-mode .reading-room .room-shell i {
+    animation: none !important;
+  }
+}
+@media (max-width: 760px) {
+  .focus-panel .reading-room {
+    margin: 4px 0 16px;
+  }
+  .focus-panel .reading-room + .focus-heading {
+    display: none;
+  }
+}
+.reading-room #focus-status.room-chip {
+  display: inline-block;
+  color: #fff;
+}
+body.reading-mode #toast {
+  top: calc(64px + env(safe-area-inset-top));
+  bottom: auto;
+}
+@container (max-aspect-ratio: 62/100) {
+  body.reading-mode .room-time {
+    bottom: calc(24% + env(safe-area-inset-bottom));
+  }
+}
+/* the companion layer: same size as the room image, cross-faded between poses */
+.companion-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  pointer-events: none;
+}
+.reading-room.ready .companion-img.on {
+  opacity: 1;
+}
+.room-say {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  z-index: 3;
+  margin: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(28, 24, 22, 0.45);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  font-size: 13px;
+  color: #fff;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -4px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+  pointer-events: none;
+}
+.room-say.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+body.reading-mode .room-say {
+  top: calc(64px + env(safe-area-inset-top));
+}
+
+/* =====================================================================
+   Immersive home screens. The village scene and the reading room fill the
+   whole screen; headings, numbers and controls float over them as text and
+   glass pills on soft scrims instead of sitting in bordered cards.
+   --sky-top / --sky-bottom and body[data-sky] come from the village sky.
+   ===================================================================== */
+:root {
+  --sky-top: #b9d0dc;
+  --sky-bottom: #e4ece6;
+  --hud-ink: #1f2a24;
+  --hud-ink-2: #1f2a24a6;
+  --hud-glass: #ffffff8c;
+  --hud-glass-edge: #ffffffb3;
+}
+body[data-sky='night'] {
+  --hud-ink: #f1f4ee;
+  --hud-ink-2: #f1f4eeb3;
+  --hud-glass: #1a222a80;
+  --hud-glass-edge: #ffffff26;
+}
+.topbar,
+#storage-alert {
+  position: relative;
+  z-index: 5;
+}
+.topbar {
+  border-bottom: 0;
+  background: transparent;
+  color: var(--hud-ink);
+}
+.topbar .compact-brand > span,
+.topbar #date-label {
+  color: var(--hud-ink-2);
+}
+/* screens only fade: a transform would pin their full-screen layers to the screen box */
+#home-pages > .home-screen {
+  animation-name: screen-fade;
+}
+@keyframes screen-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- village ---------- */
+#home-pages .village-screen {
+  gap: 8px;
+  padding: 14px 0 0;
+  color: var(--hud-ink);
+}
+#home-pages .village-screen > :not(.village-panel) {
+  position: relative;
+  z-index: 1;
+}
+#home-pages .village-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--sky-bottom);
+  box-shadow: none;
+  overflow: hidden;
+}
+#home-pages #scene {
+  position: absolute;
+  inset: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+/* mist that the floating text sits in: the sky's own colour at the top, a soft veil below */
+#home-pages .village-panel::before,
+#home-pages .village-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+#home-pages .village-panel::before {
+  top: 0;
+  height: min(42%, 340px);
+  background: linear-gradient(
+    var(--sky-top),
+    color-mix(in srgb, var(--sky-top) 82%, transparent) 45%,
+    transparent
+  );
+}
+#home-pages .village-panel::after {
+  bottom: 0;
+  height: min(30%, 240px);
+  background: linear-gradient(transparent, color-mix(in srgb, var(--sky-bottom) 70%, transparent));
+}
+body.build-mode #home-pages .village-panel::before,
+body.build-mode #home-pages .village-panel::after {
+  display: none;
+}
+/* heading: plain text */
+#home-pages .screen-heading {
+  align-items: flex-end;
+  color: var(--hud-ink);
+}
+#home-pages .screen-heading h1,
+#home-pages .screen-heading .date-line,
+#home-pages .screen-heading .eyebrow {
+  color: inherit;
+}
+#home-pages .screen-heading .date-line,
+#home-pages .screen-heading .eyebrow {
+  opacity: 0.7;
+}
+#home-pages .screen-heading .village-badge {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-align: right;
+  color: var(--hud-ink);
+}
+#home-pages .screen-heading .village-badge > svg {
+  display: none;
+}
+#home-pages .village-badge strong {
+  color: var(--hud-ink);
+}
+#home-pages .village-badge span {
+  color: var(--hud-ink-2);
+}
+/* numbers: a quiet row of figures, no cards */
+#home-pages .stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 28px;
+  margin: 0;
+}
+#home-pages .stat {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+#home-pages .stat-icon,
+#home-pages .stat .mini-bars,
+#home-pages .stat > div > span {
+  display: none;
+}
+#home-pages .stat p {
+  margin: 0 0 1px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hud-ink-2);
+}
+#home-pages .stat strong {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--hud-ink);
+}
+#home-pages .stat strong small {
+  color: var(--hud-ink-2);
+}
+#home-pages .resource-bar {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--hud-ink);
+}
+#home-pages .resource-bar .resource-label {
+  display: none;
+}
+#home-pages .resource-bar #resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+#home-pages .resource-bar #resources > * {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--hud-ink);
+}
+#home-pages .resource-bar #resources > * strong {
+  color: var(--hud-ink);
+}
+#home-pages .resource-bar #resources > * span {
+  color: var(--hud-ink-2);
+}
+#home-pages .resource-bar #rules-button {
+  color: var(--hud-ink-2);
+  background: none;
+}
+/* the backup reminder is a single glass pill */
+#home-pages .backup-nudge {
+  align-self: flex-start;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  margin: 2px 0 0;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--hud-glass-edge);
+  border-radius: 999px;
+  background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: none;
+  color: var(--hud-ink);
+}
+#home-pages .backup-nudge-icon,
+#home-pages .backup-nudge p {
+  display: none;
+}
+#home-pages .backup-nudge strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hud-ink);
+}
+#home-pages .backup-nudge-actions {
+  gap: 2px;
+  margin: 0;
+}
+#home-pages .backup-nudge-actions .primary-button {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+#home-pages .backup-nudge-actions .text-button {
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--hud-ink-2);
+}
+#home-pages .backup-nudge-actions svg {
+  width: 15px;
+  height: 15px;
+}
+/* bottom of the village: weather, camera and build on one line, the harvest as a glass bar */
+#home-pages .village-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-bottom: 8px;
+  pointer-events: none;
+}
+#home-pages .village-hud > * {
+  pointer-events: auto;
+}
+#home-pages .village-hud .hud-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+#home-pages .village-hud .hud-row > * {
+  pointer-events: auto;
+}
+#home-pages .village-hud .scene-tag,
+#home-pages .village-hud .build-entry,
+#home-pages .village-hud #reset-camera,
+#home-pages .village-hud .harvest-strip {
+  position: static;
+  border: 1px solid var(--hud-glass-edge);
+  background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 6px 20px #1f2a2414;
+  color: var(--hud-ink);
+}
+#home-pages .village-hud .scene-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+#home-pages .village-hud .panel-tools {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+#home-pages .village-hud #reset-camera {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+#home-pages .village-hud .build-entry {
+  min-height: 40px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+#home-pages .village-hud .harvest-strip {
+  margin: 0;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+}
+#home-pages .harvest-strip .harvest-icon {
+  display: none;
+}
+#home-pages .harvest-strip strong {
+  font-size: 14px;
+  color: var(--hud-ink);
+}
+#home-pages .harvest-strip p {
+  font-size: 12px;
+  color: var(--hud-ink-2);
+}
+#home-pages .harvest-strip .primary-button {
+  min-height: 42px;
+  border-radius: 999px;
+}
+#home-pages .village-hud .scene-hint {
+  position: static;
+  align-self: center;
+  transform: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--hud-ink-2);
+  pointer-events: none;
+}
+#home-pages .village-screen .screen-jump {
+  color: var(--hud-ink-2);
+}
+#home-pages #building-label {
+  bottom: auto;
+  top: 50%;
+}
+body.build-mode #home-pages .village-screen > :not(.village-panel) {
+  visibility: hidden;
+}
+
+/* ---------- focus: the reading room is the screen ---------- */
+#home-pages .focus-screen {
+  justify-content: flex-end;
+  padding: 0;
+}
+#home-pages .focus-screen > .screen-jump {
+  display: none;
+}
+#home-pages .focus-screen .focus-panel {
+  position: static;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+#home-pages .focus-panel .reading-room {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+}
+/* the screen is darker towards the bottom where the controls sit */
+.reading-room::after {
+  height: 62%;
+  background: linear-gradient(transparent, rgba(12, 10, 12, 0.35) 35%, rgba(10, 8, 10, 0.82));
+}
+.reading-room .room-top {
+  top: calc(12px + env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+}
+.reading-room .room-say {
+  top: calc(60px + env(safe-area-inset-top));
+}
+.room-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--dock-h, 74px) + 12px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+}
+.reading-room .room-dock .room-time {
+  position: static;
+  pointer-events: none;
+}
+.reading-room .room-dock .room-time #timer-display {
+  font-size: 64px;
+}
+body.reading-mode .room-dock {
+  bottom: calc(22px + env(safe-area-inset-bottom));
+}
+body.reading-mode .reading-room .room-controls {
+  position: static;
+}
+body.reading-mode #reading-room .room-dock .room-setup {
+  display: none;
+}
+/* setup: mode, length, topic and start as light text and glass over the room */
+#reading-room .room-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 420px);
+  color: #fff;
+}
+#reading-room .room-setup .mode-tabs {
+  display: flex;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+#reading-room .room-setup .mode-tabs button {
+  flex: none;
+  min-height: 32px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+#reading-room .room-setup .mode-tabs button.selected {
+  border-bottom-color: #f3e6c4;
+  background: none;
+  box-shadow: none;
+  color: #fff;
+}
+#reading-room .room-setup .duration-options {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+}
+#reading-room .room-setup .duration-options button {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(28, 24, 22, 0.32);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.86);
+}
+#reading-room .room-setup .duration-options button.selected {
+  border-color: transparent;
+  background: rgba(255, 238, 200, 0.94);
+  color: #3b2a12;
+}
+#reading-room .room-setup .topic-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.7);
+}
+#reading-room .room-setup .topic-field svg {
+  width: 17px;
+  height: 17px;
+  color: inherit;
+}
+#reading-room .room-setup .topic-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-size: 16px;
+  color: #fff;
+  outline: none;
+}
+#reading-room .room-setup .topic-field input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+#reading-room .room-setup .topic-field:focus-within {
+  border-bottom-color: #f3e6c4;
+}
+#reading-room .room-setup #start-button {
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(#f6ecd2, #ecd9aa);
+  box-shadow:
+    inset 0 1px 0 #ffffffb3,
+    0 8px 26px rgba(255, 196, 120, 0.25);
+  font-size: 17px;
+  font-weight: 600;
+  color: #3b2a12;
+}
+#reading-room .room-setup .focus-reward {
+  margin: -4px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.66);
+  text-align: center;
+}
+#reading-room .room-setup .focus-reward:empty {
+  display: none;
+}
+#reading-room .room-setup #manual-button {
+  min-height: 32px;
+  margin: -6px 0 0;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+}
+#reading-room .room-setup #manual-button svg {
+  width: 15px;
+  height: 15px;
+  color: inherit;
+}
+.reading-room .room-tools .room-btn,
+.reading-room .room-chip {
+  box-shadow: none;
+}
+/* wide screens: she sits on the right, so the time and setup stack bottom-left */
+@container (min-aspect-ratio: 1/1) {
+  .room-dock {
+    left: 6%;
+    right: auto;
+    width: min(400px, 40cqw);
+    align-items: flex-start;
+    padding: 0;
+  }
+  #reading-room .room-dock .room-setup {
+    align-items: stretch;
+  }
+  #reading-room .room-dock .room-setup .mode-tabs,
+  #reading-room .room-dock .room-setup .duration-options {
+    justify-content: flex-start;
+  }
+  #reading-room .room-dock .room-setup #manual-button {
+    align-self: flex-start;
+  }
+  .reading-room::after {
+    inset: 0 auto 0 0;
+    width: 60%;
+    height: auto;
+    background: linear-gradient(90deg, rgba(10, 8, 10, 0.72), rgba(10, 8, 10, 0.35) 55%, transparent);
+  }
+  body.reading-mode .room-dock {
+    bottom: 9%;
+  }
+}
+/* short screens: keep the setup compact */
+@media (max-height: 720px) {
+  .reading-room .room-dock .room-time #timer-display {
+    font-size: 48px;
+  }
+  .reading-room .room-dock .room-time #timer-note,
+  #reading-room .room-setup .focus-reward {
+    display: none;
+  }
+  #reading-room .room-dock,
+  #reading-room .room-setup {
+    gap: 9px;
+  }
+}
+
+/* order of the floating village layers, whatever older layouts set */
+#home-pages .village-screen > .screen-heading {
+  order: 0;
+}
+#home-pages .village-screen > .stats-grid {
+  order: 1;
+}
+#home-pages .village-screen > .resource-bar {
+  order: 2;
+}
+#home-pages .village-screen > .backup-nudge {
+  order: 3;
+}
+#home-pages .village-screen > .village-hud {
+  order: 10;
+}
+#home-pages .home-screen > .screen-jump {
+  display: none;
+}
+#reading-room .room-setup .mode-tabs {
+  display: flex;
+  width: auto;
+}
+#reading-room .room-setup .mode-tabs button {
+  width: auto;
+}
+/* the ring around the dream shell stays clear of the time below it */
+.reading-room #timer-ring.timer-ring,
+body.reading-mode .reading-room #timer-ring.timer-ring {
+  width: min(30cqw, 21cqh);
+  height: min(30cqw, 21cqh);
+}
+@container (min-aspect-ratio: 1/1) {
+  .reading-room #timer-ring.timer-ring,
+  body.reading-mode .reading-room #timer-ring.timer-ring {
+    width: min(22cqw, 34cqh);
+    height: min(22cqw, 34cqh);
+  }
+}
+/* on the reading room the top bar and the tab bar turn to dark glass */
+body:has(#home-pages[data-screen='focus']) .topbar {
+  --hud-ink: #f4efe6;
+  --hud-ink-2: #f4efe6a6;
+}
+body:has(#home-pages[data-screen='focus']) .topbar .icon-button {
+  background: rgba(28, 24, 22, 0.36);
+  color: #fff;
+}
+@media (min-width: 761px) {
+  body:not(.reading-mode) .reading-room .room-top {
+    top: 76px;
+    left: max(16px, calc((100vw - 1180px) / 2 + 24px));
+    right: max(16px, calc((100vw - 1180px) / 2 + 24px));
+  }
+  body:not(.reading-mode) .reading-room .room-say {
+    top: 124px;
+  }
+  /* the village's bottom layer is one line: weather, harvest in the middle, camera and build */
+  #home-pages .village-hud {
+    flex-flow: row wrap;
+    align-items: center;
+  }
+  #home-pages .village-hud .hud-row {
+    display: contents;
+  }
+  #home-pages .village-hud .scene-tag {
+    order: 1;
+  }
+  #home-pages .village-hud .harvest-strip {
+    order: 2;
+    gap: 18px;
+    margin: 0 auto;
+  }
+  #home-pages .village-hud .panel-tools {
+    order: 3;
+    margin-left: 0;
+  }
+  #home-pages .village-hud .scene-hint {
+    order: 4;
+    flex-basis: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
+@media (max-width: 760px) {
+  body:has(#home-pages[data-screen='focus']) .screen-dock {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(24, 20, 18, 0.55);
+  }
+  body:has(#home-pages[data-screen='focus']) .screen-dock button:not(.selected) {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  body:has(#home-pages[data-screen='focus']) .dock-divider {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+body.reading-mode .reading-room .room-dock .room-controls {
+  align-self: stretch;
+}
+/* short screens (phones on their side): the setup packs into two rows under the time */
+@media (max-height: 520px) {
+  body:has(#home-pages[data-screen='focus']) .topbar {
+    visibility: hidden;
+  }
+  body:not(.reading-mode) .reading-room .room-top {
+    top: calc(10px + env(safe-area-inset-top));
+  }
+  #reading-room .room-dock {
+    gap: 8px;
+    bottom: calc(var(--dock-h, 74px) + 6px);
+  }
+  .reading-room .room-dock .room-time #timer-display {
+    font-size: 40px;
+  }
+  .reading-room .room-dock .room-time #timer-kicker,
+  #reading-room .room-setup #manual-button {
+    display: none;
+  }
+  #reading-room .room-setup {
+    flex-flow: row wrap;
+    align-items: center;
+    gap: 8px 14px;
+  }
+  #reading-room .room-setup .topic-field {
+    flex: 1 1 150px;
+    width: auto;
+  }
+  #reading-room .room-setup #start-button {
+    width: auto;
+    min-height: 44px;
+    padding: 0 22px;
+  }
+}
+
+/* --- polish: backup pill spans the row; the reading room's controls are warm glass --- */
+@media (max-width: 760px) {
+  #home-pages .backup-nudge {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+  #home-pages .backup-nudge > div:not(.backup-nudge-actions) {
+    flex: 1;
+    min-width: 0;
+  }
+}
+/* one warm glass recipe for everything that floats in the room */
+.reading-room {
+  --room-glass: linear-gradient(180deg, rgba(255, 248, 236, 0.16), rgba(255, 240, 220, 0.06));
+  --room-glass-edge: rgba(255, 244, 226, 0.26);
+  --room-glass-shine: inset 0 1px 0 rgba(255, 250, 240, 0.32), inset 0 -1px 0 rgba(255, 250, 240, 0.06),
+    0 6px 18px rgba(0, 0, 0, 0.22);
+  --room-warm: linear-gradient(180deg, rgba(250, 238, 210, 0.94), rgba(232, 208, 158, 0.9));
+  --room-warm-shine: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 0 rgba(150, 110, 40, 0.18),
+    0 8px 26px rgba(255, 196, 120, 0.22);
+}
+.reading-room .room-btn,
+.reading-room .room-chip,
+#reading-room .room-setup .duration-options button,
+.reading-room .room-controls #pause-button {
+  border: 1px solid var(--room-glass-edge);
+  background: var(--room-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: var(--room-glass-shine);
+}
+.reading-room .room-btn[aria-pressed='true'],
+#reading-room .room-setup .duration-options button.selected,
+#reading-room .room-setup #start-button,
+.reading-room .room-controls #finish-button {
+  border: 1px solid rgba(255, 250, 236, 0.7);
+  background: var(--room-warm);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: var(--room-warm-shine);
+  color: #3b2a12;
+}
+#reading-room .room-setup .mode-tabs button.selected {
+  border-bottom-color: #ecd9aa;
+}
+#reading-room .room-setup .topic-field:focus-within {
+  border-bottom-color: #ecd9aa;
+}
+/* the tab bar over the room: dark glass, the selected tab in the same warm glass as the buttons */
+body:has(#home-pages[data-screen='focus']) .screen-dock {
+  border-color: rgba(255, 244, 226, 0.18);
+  background: linear-gradient(180deg, rgba(40, 32, 26, 0.5), rgba(20, 16, 14, 0.62));
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 240, 0.14),
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+body:has(#home-pages[data-screen='focus']) .screen-dock button:not(.selected) {
+  color: rgba(255, 244, 226, 0.82);
+}
+body:has(#home-pages[data-screen='focus']) .screen-dock button.selected,
+body:has(#home-pages[data-screen='focus']) .screen-dock button[aria-current='page'] {
+  background: linear-gradient(180deg, #f8efd9, #e8d3a2);
+  color: #3b2a12;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(150, 110, 40, 0.2),
+    0 2px 10px rgba(255, 196, 120, 0.22);
+}
+body:has(#home-pages[data-screen='focus']) .dock-divider {
+  background: rgba(255, 244, 226, 0.18);
+}

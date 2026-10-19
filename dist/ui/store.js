@@ -1,6 +1,6 @@
 // Shared state and helpers. The save, the 3D scene handle and the current page are exported as live
 // bindings: other modules read them directly, but only this module reassigns them (via the setters).
-import * as C from '../core.js?v=4';
+import * as C from '../core.js?v=7';
 export const KEY = 'timegrove-save-v1',
   BACKUP = KEY + '-previous',
   V1BAK = 'timegrove-save-v1-backup-before-v2';
@@ -118,18 +118,29 @@ export function weekData() {
 export function confirmAction(title, text) {
   $('#confirm-title').textContent = title;
   $('#confirm-text').textContent = text;
-  $('#confirm-dialog').showModal();
+  const dlg = $('#confirm-dialog');
+  dlg.returnValue = 'no';
+  dlg.showModal();
   return new Promise(resolve => {
-    const dlg = $('#confirm-dialog');
-    $('#confirm-yes').onclick = () => {
-      dlg.close('yes');
-    };
+    confirmResolve?.(false);
+    confirmResolve = resolve;
+    $('#confirm-yes').onclick = () => dlg.close('yes');
     $('#confirm-no').onclick = () => dlg.close('no');
-    dlg.onclose = () => resolve(dlg.returnValue === 'yes');
-    dlg.oncancel = () => {
-      dlg.returnValue = 'no';
-    };
   });
+}
+let confirmResolve = null;
+onDialogClose($('#confirm-dialog'), () => {
+  confirmResolve?.($('#confirm-dialog').returnValue === 'yes');
+  confirmResolve = null;
+});
+// Runs fn whenever the dialog closes. Watches the `open` attribute rather than the 'close' event,
+// which Chromium does not always deliver (seen when a dialog closes right after a button press).
+export function onDialogClose(dlg, fn) {
+  let was = dlg.open;
+  new MutationObserver(() => {
+    if (was && !dlg.open) fn();
+    was = dlg.open;
+  }).observe(dlg, {attributes: true, attributeFilter: ['open']});
 }
 // Each feature module registers its renderer; render() redraws everything after a state change.
 const renderers = [];

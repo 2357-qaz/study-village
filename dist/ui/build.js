@@ -1,5 +1,5 @@
 // Build mode (建造模式): full-screen island editing on top of the 3D scene.
-import * as C from '../core.js?v=4';
+import * as C from '../core.js?v=7';
 import {
   $,
   $$,
@@ -17,9 +17,9 @@ import {
   state,
   broken,
   village
-} from './store.js?v=9';
-import {setPage} from './nav.js?v=10';
-import {thumbInner, hydrateThumbs} from './thumbs.js?v=9';
+} from './store.js?v=11';
+import {setPage} from './nav.js?v=13';
+import {thumbInner, hydrateThumbs} from './thumbs.js?v=11';
 const decorDefs = () =>
   Array.isArray(C.DECOR) ? C.DECOR : Object.entries(C.DECOR).map(([id, v]) => ({id, ...v}));
 const decorDef = t => decorDefs().find(d => d.id === t);
@@ -43,6 +43,7 @@ const TERRAIN_INFO = {
   w: '挖成池塘，可架木桥，免费',
   raise: '抬升一级（最高 3 级），费用随高度增加',
   lower: '降低一级，免费',
+  level: '拖动涂抹，把地块统一到起点的高度，只收抬升所需石料',
   sea: '平地沉回大海，免费'
 };
 const TERRAIN_COST = {f: {food: 2}, r: {stone: 2}, p: {stone: 3}};
@@ -93,6 +94,8 @@ function applyTool(t) {
   bm.ghost = null;
   village.setGhost(null);
   village.setTool(t);
+  endStroke();
+  village.setPaint?.(t?.kind === 'terrain');
 }
 function selectObj(key) {
   bm.sel = key;
@@ -158,6 +161,47 @@ export function onTile(info) {
   }
   ghostAt(info.x, info.z);
 }
+// Drag painting: one stroke = pointer down..up. Each tile gets the tool once; every tile's cost and edit are
+// applied in a single transact so a save is never half-deducted. Tiles are applied in order via a promise chain.
+let stroke = null;
+const SKIP_OK = e => e && e.message !== C.NOMAT_MSG;
+function endStroke() {
+  stroke = null;
+}
+export function onPaint(hit, phase) {
+  if (!inBuild() || bm.busy) return;
+  const t = bm.tool;
+  if (phase === 'end') return endStroke();
+  if (!t || t.kind !== 'terrain' || !hit) return;
+  if (phase === 'start' || !stroke)
+    stroke = {tool: t.tool, seen: new Set(), target: null, stopped: false, chain: Promise.resolve()};
+  const st = stroke,
+    i = C.tileIndex(hit.x, hit.z);
+  if (!C.inBounds(hit.x, hit.z) || st.stopped || st.seen.has(i)) return;
+  st.seen.add(i);
+  const q = C.tileAt(state, hit.x, hit.z);
+  if (st.tool === 'level') {
+    if (st.target === null && q && q.t !== '.') st.target = q.h;
+    if (st.target === null) return;
+  }
+  const opts = st.tool === 'level' ? {target: st.target} : undefined,
+    x = hit.x,
+    z = hit.z;
+  st.chain = st.chain.then(() => {
+    if (st.stopped) return;
+    return transact(s => {
+      try {
+        return C.editTerrain(s, st.tool, x, z, opts);
+      } catch (e) {
+        if (!SKIP_OK(e)) {
+          st.stopped = true; // out of materials: stop for the rest of the stroke (transact toasts once)
+          throw e;
+        }
+        return null; // sea, occupied, already that terrain/height...: skip this tile silently
+      }
+    }).catch(() => {});
+  });
+}
 export function enterBuild(pick) {
   if (!buildOK()) {
     toast('当前设备无法显示 3D 场景，无法使用自由建造');
@@ -172,6 +216,7 @@ export function enterBuild(pick) {
   $('#build-hud').classList.remove('folded');
   village.setBuildMode(true);
   village.onTile = onTile;
+  village.onPaint = onPaint;
   renderBuild();
   if (pick) pickBuilding(pick);
 }
@@ -372,7 +417,8 @@ function renderHint() {
             : '选择一种地貌工具，再点击地块';
   } else if (t.kind === 'terrain') {
     const tool = C.TERRAIN_TOOLS.find(x => x.id === t.tool);
-    h = `${tool?.name || ''}：点击地块应用 · ${TERRAIN_INFO[t.tool] || ''}`;
+    const touch = matchMedia?.('(pointer: coarse)').matches;
+    h = `${tool?.name || ''}：${touch ? '拖动涂抹地块 · 双指旋转视角' : '拖动涂抹地块 · 右键或 Shift+拖动旋转'} · ${TERRAIN_INFO[t.tool] || ''}`;
   } else if (t.kind === 'move') h = bm.ghost && !bm.ghost.valid ? bm.ghost.reason : '点击岛上空地选择新位置';
   else h = bm.ghost ? (bm.ghost.valid ? '位置合适，点「确认」放置' : bm.ghost.reason) : '点击岛上空地放置';
   $('#bh-hint').textContent = h;
@@ -468,7 +514,7 @@ function renderPalette() {
         t.id,
         bm.tool?.kind === 'terrain' && bm.tool.tool === t.id,
         false,
-        `<span class="bh-ic">${icon(t.icon)}</span><h4>${t.name}</h4><p>${TERRAIN_INFO[t.id] || ''}</p><span class="bh-cost">${t.id === 'raise' ? '<span>石料 4×(高度+1)</span>' : costChips(cost)}</span>`
+        `<span class="bh-ic">${icon(t.icon)}</span><h4>${t.name}</h4><p>${TERRAIN_INFO[t.id] || ''}</p><span class="bh-cost">${t.id === 'raise' || t.id === 'level' ? '<span>石料 4×(高度+1)</span>' : costChips(cost)}</span>`
       );
     }).join('');
   } else {

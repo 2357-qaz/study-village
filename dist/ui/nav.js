@@ -1,5 +1,5 @@
 // Page navigation: the two swipeable home screens and the secondary pages in a dialog.
-import {$, $$, render, safe, setCurrentPage} from './store.js?v=9';
+import {$, $$, render, safe, setCurrentPage, onDialogClose} from './store.js?v=11';
 // Bottom navigation: which dock item represents each page.
 const DOCK = {
   village: 'village',
@@ -68,15 +68,12 @@ export function setPage(p) {
   sheet.scrollTop = 0;
   render();
 }
-$('#secondary-dialog').addEventListener('close', () =>
-  markDock($('#home-pages').dataset.screen || 'village')
-);
+onDialogClose($('#secondary-dialog'), () => markDock($('#home-pages').dataset.screen || 'village'));
 document.addEventListener('keydown', e => {
   const sheet = $('#secondary-dialog');
   if (e.key === 'Escape' && sheet.open && !sheet.matches(':modal') && !document.querySelector('dialog:modal'))
     sheet.close();
 });
-$('#menu-button').onclick = () => $('#menu-dialog').showModal();
 $('#dock-more').onclick = () => $('#menu-dialog').showModal();
 // Each gesture selects one complete screen; the two screens never share a scroll position.
 const pager = $('#home-pages');

@@ -1,6 +1,6 @@
 // Focus / rest timer, manual study entries and timer alert toggles.
-import * as C from '../core.js?v=4';
-import * as A from '../alerts.js?v=5';
+import * as C from '../core.js?v=7';
+import * as A from '../alerts.js?v=6';
 import {requestPersist} from '../offline.js?v=1';
 import {
   $,
@@ -13,7 +13,7 @@ import {
   onRender,
   state,
   broken
-} from './store.js?v=9';
+} from './store.js?v=11';
 let mode = 'study',
   minutes = 25,
   readyNotified = false;
@@ -47,7 +47,7 @@ export function renderTimer() {
     mode === 'study'
       ? `预计获得 <span>木材 +${minutes * 2}</span>石料 +${minutes}`
       : `可奖励休息 ${Math.floor(C.restCredit(state) / 60)} 分钟 · 每分钟 +2 补给`;
-  $('#timer-kicker').textContent = mode === 'study' ? '下一块砖，从此刻开始' : '休息，也是生长的一部分';
+  $('#timer-kicker').textContent = mode === 'study' ? '书屋的灯已经点亮' : '读梦的人，也要出去走走';
   updateTimer();
 }
 export function updateTimer() {
@@ -69,18 +69,20 @@ export function updateTimer() {
     : '准备出发';
   $('#timer-note').textContent = t
     ? remain === 0
-      ? '辛苦了，领取你的奖励吧'
+      ? '这个梦读完了，去打卡收下它吧'
       : t.runningSince === null
         ? '随时可以继续'
-        : '时间正化作村庄的一部分'
-    : '一小步，也算数。';
+        : mode === 'study'
+          ? '旧梦正一点点化成光'
+          : '海风正慢慢吹走疲惫'
+    : '读完一个梦，小镇就亮一点。';
   $('#pause-button').textContent = t?.runningSince === null ? '继续' : '暂停';
   $('#pause-button').disabled = remain === 0;
   $('#finish-button').disabled = elapsed < 60;
   $('#start-button').disabled = broken || (mode === 'rest' && C.restCredit(state) < 60);
   if (t && remain === 0 && !readyNotified) {
     readyNotified = true;
-    toast(mode === 'study' ? '这一段专注完成了，记得打卡领取奖励。' : '休息结束，欢迎回来。');
+    toast(mode === 'study' ? '这个旧梦读完了，记得打卡，把光带回小镇。' : '散步结束，书屋的灯还亮着。');
     A.timerFinished(t.kind);
   }
   if (!t) readyNotified = false;
@@ -122,7 +124,7 @@ document.addEventListener('click', e => {
 $('#start-button').onclick = safe(async () => {
   A.primeAudio();
   await transact(s => C.startTimer(s, mode, minutes, $('#topic').value));
-  toast(mode === 'study' ? '村庄等你回来。安心专注吧。' : '伸个懒腰，给自己一点空白。');
+  toast(mode === 'study' ? '书屋很安静，慢慢读吧。' : '去岸边走走，让眼睛歇一歇。');
 });
 $('#pause-button').onclick = safe(() => {
   A.primeAudio();
@@ -132,7 +134,9 @@ $('#finish-button').onclick = safe(async () => {
   const before = C.population(state);
   const r = await transact(s => C.finishTimer(s));
   requestPersist();
-  toast(`打卡成功！${rewardText(r)}${C.population(state) > before ? ' · 新居民搬来了！' : ''}`);
+  toast(
+    `梦已读完！${rewardText(r)}${C.population(state) > before ? ' · 有人决定在小镇住下了，金色的小兽从雾里走来' : ''}`
+  );
 });
 $('#cancel-timer').onclick = safe(async () => {
   if (await confirmAction('放弃本次计时？', '尚未打卡的时间不会计入学习，也不会获得奖励。'))
@@ -151,7 +155,7 @@ $('#manual-form').onsubmit = async e => {
     );
     $('#manual-dialog').close();
     requestPersist();
-    toast(`学习已记下！${rewardText(r)}`);
+    toast(`补记的时间也化成了光：${rewardText(r)}`);
   } catch (error) {
     $('#manual-error').textContent = error.message;
   }

@@ -1,5 +1,5 @@
 // Village home screen: weekly stats, residents, resources and building production.
-import * as C from '../core.js?v=4';
+import * as C from '../core.js?v=7';
 import {
   $,
   icon,
@@ -13,7 +13,7 @@ import {
   onRender,
   state,
   broken
-} from './store.js?v=9';
+} from './store.js?v=11';
 export function renderStats() {
   const days = weekData(),
     week = days.reduce((n, d) => n + d.seconds, 0),
