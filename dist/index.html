@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=18" />
+    <link rel="stylesheet" href="./style.css?v=19" />
     <script src="./vendor/lucide-icons.js?v=6" defer></script>
-    <script type="module" src="./app.js?v=17"></script>
+    <script type="module" src="./app.js?v=18"></script>
   </head>
   <body>
     <main>
@@ -89,24 +89,21 @@
               ><button id="backup-nudge-later" class="text-button">稍后</button>
             </div>
           </section>
-          <section class="village-panel">
-            <div class="panel-heading">
-              <div>
-                <h2><span class="live-dot"></span>雾中的小镇</h2>
-                <span>每一份专注，都在让这里变得不同</span>
-              </div>
-              <div class="panel-tools">
-                <button class="icon-button" id="reset-camera" title="重置视角" aria-label="重置 3D 视角"><i data-lucide="scan"></i></button>
-              </div>
-            </div>
+          <section class="village-panel" aria-label="雾中的小镇">
             <div id="scene" aria-label="可拖动旋转的 3D 村庄">
               <div class="scene-loading" id="scene-loading">正在种下第一棵树…</div>
-              <div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合读梦的一天</div>
-              <button class="build-entry" id="build-button" disabled title="3D 场景加载中…">
-                <span class="build-entry-icon"><i data-lucide="hammer"></i></span>建造
-              </button>
-              <div class="scene-hint"><i data-lucide="move"></i>拖动旋转 · 滚轮缩放 · 点击建筑</div>
               <div id="building-label" hidden></div>
+            </div>
+          </section>
+          <div class="village-hud">
+            <div class="hud-row">
+              <div class="scene-tag"><i data-lucide="sun"></i>晴 · 适合读梦的一天</div>
+              <div class="panel-tools">
+                <button class="icon-button" id="reset-camera" title="重置视角" aria-label="重置 3D 视角"><i data-lucide="scan"></i></button
+                ><button class="build-entry" id="build-button" disabled title="3D 场景加载中…">
+                  <span class="build-entry-icon"><i data-lucide="hammer"></i></span>建造
+                </button>
+              </div>
             </div>
             <div class="harvest-strip">
               <div>
@@ -120,15 +117,12 @@
                 <i data-lucide="hand-coins"></i><span id="harvest-label">领取产出</span>
               </button>
             </div>
-          </section>
+            <div class="scene-hint"><i data-lucide="move"></i>拖动旋转 · 滚轮缩放 · 点击建筑</div>
+          </div>
           <button class="screen-jump text-button" data-page="focus">上滑进入计时 <i data-lucide="chevron-down"></i></button>
         </div>
         <section id="page-focus" hidden class="home-screen focus-screen" aria-label="计时">
           <button class="screen-jump text-button" data-page="village"><i data-lucide="chevron-up"></i>回到村庄</button>
-          <div class="ios-large-title">
-            <span class="date-line" data-date></span>
-            <h1>计时</h1>
-          </div>
           <section class="focus-panel">
             <div class="reading-room" id="reading-room">
               <img id="room-img" alt="" aria-hidden="true" />
@@ -156,33 +150,34 @@
                 ></span>
               </div>
               <p class="room-say" id="room-say" role="status"></p>
-              <div class="room-time" aria-live="off">
-                <span id="timer-kicker">书屋的灯已经点亮</span><strong id="timer-display" aria-label="剩余时间">25:00</strong
-                ><span id="timer-note">读完一个梦，小镇就亮一点。</span>
-              </div>
-              <div class="room-controls">
-                <div class="timer-actions" hidden id="timer-actions">
-                  <button id="pause-button" class="secondary-button">暂停</button
-                  ><button id="finish-button" class="primary-button">结束并打卡</button>
+              <div class="room-dock">
+                <div class="room-time" aria-live="off">
+                  <span id="timer-kicker">书屋的灯已经点亮</span><strong id="timer-display" aria-label="剩余时间">25:00</strong
+                  ><span id="timer-note">读完一个梦，小镇就亮一点。</span>
                 </div>
-                <button id="cancel-timer" class="text-button" hidden>放弃本次计时</button>
-                <p class="room-hint">轻点画面显示控制</p>
+                <div class="room-setup">
+                  <div class="mode-tabs" role="tablist" aria-label="计时模式">
+                    <button id="study-tab" role="tab" aria-selected="true" data-mode="study" class="selected">专注学习</button
+                    ><button id="rest-tab" role="tab" aria-selected="false" data-mode="rest">好好休息</button>
+                  </div>
+                  <div class="duration-options" id="durations"></div>
+                  <label class="topic-field"
+                    ><i data-lucide="pencil-line"></i
+                    ><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容" /></label
+                  ><button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button>
+                  <div class="focus-reward" id="focus-reward"></div>
+                  <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button>
+                </div>
+                <div class="room-controls">
+                  <div class="timer-actions" hidden id="timer-actions">
+                    <button id="pause-button" class="secondary-button">暂停</button
+                    ><button id="finish-button" class="primary-button">结束并打卡</button>
+                  </div>
+                  <button id="cancel-timer" class="text-button" hidden>放弃本次计时</button>
+                  <p class="room-hint">轻点画面显示控制</p>
+                </div>
               </div>
             </div>
-            <div class="focus-heading">
-              <h2><i data-lucide="timer"></i>留一段时间给自己</h2>
-            </div>
-            <div class="mode-tabs" role="tablist" aria-label="计时模式">
-              <button id="study-tab" role="tab" aria-selected="true" data-mode="study" class="selected">专注学习</button
-              ><button id="rest-tab" role="tab" aria-selected="false" data-mode="rest">好好休息</button>
-            </div>
-            <div class="duration-options" id="durations"></div>
-            <label class="topic-field"
-              ><i data-lucide="pencil-line"></i
-              ><input id="topic" maxlength="80" placeholder="这次想学点什么？" aria-label="本次学习内容" /></label
-            ><button id="start-button" class="primary-button"><i data-lucide="play"></i><span>开始专注</span></button>
-            <div class="focus-reward" id="focus-reward"></div>
-            <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button>
           </section>
         </section>
       </div>

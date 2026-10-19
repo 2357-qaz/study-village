@@ -52,7 +52,7 @@ async function paintRoom() {
   if (key === lastKey) return;
   lastKey = key;
   try {
-    mod ??= await import('../reading-room.js?v=3');
+    mod ??= await import('../reading-room.js?v=4');
     sculptReady ??= mod.loadCompanion();
     const r = mod.renderRoom(opts);
     if (key !== lastKey) return; // a newer size arrived meanwhile

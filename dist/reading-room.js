@@ -384,7 +384,7 @@ function build(opts) {
   cam.updateMatrixWorld();
   // shift the view so the dream shell sits centred, a little below the middle, on every screen shape
   const sp = pts.shell.clone().project(cam),
-    ty = aspect > 1 ? 0.68 : aspect < 0.62 ? 0.47 : 0.6; // tall full-screen views leave room below for the time
+    ty = aspect > 1 ? 0.6 : aspect < 0.62 ? 0.3 : 0.38; // tall views keep the lower half for the time and controls
   cam.setViewOffset(w, h, ((sp.x + 1) / 2 - 0.5) * w, ((1 - sp.y) / 2 - ty) * h, w, h);
   built = {key, w, h, aspect, daypart, night, scene, grp, cam, pts, snowTex, occluding: false, actor: null};
   return built;

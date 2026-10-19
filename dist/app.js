@@ -26,7 +26,7 @@ import {renderBackup} from './ui/save.js?v=12';
 import './offline.js?v=1';
 import {buildEntryState, onTile} from './ui/build.js?v=12';
 import './ui/story.js?v=2';
-import './ui/reading.js?v=3';
+import './ui/reading.js?v=4';
 window.addEventListener('storage', e => {
   if (e.key === KEY && e.newValue) {
     try {
@@ -68,7 +68,7 @@ import('./items3d.js?v=5')
     hydrateThumbs($('#draw-results'));
   })
   .catch(() => {});
-import('./scene.js?v=7')
+import('./scene.js?v=8')
   .then(m => {
     try {
       setVillage(

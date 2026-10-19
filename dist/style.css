@@ -6926,3 +6926,734 @@ body.reading-mode #toast {
 body.reading-mode .room-say {
   top: calc(64px + env(safe-area-inset-top));
 }
+
+/* =====================================================================
+   Immersive home screens. The village scene and the reading room fill the
+   whole screen; headings, numbers and controls float over them as text and
+   glass pills on soft scrims instead of sitting in bordered cards.
+   --sky-top / --sky-bottom and body[data-sky] come from the village sky.
+   ===================================================================== */
+:root {
+  --sky-top: #b9d0dc;
+  --sky-bottom: #e4ece6;
+  --hud-ink: #1f2a24;
+  --hud-ink-2: #1f2a24a6;
+  --hud-glass: #ffffff8c;
+  --hud-glass-edge: #ffffffb3;
+}
+body[data-sky='night'] {
+  --hud-ink: #f1f4ee;
+  --hud-ink-2: #f1f4eeb3;
+  --hud-glass: #1a222a80;
+  --hud-glass-edge: #ffffff26;
+}
+.topbar,
+#storage-alert {
+  position: relative;
+  z-index: 5;
+}
+.topbar {
+  border-bottom: 0;
+  background: transparent;
+  color: var(--hud-ink);
+}
+.topbar .compact-brand > span,
+.topbar #date-label {
+  color: var(--hud-ink-2);
+}
+/* screens only fade: a transform would pin their full-screen layers to the screen box */
+#home-pages > .home-screen {
+  animation-name: screen-fade;
+}
+@keyframes screen-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- village ---------- */
+#home-pages .village-screen {
+  gap: 8px;
+  padding: 14px 0 0;
+  color: var(--hud-ink);
+}
+#home-pages .village-screen > :not(.village-panel) {
+  position: relative;
+  z-index: 1;
+}
+#home-pages .village-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--sky-bottom);
+  box-shadow: none;
+  overflow: hidden;
+}
+#home-pages #scene {
+  position: absolute;
+  inset: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+/* mist that the floating text sits in: the sky's own colour at the top, a soft veil below */
+#home-pages .village-panel::before,
+#home-pages .village-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+#home-pages .village-panel::before {
+  top: 0;
+  height: min(42%, 340px);
+  background: linear-gradient(
+    var(--sky-top),
+    color-mix(in srgb, var(--sky-top) 82%, transparent) 45%,
+    transparent
+  );
+}
+#home-pages .village-panel::after {
+  bottom: 0;
+  height: min(30%, 240px);
+  background: linear-gradient(transparent, color-mix(in srgb, var(--sky-bottom) 70%, transparent));
+}
+body.build-mode #home-pages .village-panel::before,
+body.build-mode #home-pages .village-panel::after {
+  display: none;
+}
+/* heading: plain text */
+#home-pages .screen-heading {
+  align-items: flex-end;
+  color: var(--hud-ink);
+}
+#home-pages .screen-heading h1,
+#home-pages .screen-heading .date-line,
+#home-pages .screen-heading .eyebrow {
+  color: inherit;
+}
+#home-pages .screen-heading .date-line,
+#home-pages .screen-heading .eyebrow {
+  opacity: 0.7;
+}
+#home-pages .screen-heading .village-badge {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-align: right;
+  color: var(--hud-ink);
+}
+#home-pages .screen-heading .village-badge > svg {
+  display: none;
+}
+#home-pages .village-badge strong {
+  color: var(--hud-ink);
+}
+#home-pages .village-badge span {
+  color: var(--hud-ink-2);
+}
+/* numbers: a quiet row of figures, no cards */
+#home-pages .stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 28px;
+  margin: 0;
+}
+#home-pages .stat {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+#home-pages .stat-icon,
+#home-pages .stat .mini-bars,
+#home-pages .stat > div > span {
+  display: none;
+}
+#home-pages .stat p {
+  margin: 0 0 1px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--hud-ink-2);
+}
+#home-pages .stat strong {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--hud-ink);
+}
+#home-pages .stat strong small {
+  color: var(--hud-ink-2);
+}
+#home-pages .resource-bar {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--hud-ink);
+}
+#home-pages .resource-bar .resource-label {
+  display: none;
+}
+#home-pages .resource-bar #resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+#home-pages .resource-bar #resources > * {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--hud-ink);
+}
+#home-pages .resource-bar #resources > * strong {
+  color: var(--hud-ink);
+}
+#home-pages .resource-bar #resources > * span {
+  color: var(--hud-ink-2);
+}
+#home-pages .resource-bar #rules-button {
+  color: var(--hud-ink-2);
+  background: none;
+}
+/* the backup reminder is a single glass pill */
+#home-pages .backup-nudge {
+  align-self: flex-start;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  margin: 2px 0 0;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--hud-glass-edge);
+  border-radius: 999px;
+  background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: none;
+  color: var(--hud-ink);
+}
+#home-pages .backup-nudge-icon,
+#home-pages .backup-nudge p {
+  display: none;
+}
+#home-pages .backup-nudge strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hud-ink);
+}
+#home-pages .backup-nudge-actions {
+  gap: 2px;
+  margin: 0;
+}
+#home-pages .backup-nudge-actions .primary-button {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+#home-pages .backup-nudge-actions .text-button {
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--hud-ink-2);
+}
+#home-pages .backup-nudge-actions svg {
+  width: 15px;
+  height: 15px;
+}
+/* bottom of the village: weather, camera and build on one line, the harvest as a glass bar */
+#home-pages .village-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-bottom: 8px;
+  pointer-events: none;
+}
+#home-pages .village-hud > * {
+  pointer-events: auto;
+}
+#home-pages .village-hud .hud-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+#home-pages .village-hud .hud-row > * {
+  pointer-events: auto;
+}
+#home-pages .village-hud .scene-tag,
+#home-pages .village-hud .build-entry,
+#home-pages .village-hud #reset-camera,
+#home-pages .village-hud .harvest-strip {
+  position: static;
+  border: 1px solid var(--hud-glass-edge);
+  background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 6px 20px #1f2a2414;
+  color: var(--hud-ink);
+}
+#home-pages .village-hud .scene-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+#home-pages .village-hud .panel-tools {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+#home-pages .village-hud #reset-camera {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+#home-pages .village-hud .build-entry {
+  min-height: 40px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+#home-pages .village-hud .harvest-strip {
+  margin: 0;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+}
+#home-pages .harvest-strip .harvest-icon {
+  display: none;
+}
+#home-pages .harvest-strip strong {
+  font-size: 14px;
+  color: var(--hud-ink);
+}
+#home-pages .harvest-strip p {
+  font-size: 12px;
+  color: var(--hud-ink-2);
+}
+#home-pages .harvest-strip .primary-button {
+  min-height: 42px;
+  border-radius: 999px;
+}
+#home-pages .village-hud .scene-hint {
+  position: static;
+  align-self: center;
+  transform: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--hud-ink-2);
+  pointer-events: none;
+}
+#home-pages .village-screen .screen-jump {
+  color: var(--hud-ink-2);
+}
+#home-pages #building-label {
+  bottom: auto;
+  top: 50%;
+}
+body.build-mode #home-pages .village-screen > :not(.village-panel) {
+  visibility: hidden;
+}
+
+/* ---------- focus: the reading room is the screen ---------- */
+#home-pages .focus-screen {
+  justify-content: flex-end;
+  padding: 0;
+}
+#home-pages .focus-screen > .screen-jump {
+  display: none;
+}
+#home-pages .focus-screen .focus-panel {
+  position: static;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+#home-pages .focus-panel .reading-room {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+}
+/* the screen is darker towards the bottom where the controls sit */
+.reading-room::after {
+  height: 62%;
+  background: linear-gradient(transparent, rgba(12, 10, 12, 0.35) 35%, rgba(10, 8, 10, 0.82));
+}
+.reading-room .room-top {
+  top: calc(12px + env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+}
+.reading-room .room-say {
+  top: calc(60px + env(safe-area-inset-top));
+}
+.room-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--dock-h, 74px) + 12px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0 20px;
+}
+.reading-room .room-dock .room-time {
+  position: static;
+  pointer-events: none;
+}
+.reading-room .room-dock .room-time #timer-display {
+  font-size: 64px;
+}
+body.reading-mode .room-dock {
+  bottom: calc(22px + env(safe-area-inset-bottom));
+}
+body.reading-mode .reading-room .room-controls {
+  position: static;
+}
+body.reading-mode #reading-room .room-dock .room-setup {
+  display: none;
+}
+/* setup: mode, length, topic and start as light text and glass over the room */
+#reading-room .room-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 420px);
+  color: #fff;
+}
+#reading-room .room-setup .mode-tabs {
+  display: flex;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+#reading-room .room-setup .mode-tabs button {
+  flex: none;
+  min-height: 32px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+#reading-room .room-setup .mode-tabs button.selected {
+  border-bottom-color: #f3e6c4;
+  background: none;
+  box-shadow: none;
+  color: #fff;
+}
+#reading-room .room-setup .duration-options {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+}
+#reading-room .room-setup .duration-options button {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(28, 24, 22, 0.32);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.86);
+}
+#reading-room .room-setup .duration-options button.selected {
+  border-color: transparent;
+  background: rgba(255, 238, 200, 0.94);
+  color: #3b2a12;
+}
+#reading-room .room-setup .topic-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.7);
+}
+#reading-room .room-setup .topic-field svg {
+  width: 17px;
+  height: 17px;
+  color: inherit;
+}
+#reading-room .room-setup .topic-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-size: 16px;
+  color: #fff;
+  outline: none;
+}
+#reading-room .room-setup .topic-field input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+#reading-room .room-setup .topic-field:focus-within {
+  border-bottom-color: #f3e6c4;
+}
+#reading-room .room-setup #start-button {
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(#f6ecd2, #ecd9aa);
+  box-shadow:
+    inset 0 1px 0 #ffffffb3,
+    0 8px 26px rgba(255, 196, 120, 0.25);
+  font-size: 17px;
+  font-weight: 600;
+  color: #3b2a12;
+}
+#reading-room .room-setup .focus-reward {
+  margin: -4px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.66);
+  text-align: center;
+}
+#reading-room .room-setup .focus-reward:empty {
+  display: none;
+}
+#reading-room .room-setup #manual-button {
+  min-height: 32px;
+  margin: -6px 0 0;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+}
+#reading-room .room-setup #manual-button svg {
+  width: 15px;
+  height: 15px;
+  color: inherit;
+}
+.reading-room .room-tools .room-btn,
+.reading-room .room-chip {
+  box-shadow: none;
+}
+/* wide screens: she sits on the right, so the time and setup stack bottom-left */
+@container (min-aspect-ratio: 1/1) {
+  .room-dock {
+    left: 6%;
+    right: auto;
+    width: min(400px, 40cqw);
+    align-items: flex-start;
+    padding: 0;
+  }
+  #reading-room .room-dock .room-setup {
+    align-items: stretch;
+  }
+  #reading-room .room-dock .room-setup .mode-tabs,
+  #reading-room .room-dock .room-setup .duration-options {
+    justify-content: flex-start;
+  }
+  #reading-room .room-dock .room-setup #manual-button {
+    align-self: flex-start;
+  }
+  .reading-room::after {
+    inset: 0 auto 0 0;
+    width: 60%;
+    height: auto;
+    background: linear-gradient(90deg, rgba(10, 8, 10, 0.72), rgba(10, 8, 10, 0.35) 55%, transparent);
+  }
+  body.reading-mode .room-dock {
+    bottom: 9%;
+  }
+}
+/* short screens: keep the setup compact */
+@media (max-height: 720px) {
+  .reading-room .room-dock .room-time #timer-display {
+    font-size: 48px;
+  }
+  .reading-room .room-dock .room-time #timer-note,
+  #reading-room .room-setup .focus-reward {
+    display: none;
+  }
+  #reading-room .room-dock,
+  #reading-room .room-setup {
+    gap: 9px;
+  }
+}
+
+/* order of the floating village layers, whatever older layouts set */
+#home-pages .village-screen > .screen-heading {
+  order: 0;
+}
+#home-pages .village-screen > .stats-grid {
+  order: 1;
+}
+#home-pages .village-screen > .resource-bar {
+  order: 2;
+}
+#home-pages .village-screen > .backup-nudge {
+  order: 3;
+}
+#home-pages .village-screen > .village-hud {
+  order: 10;
+}
+#home-pages .home-screen > .screen-jump {
+  display: none;
+}
+#reading-room .room-setup .mode-tabs {
+  display: flex;
+  width: auto;
+}
+#reading-room .room-setup .mode-tabs button {
+  width: auto;
+}
+/* the ring around the dream shell stays clear of the time below it */
+.reading-room #timer-ring.timer-ring,
+body.reading-mode .reading-room #timer-ring.timer-ring {
+  width: min(30cqw, 21cqh);
+  height: min(30cqw, 21cqh);
+}
+@container (min-aspect-ratio: 1/1) {
+  .reading-room #timer-ring.timer-ring,
+  body.reading-mode .reading-room #timer-ring.timer-ring {
+    width: min(22cqw, 34cqh);
+    height: min(22cqw, 34cqh);
+  }
+}
+/* on the reading room the top bar and the tab bar turn to dark glass */
+body:has(#home-pages[data-screen='focus']) .topbar {
+  --hud-ink: #f4efe6;
+  --hud-ink-2: #f4efe6a6;
+}
+body:has(#home-pages[data-screen='focus']) .topbar .icon-button {
+  background: rgba(28, 24, 22, 0.36);
+  color: #fff;
+}
+@media (min-width: 761px) {
+  body:not(.reading-mode) .reading-room .room-top {
+    top: 76px;
+    left: max(16px, calc((100vw - 1180px) / 2 + 24px));
+    right: max(16px, calc((100vw - 1180px) / 2 + 24px));
+  }
+  body:not(.reading-mode) .reading-room .room-say {
+    top: 124px;
+  }
+  /* the village's bottom layer is one line: weather, harvest in the middle, camera and build */
+  #home-pages .village-hud {
+    flex-flow: row wrap;
+    align-items: center;
+  }
+  #home-pages .village-hud .hud-row {
+    display: contents;
+  }
+  #home-pages .village-hud .scene-tag {
+    order: 1;
+  }
+  #home-pages .village-hud .harvest-strip {
+    order: 2;
+    gap: 18px;
+    margin: 0 auto;
+  }
+  #home-pages .village-hud .panel-tools {
+    order: 3;
+    margin-left: 0;
+  }
+  #home-pages .village-hud .scene-hint {
+    order: 4;
+    flex-basis: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
+@media (max-width: 760px) {
+  body:has(#home-pages[data-screen='focus']) .screen-dock {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(24, 20, 18, 0.55);
+  }
+  body:has(#home-pages[data-screen='focus']) .screen-dock button:not(.selected) {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  body:has(#home-pages[data-screen='focus']) .dock-divider {
+    background: rgba(255, 255, 255, 0.18);
+  }
+}
+body.reading-mode .reading-room .room-dock .room-controls {
+  align-self: stretch;
+}
+/* short screens (phones on their side): the setup packs into two rows under the time */
+@media (max-height: 520px) {
+  body:has(#home-pages[data-screen='focus']) .topbar {
+    visibility: hidden;
+  }
+  body:not(.reading-mode) .reading-room .room-top {
+    top: calc(10px + env(safe-area-inset-top));
+  }
+  #reading-room .room-dock {
+    gap: 8px;
+    bottom: calc(var(--dock-h, 74px) + 6px);
+  }
+  .reading-room .room-dock .room-time #timer-display {
+    font-size: 40px;
+  }
+  .reading-room .room-dock .room-time #timer-kicker,
+  #reading-room .room-setup #manual-button {
+    display: none;
+  }
+  #reading-room .room-setup {
+    flex-flow: row wrap;
+    align-items: center;
+    gap: 8px 14px;
+  }
+  #reading-room .room-setup .topic-field {
+    flex: 1 1 150px;
+    width: auto;
+  }
+  #reading-room .room-setup #start-button {
+    width: auto;
+    min-height: 44px;
+    padding: 0 22px;
+  }
+}

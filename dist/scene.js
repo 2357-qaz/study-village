@@ -1297,6 +1297,12 @@ export function createVillage(container, onSelect) {
     if (css !== skyKey) {
       skyKey = css;
       container.style.background = css;
+      // the floating text over the scene fades into this sky and reads light on a dark one
+      const root = document.documentElement.style;
+      root.setProperty('--sky-top', `#${k.top.getHexString()}`);
+      root.setProperty('--sky-bottom', `#${k.bottom.getHexString()}`);
+      document.body.dataset.sky =
+        0.2126 * k.top.r + 0.7152 * k.top.g + 0.0722 * k.top.b < 0.12 ? 'night' : 'day';
     }
     if (tag && tag.lastChild?.nodeType === 3) tag.lastChild.textContent = k.tag;
   }
