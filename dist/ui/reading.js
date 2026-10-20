@@ -2,10 +2,10 @@
 // dream shell over it, switches to the immersive reading view while a timer exists on the focus
 // screen, reveals the controls on tap, runs the wall clock only while reading, and keeps the
 // screen awake if asked to.
-import * as C from '../core.js?v=7';
+import * as C from '../core.js?v=8';
 import * as A from '../alerts.js?v=6';
-import {$, onRender, state} from './store.js?v=11';
-import {setPage} from './nav.js?v=13';
+import {$, onRender, state} from './store.js?v=12';
+import {setPage} from './nav.js?v=14';
 
 const room = $('#reading-room'),
   img = $('#room-img'),
@@ -39,6 +39,17 @@ function hourNow() {
   return d.getHours() + d.getMinutes() / 60;
 }
 
+// The dreams read so far, for the points of light on the shelf: the most recent ones' lengths, oldest first,
+// rounded to the steps that change how brightly a light glows.
+const LIGHT_SLOTS = 12;
+function dreamsRead() {
+  return state.sessions
+    .filter(x => x.kind === 'study')
+    .sort((a, b) => a.endedAt - b.endedAt)
+    .slice(-LIGHT_SLOTS)
+    .map(x => (x.seconds >= 45 * 60 ? 45 : x.seconds >= 25 * 60 ? 25 : 10));
+}
+
 async function paintRoom() {
   const w = room.clientWidth,
     h = room.clientHeight;
@@ -50,13 +61,16 @@ async function paintRoom() {
       hour: hourNow(),
       warmth: warm,
       snow: C.snowfall(warm),
-      cover: C.snowCover(warm)
+      cover: C.snowCover(warm),
+      dreams: dreamsRead()
     },
-    key = [w, h, Math.floor(opts.hour * 2), opts.snow > 0, Math.round(warm * 4)].join('|');
+    key = [w, h, Math.floor(opts.hour * 2), opts.snow > 0, Math.round(warm * 4), opts.dreams.join(',')].join(
+      '|'
+    );
   if (key === lastKey) return;
   lastKey = key;
   try {
-    mod ??= await import('../reading-room.js?v=4');
+    mod ??= await import('../reading-room.js?v=6');
     sculptReady ??= mod.loadCompanion();
     const r = mod.renderRoom(opts);
     if (key !== lastKey) return; // a newer size arrived meanwhile
@@ -73,6 +87,7 @@ async function paintRoom() {
     room.style.setProperty('--mdx', ((wx - sx) * 100).toFixed(2));
     room.style.setProperty('--mdy', ((wy - sy) * 100).toFixed(2));
     room.dataset.daypart = r.daypart;
+    room.dataset.dreams = String(opts.dreams.length); // shells lit in this painting
     img.src = r.url;
     room.classList.add('ready');
     room.classList.remove('no-room');

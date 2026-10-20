@@ -1,5 +1,5 @@
 // Build mode (建造模式): full-screen island editing on top of the 3D scene.
-import * as C from '../core.js?v=7';
+import * as C from '../core.js?v=8';
 import {
   $,
   $$,
@@ -17,9 +17,9 @@ import {
   state,
   broken,
   village
-} from './store.js?v=11';
-import {setPage} from './nav.js?v=13';
-import {thumbInner, hydrateThumbs} from './thumbs.js?v=11';
+} from './store.js?v=12';
+import {setPage} from './nav.js?v=14';
+import {thumbInner, hydrateThumbs} from './thumbs.js?v=12';
 const decorDefs = () =>
   Array.isArray(C.DECOR) ? C.DECOR : Object.entries(C.DECOR).map(([id, v]) => ({id, ...v}));
 const decorDef = t => decorDefs().find(d => d.id === t);

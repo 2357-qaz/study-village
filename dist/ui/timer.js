@@ -1,5 +1,5 @@
 // Focus / rest timer, manual study entries and timer alert toggles.
-import * as C from '../core.js?v=7';
+import * as C from '../core.js?v=8';
 import * as A from '../alerts.js?v=6';
 import {requestPersist} from '../offline.js?v=1';
 import {
@@ -13,7 +13,8 @@ import {
   onRender,
   state,
   broken
-} from './store.js?v=11';
+} from './store.js?v=12';
+import {planDraft, clearDraft} from './plan.js?v=1';
 let mode = 'study',
   minutes = 25,
   readyNotified = false;
@@ -123,7 +124,8 @@ document.addEventListener('click', e => {
 });
 $('#start-button').onclick = safe(async () => {
   A.primeAudio();
-  await transact(s => C.startTimer(s, mode, minutes, $('#topic').value));
+  await transact(s => C.startTimer(s, mode, minutes, $('#topic').value, Date.now(), planDraft()));
+  if (mode === 'study') clearDraft();
   toast(mode === 'study' ? '书屋很安静，慢慢读吧。' : '去岸边走走，让眼睛歇一歇。');
 });
 $('#pause-button').onclick = safe(() => {

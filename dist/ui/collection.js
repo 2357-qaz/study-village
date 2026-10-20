@@ -1,5 +1,5 @@
 // Wonders: the cabinet (奇物柜), the item viewer and stardust wishes (星砂寻宝) with their animation.
-import * as C from '../core.js?v=7';
+import * as C from '../core.js?v=8';
 import * as A from '../alerts.js?v=6';
 import {
   $,
@@ -15,8 +15,8 @@ import {
   items3d,
   page,
   onDialogClose
-} from './store.js?v=11';
-import {thumbInner, wantThumb, hydrateThumbs} from './thumbs.js?v=11';
+} from './store.js?v=12';
+import {thumbInner, wantThumb, hydrateThumbs} from './thumbs.js?v=12';
 let drawBusy = false,
   viewer = null,
   viewToken = 0;

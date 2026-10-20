@@ -669,3 +669,59 @@ test('平整：海与被占用的地块抛错且不扣费，材料不足不改�
   assert.equal(C.tileAt(poor, g.x, g.z).h, 1);
   assert.ok(C.TERRAIN_TOOLS.some(t => t.id === 'level'));
 });
+
+test('专注计划：开始时写下、计时中勾选与补充、打卡时留在记录里', () => {
+  const s = C.initialState(now);
+  C.startTimer(s, 'study', 25, '线代', now, ['  看完 3.1 节 ', '', '做 5 道题', 'x'.repeat(90)]);
+  assert.deepEqual(
+    s.timer.plan.map(x => x.text),
+    ['看完 3.1 节', '做 5 道题', 'x'.repeat(C.PLAN_TEXT)]
+  );
+  C.togglePlan(s, 1);
+  assert.equal(s.timer.plan[1].done, true);
+  C.togglePlan(s, 1);
+  C.togglePlan(s, 0);
+  C.addPlanItem(s, '整理笔记');
+  assert.equal(s.timer.plan.length, 4);
+  assert.throws(() => C.togglePlan(s, 9), /没有这一项/);
+  assert.throws(() => C.addPlanItem(s, '   '), /写点什么/);
+  // the plan survives a reload and goes with the session
+  const back = C.validateState(JSON.parse(JSON.stringify(s)));
+  assert.equal(back.timer.plan[0].done, true);
+  C.finishTimer(back, now + 26 * 60000);
+  assert.deepEqual(
+    back.sessions.at(-1).plan.map(x => x.done),
+    [true, false, false, false]
+  );
+  assert.equal(C.validateState(JSON.parse(JSON.stringify(back))).sessions.at(-1).plan.length, 4);
+});
+
+test('专注计划：上限、休息不带计划、旧存档与坏数据', () => {
+  const s = C.initialState(now);
+  C.startTimer(
+    s,
+    'study',
+    25,
+    '',
+    now,
+    Array.from({length: 12}, (_, i) => `第 ${i} 项`)
+  );
+  assert.equal(s.timer.plan.length, C.PLAN_MAX);
+  assert.throws(() => C.addPlanItem(s, '再来一项'), /最多/);
+  // a timer without a plan (older saves) keeps no plan field and still validates
+  const r = C.initialState(now);
+  C.manualStudy(r, 120, now - 3600000, '数学', now);
+  C.startTimer(r, 'rest', 5, '', now, ['不该出现']);
+  assert.equal('plan' in r.timer, false);
+  assert.equal(C.validateState(JSON.parse(JSON.stringify(r))).timer.plan, undefined);
+  for (const bad of [
+    [{text: '', done: false}],
+    [{text: 'a', done: 'yes'}],
+    'abc',
+    Array(9).fill({text: 'a', done: false})
+  ]) {
+    const x = JSON.parse(JSON.stringify(s));
+    x.timer.plan = bad;
+    assert.throws(() => C.validateState(x));
+  }
+});
