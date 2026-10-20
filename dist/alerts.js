@@ -121,6 +121,24 @@ export function chime() {
   });
 }
 
+// One soft note for a checked plan item, a step up the pentatonic scale with each one done.
+export function pling(step = 0) {
+  if (!audio) return;
+  const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51],
+    at = audio.currentTime + 0.02,
+    osc = audio.createOscillator(),
+    gain = audio.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = scale[Math.min(step, scale.length - 1)];
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(0.16, at + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.9);
+  osc.connect(gain);
+  gain.connect(audio.destination);
+  osc.start(at);
+  osc.stop(at + 1);
+}
+
 export const notificationsSupported = () => 'Notification' in window && 'serviceWorker' in navigator;
 
 // Asks for permission and registers the tiny service worker that shows and focuses notifications.

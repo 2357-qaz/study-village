@@ -381,6 +381,17 @@ const validPlan = p =>
       x =>
         x && typeof x.text === 'string' && x.text && x.text.length <= PLAN_TEXT && typeof x.done === 'boolean'
     ));
+// Finishing what was planned adds star sand: up to half the session's own, in proportion to the
+// share checked off (so writing more items earns nothing by itself).
+export function planBonus(plan, seconds) {
+  if (!plan?.length) return 0;
+  return ((seconds / 300) * plan.filter(x => x.done).length) / plan.length;
+}
+// What is left of a plan, ready to go into the next one.
+export const planLeft = plan =>
+  cleanPlan(plan)
+    .filter(x => !x.done)
+    .map(x => x.text);
 export function togglePlan(s, i) {
   const item = s.timer?.plan?.[i];
   if (!item) throw Error('没有这一项计划');
@@ -450,6 +461,7 @@ export function addSession(s, kind, segments, topic, now = Date.now(), manual = 
     kind === 'study'
       ? {wood: seconds / 30, stone: seconds / 60, food: 0, stars: seconds / 150}
       : {wood: 0, stone: 0, food: seconds / 30, stars: seconds / 300};
+  if (kind === 'study' && !manual) reward.stars += planBonus(plan, seconds);
   for (const k of Object.keys(reward)) s.resources[k] += reward[k];
   s.sessions.push({
     id: globalThis.crypto?.randomUUID?.() || `${now}-${s.sessions.length}`,

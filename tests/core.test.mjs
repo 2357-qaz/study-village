@@ -725,3 +725,31 @@ test('专注计划：上限、休息不带计划、旧存档与坏数据', () =>
     assert.throws(() => C.validateState(x));
   }
 });
+
+test('专注计划：按完成比例多得星砂，没做完的留给下次', () => {
+  const run = plan => {
+    const s = C.initialState(now);
+    C.startTimer(s, 'study', 25, '', now, plan);
+    return s;
+  };
+  const plain = run([]),
+    base = C.finishTimer(plain, now + 30 * 60000).stars;
+  const half = run(['a', 'b']);
+  C.togglePlan(half, 0);
+  assert.ok(Math.abs(C.finishTimer(half, now + 30 * 60000).stars - base * 1.25) < 1e-9);
+  const all = run(['a']);
+  C.togglePlan(all, 0);
+  const r = C.finishTimer(all, now + 30 * 60000);
+  assert.ok(Math.abs(r.stars - base * 1.5) < 1e-9);
+  assert.equal(r.wood, C.finishTimer(run([]), now + 30 * 60000).wood); // only star sand changes
+  assert.equal(C.planBonus(undefined, 1500), 0);
+  assert.equal(C.planBonus([{text: 'a', done: false}], 1500), 0);
+  assert.deepEqual(
+    C.planLeft([
+      {text: 'a', done: true},
+      {text: 'b', done: false}
+    ]),
+    ['b']
+  );
+  assert.deepEqual(C.planLeft(undefined), []);
+});

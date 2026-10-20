@@ -1,6 +1,6 @@
 // Study journal: totals, weekly chart and session history (study sessions read as dreams).
-import * as C from '../core.js?v=8';
-import {$, icon, esc, duration, weekData, icons, onRender, state} from './store.js?v=12';
+import * as C from '../core.js?v=9';
+import {$, icon, esc, duration, weekData, icons, onRender, state} from './store.js?v=13';
 let historyLimit = 30;
 // Each study session is a dream read in 旧梦书屋 (its shell glows on the shelf); `nth` counts them.
 function sessionHTML(x, nth) {
