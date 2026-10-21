@@ -2,10 +2,10 @@
 // dream shell over it, switches to the immersive reading view while a timer exists on the focus
 // screen, reveals the controls on tap, runs the wall clock only while reading, and keeps the
 // screen awake if asked to.
-import * as C from '../core.js?v=8';
-import * as A from '../alerts.js?v=6';
-import {$, onRender, state} from './store.js?v=12';
-import {setPage} from './nav.js?v=14';
+import * as C from '../core.js?v=9';
+import * as A from '../alerts.js?v=7';
+import {$, onRender, state} from './store.js?v=13';
+import {setPage} from './nav.js?v=15';
 
 const room = $('#reading-room'),
   img = $('#room-img'),

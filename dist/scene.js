@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
-import * as C from './core.js?v=8';
+import * as C from './core.js?v=9';
 import {
   Builder,
   LiveSink,
@@ -11,7 +11,7 @@ import {
   beastModel,
   shade
 } from './models.js?v=5';
-import {audioContext, loadPrefs} from './alerts.js?v=6';
+import {audioContext, loadPrefs} from './alerts.js?v=7';
 const PI = Math.PI,
   H = PI / 2,
   N = C.GRID,

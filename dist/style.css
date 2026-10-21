@@ -8089,3 +8089,124 @@ body:has(#home-pages[data-screen='focus']) .dock-divider {
     min-height: 36px;
   }
 }
+/* plan reuse and the small rewards of checking things off */
+#reading-room .room-setup .plan-reuse {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px dashed rgba(255, 244, 226, 0.4);
+  border-radius: 999px;
+  background: none;
+  font-size: 13px;
+  color: rgba(255, 244, 226, 0.88);
+}
+#reading-room .room-setup .plan-reuse[hidden] {
+  display: none;
+}
+#reading-room .room-setup .plan-reuse svg {
+  width: 14px;
+  height: 14px;
+}
+.plan-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 420px);
+  padding: 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 244, 226, 0.72);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  transition: color 0.4s ease;
+}
+.plan-meter[hidden] {
+  display: none;
+}
+.plan-meter b {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.plan-meter b::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: scaleX(var(--done, 0));
+  transform-origin: left;
+  background: #ecd9aa;
+  transition: transform 0.6s ease;
+}
+.plan-meter.all-done {
+  color: #ffe2a8;
+}
+.plan-item i::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 1.5px solid #ffd28a;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.plan-item.just-done i {
+  animation: plan-pop 0.45s ease-out;
+}
+.plan-item.just-done i::after {
+  animation: plan-ripple 0.8s ease-out;
+}
+.plan-run.all-done .plan-item {
+  animation: plan-shine 1.2s ease both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.plan-spark {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #fff 0 22%,
+    #ffe9bd 42%,
+    rgba(255, 210, 140, 0.35) 62%,
+    rgba(255, 210, 140, 0) 72%
+  );
+  box-shadow: 0 0 22px 8px rgba(255, 210, 140, 0.5);
+  pointer-events: none;
+}
+@keyframes plan-pop {
+  40% {
+    transform: scale(1.35);
+  }
+}
+@keyframes plan-ripple {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+@keyframes plan-shine {
+  40% {
+    background: rgba(255, 210, 140, 0.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-item.just-done i,
+  .plan-item.just-done i::after,
+  .plan-run.all-done .plan-item {
+    animation: none;
+  }
+}

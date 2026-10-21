@@ -1,6 +1,6 @@
 // Save management: export / import, the backup reminder and the settings dialog.
-import * as C from '../core.js?v=8';
-import * as A from '../alerts.js?v=6';
+import * as C from '../core.js?v=9';
+import * as A from '../alerts.js?v=7';
 import {requestPersist, storageStatus} from '../offline.js?v=1';
 import {
   $,
@@ -16,7 +16,7 @@ import {
   setBroken,
   state,
   broken
-} from './store.js?v=12';
+} from './store.js?v=13';
 export function renderBackup() {
   const prefs = A.loadPrefs(),
     due = broken

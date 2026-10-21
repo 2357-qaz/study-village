@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="时光村落" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <link rel="stylesheet" href="./style.css?v=22" />
-    <script src="./vendor/lucide-icons.js?v=7" defer></script>
-    <script type="module" src="./app.js?v=20"></script>
+    <link rel="stylesheet" href="./style.css?v=23" />
+    <script src="./vendor/lucide-icons.js?v=8" defer></script>
+    <script type="module" src="./app.js?v=21"></script>
   </head>
   <body>
     <main>
@@ -166,6 +166,7 @@
                   /></label>
                   <div class="plan-edit" id="plan-edit">
                     <ul id="plan-draft" class="plan-draft" aria-label="本次计划"></ul>
+                    <button type="button" id="plan-reuse" class="plan-reuse" hidden><i data-lucide="history"></i><span></span></button>
                     <label class="plan-add"
                       ><i data-lucide="plus"></i
                       ><input
@@ -180,6 +181,7 @@
                   <div class="focus-reward" id="focus-reward"></div>
                   <button id="manual-button" class="text-button"><i data-lucide="notebook-pen"></i>已经学过了？补记一段时间</button>
                 </div>
+                <div id="plan-meter" class="plan-meter" hidden><span></span><b aria-hidden="true"></b></div>
                 <ul id="plan-run" class="plan-run" hidden aria-label="本次计划"></ul>
                 <div class="room-controls">
                   <div class="timer-actions" hidden id="timer-actions">
@@ -274,7 +276,7 @@
           <strong>专注计划</strong
           ><span
             >开始专注前，可以写下这段时间要完成的几件事（最多 8
-            项，回车添加）。读梦时它们浮在时间下方，完成一项就轻点勾上；打卡后手记会记下完成了几项。</span
+            项，回车添加）。读梦时它们浮在时间下方，完成一项就轻点勾上，会有一点光飞进梦壳。打卡时按完成的比例多得星砂，全部完成最多多得一半；没做完的会留到下次的计划里，也可以一键沿用上次的计划。手记会记下完成了几项。</span
           >
         </p>
         <p>

@@ -1,6 +1,6 @@
 // Focus / rest timer, manual study entries and timer alert toggles.
-import * as C from '../core.js?v=8';
-import * as A from '../alerts.js?v=6';
+import * as C from '../core.js?v=9';
+import * as A from '../alerts.js?v=7';
 import {requestPersist} from '../offline.js?v=1';
 import {
   $,
@@ -13,8 +13,8 @@ import {
   onRender,
   state,
   broken
-} from './store.js?v=12';
-import {planDraft, clearDraft} from './plan.js?v=1';
+} from './store.js?v=13';
+import {planDraft, clearDraft, carryOver} from './plan.js?v=2';
 let mode = 'study',
   minutes = 25,
   readyNotified = false;
@@ -133,18 +133,25 @@ $('#pause-button').onclick = safe(() => {
   return transact(s => (s.timer?.runningSince === null ? C.resumeTimer(s) : C.pauseTimer(s)));
 });
 $('#finish-button').onclick = safe(async () => {
-  const before = C.population(state);
+  const before = C.population(state),
+    plan = state.timer?.plan || [];
   const r = await transact(s => C.finishTimer(s));
   requestPersist();
+  const done = plan.filter(x => x.done).length,
+    bonus = C.planBonus(plan, state.sessions.at(-1).seconds),
+    left = carryOver(C.planLeft(plan));
   toast(
-    `梦已读完！${rewardText(r)}${C.population(state) > before ? ' · 有人决定在小镇住下了，金色的小兽从雾里走来' : ''}`
+    `梦已读完！${rewardText(r)}${bonus ? ` · 完成计划 ${done}/${plan.length}，其中 ${Number(bonus.toFixed(1))} 星砂是计划的奖励` : ''}${left ? ` · 没做完的 ${left} 项留到了下次的计划里` : ''}${C.population(state) > before ? ' · 有人决定在小镇住下了，金色的小兽从雾里走来' : ''}`
   );
 });
 $('#cancel-timer').onclick = safe(async () => {
-  if (await confirmAction('放弃本次计时？', '尚未打卡的时间不会计入学习，也不会获得奖励。'))
-    await transact(s => {
-      s.timer = null;
-    });
+  if (!(await confirmAction('放弃本次计时？', '尚未打卡的时间不会计入学习，也不会获得奖励。'))) return;
+  const plan = state.timer?.plan || [];
+  await transact(s => {
+    s.timer = null;
+  });
+  const left = carryOver(C.planLeft(plan));
+  if (left) toast(`没做完的 ${left} 项计划放回了草稿里`);
 });
 $('#manual-button').onclick = openManual;
 $('#journal-manual').onclick = openManual;
