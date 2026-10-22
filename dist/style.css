@@ -8444,3 +8444,68 @@ body:has(#secondary-dialog[open] :is(#page-wish, #page-collection).active) .dock
 #secondary-dialog .cabinet-head .secondary-button {
   color: var(--mist-ink);
 }
+/* the night's liquid glass: status, history and the cabinet count are rounded glass panes again,
+   and buttons, filters and tiles are glass too; each pane has a lit top edge, a soft sheen and a
+   blur of the stars behind it */
+#secondary-dialog:has(#page-wish.active, #page-collection.active) {
+  --night-glass: linear-gradient(180deg, rgba(240, 255, 240, 0.11), rgba(240, 255, 240, 0.035) 60%);
+  --night-glass-edge: rgba(235, 250, 235, 0.16);
+  --night-glass-shine: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 20, 14, 0.25),
+    0 10px 28px rgba(0, 20, 14, 0.32);
+}
+#secondary-dialog .wish-status,
+#secondary-dialog .wish-history,
+#secondary-dialog .cabinet-head,
+#secondary-dialog .wish-btn:not(.gold):not(:disabled),
+#secondary-dialog .cab-filter:not([aria-selected='true']),
+#secondary-dialog .cabinet-grid .collectible:not(.unowned),
+#secondary-dialog .cabinet-head .secondary-button,
+#secondary-dialog .wish-rates span {
+  border: 1px solid var(--night-glass-edge);
+  background: var(--night-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--night-glass-shine);
+}
+#secondary-dialog .wish-status,
+#secondary-dialog .wish-history,
+#secondary-dialog .cabinet-head {
+  border-radius: 20px;
+}
+#secondary-dialog .wish-status {
+  margin: 8px 0 14px;
+  padding: 16px 18px;
+}
+#secondary-dialog .wish-history {
+  margin-top: 4px;
+  padding: 16px 18px;
+}
+#secondary-dialog .cabinet-head {
+  padding: 14px 16px;
+}
+#secondary-dialog .cab-filter:not([aria-selected='true']),
+#secondary-dialog .wish-rates span {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 4px 12px rgba(0, 20, 14, 0.2);
+}
+#secondary-dialog .cabinet-grid .collectible:not(.unowned) {
+  border-radius: 18px;
+}
+#secondary-dialog .cabinet-grid .collectible:not(.unowned) .item-art {
+  border-radius: 17px 17px 0 0;
+}
+/* the lime pieces are glass too: a bright top edge and a soft glow */
+#secondary-dialog .wish-btn.gold:not(:disabled),
+#secondary-dialog:has(#page-wish.active, #page-collection.active) .page-switch button[aria-selected='true'],
+#secondary-dialog:has(#page-collection.active) .cab-filter[aria-selected='true'] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(90, 120, 40, 0.25),
+    0 6px 18px rgba(200, 230, 150, 0.22);
+}
+#secondary-dialog.secondary-dialog:has(#page-wish.active, #page-collection.active) .page-switch {
+  border-color: var(--night-glass-edge);
+  background: linear-gradient(180deg, rgba(20, 56, 46, 0.88), rgba(12, 40, 33, 0.88));
+  box-shadow: var(--night-glass-shine);
+}
