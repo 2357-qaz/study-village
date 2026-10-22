@@ -8210,3 +8210,167 @@ body:has(#home-pages[data-screen='focus']) .dock-divider {
     animation: none;
   }
 }
+
+/* =====================================================================
+   星砂寻宝 is one night sky: the whole sheet takes the banner's forest green
+   and its stars, the banner loses its card, and status, buttons and history
+   sit on the night as plain text and hairlines. The tab bar follows, with
+   its selected tab in the same lime as the main action.
+   ===================================================================== */
+#secondary-dialog.secondary-dialog:has(#page-wish.active) {
+  --mist-line: rgba(220, 240, 220, 0.12);
+  --mist-tile: rgba(230, 245, 230, 0.08);
+  --mist-tile-edge: rgba(230, 245, 230, 0.14);
+  --mist-ink: #eef5e6;
+  --mist-ink-2: rgba(222, 236, 216, 0.66);
+  --wish-lime: linear-gradient(180deg, #e3f0b8, #cfe39a);
+  border-color: rgba(230, 245, 230, 0.12);
+  background: radial-gradient(1.4px 1.4px at 12% 6%, #ffffffb3, transparent),
+    radial-gradient(1px 1px at 86% 3%, #ffffff99, transparent),
+    radial-gradient(1.2px 1.2px at 64% 12%, #ffffff80, transparent),
+    radial-gradient(1px 1px at 30% 52%, #ffffff66, transparent),
+    radial-gradient(1.2px 1.2px at 92% 58%, #ffffff80, transparent),
+    radial-gradient(1px 1px at 8% 78%, #ffffff66, transparent),
+    radial-gradient(1px 1px at 70% 90%, #ffffff66, transparent),
+    radial-gradient(circle at 50% 18%, #f7d27a24, transparent 40%),
+    radial-gradient(circle at 0% 100%, #5fae8833, transparent 55%),
+    linear-gradient(170deg, #0e2c26, #133b32 45%, #18463a);
+  color: var(--mist-ink);
+}
+#secondary-dialog:has(#page-wish.active) .dialog-heading .icon-button,
+#secondary-dialog:has(#page-wish.active) .page-switch button {
+  color: var(--mist-ink);
+}
+#secondary-dialog.secondary-dialog:has(#page-wish.active) .page-switch {
+  background: rgba(14, 44, 38, 0.6);
+}
+#secondary-dialog:has(#page-wish.active) .page-switch button[aria-selected='true'] {
+  border: 0;
+  background: var(--wish-lime);
+  color: #1f3a2b;
+  box-shadow: inset 0 1px 0 #ffffffb3;
+}
+#secondary-dialog:has(#page-wish.active) .page-switch small {
+  background: rgba(230, 245, 230, 0.14);
+  color: inherit;
+}
+#secondary-dialog .wish-banner {
+  margin-top: 4px;
+  padding-inline: 4px;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+}
+#secondary-dialog .wish-banner::before {
+  display: none;
+}
+/* the status: two plain figures between hairlines */
+#secondary-dialog .wish-status {
+  margin: 4px 0 18px;
+  padding: 16px 4px;
+  border: 0;
+  border-top: 1px solid var(--mist-line);
+  border-bottom: 1px solid var(--mist-line);
+  border-radius: 0;
+  background: none;
+}
+#secondary-dialog .wish-balance {
+  border-right-color: var(--mist-line);
+}
+#secondary-dialog .wish-balance > span,
+#secondary-dialog .wish-pity-head span,
+#secondary-dialog .wish-pity p,
+#secondary-dialog #page-wish .draw-balance,
+#secondary-dialog .wish-history-head span,
+#secondary-dialog .wish-log-row time {
+  color: var(--mist-ink-2);
+}
+#secondary-dialog .wish-balance b,
+#secondary-dialog .wish-pity-head b,
+#secondary-dialog .wish-history-head h3,
+#secondary-dialog .wish-log-row b {
+  color: var(--mist-ink);
+}
+#secondary-dialog .wish-balance b svg,
+#secondary-dialog .wish-btn small svg {
+  color: #c8b8ff;
+}
+#secondary-dialog .pity-segs i {
+  background: rgba(230, 245, 230, 0.14);
+}
+#secondary-dialog .pity-segs i.on {
+  background: #b7d49c;
+  box-shadow: 0 0 6px #b7d49c66;
+}
+/* the two actions: night glass and lime */
+#secondary-dialog .wish-btn,
+#secondary-dialog .wish-btn:not(.gold) {
+  border: 1px solid var(--mist-tile-edge);
+  background: var(--mist-tile);
+  color: var(--mist-ink);
+}
+#secondary-dialog .wish-btn small {
+  color: var(--mist-ink-2);
+}
+#secondary-dialog .wish-btn.gold {
+  border-color: transparent;
+  background: var(--wish-lime);
+  color: #1f3a2b;
+  box-shadow: inset 0 1px 0 #ffffffb3;
+}
+#secondary-dialog .wish-btn.gold small {
+  color: #3f5a33;
+}
+#secondary-dialog .wish-btn:disabled,
+#secondary-dialog .wish-btn.gold:disabled {
+  border: 1px dashed rgba(230, 245, 230, 0.16);
+  background: none;
+  box-shadow: none;
+  color: rgba(222, 236, 216, 0.42);
+}
+#secondary-dialog .wish-btn:disabled small {
+  color: rgba(222, 236, 216, 0.36);
+}
+/* history: rows on the night, separated by hairlines */
+#secondary-dialog .wish-history {
+  padding: 16px 4px;
+  border: 0;
+  border-top: 1px solid var(--mist-line);
+  border-radius: 0;
+}
+#secondary-dialog .wish-log-row {
+  border-radius: 0;
+  border-bottom: 1px solid var(--mist-line);
+  padding-left: 0;
+}
+#secondary-dialog .wish-log-row:last-child {
+  border-bottom: 0;
+}
+#secondary-dialog #page-wish .empty-state,
+#secondary-dialog #page-wish .empty-state svg {
+  color: var(--mist-ink-2);
+}
+/* the tab bar under the night sheet */
+body:has(#secondary-dialog[open] #page-wish.active) .screen-dock {
+  border-color: rgba(230, 245, 230, 0.16);
+  background: linear-gradient(180deg, rgba(22, 60, 50, 0.72), rgba(12, 38, 32, 0.82));
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(230, 255, 230, 0.12),
+    0 10px 30px rgba(0, 20, 14, 0.4);
+}
+body:has(#secondary-dialog[open] #page-wish.active) .screen-dock button:not(.selected) {
+  color: rgba(230, 242, 226, 0.82);
+}
+body:has(#secondary-dialog[open] #page-wish.active) .screen-dock button.selected,
+body:has(#secondary-dialog[open] #page-wish.active) .screen-dock button[aria-current='page'] {
+  background: linear-gradient(180deg, #e3f0b8, #cfe39a);
+  color: #1f3a2b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 2px 12px rgba(200, 230, 150, 0.28);
+}
+body:has(#secondary-dialog[open] #page-wish.active) .dock-divider {
+  background: rgba(230, 245, 230, 0.16);
+}
