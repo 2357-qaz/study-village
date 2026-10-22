@@ -8212,12 +8212,13 @@ body:has(#home-pages[data-screen='focus']) .dock-divider {
 }
 
 /* =====================================================================
-   星砂寻宝 is one night sky: the whole sheet takes the banner's forest green
-   and its stars, the banner loses its card, and status, buttons and history
-   sit on the night as plain text and hairlines. The tab bar follows, with
-   its selected tab in the same lime as the main action.
+   星砂寻宝 and 奇物柜 are one night sky: the whole sheet takes the banner's
+   forest green and its stars, the banner loses its card, and status, buttons,
+   history and the cabinet sit on the night as plain text, hairlines and dark
+   glass. The tab bar follows, with its selected tab in the same lime as the
+   main action.
    ===================================================================== */
-#secondary-dialog.secondary-dialog:has(#page-wish.active) {
+#secondary-dialog.secondary-dialog:has(#page-wish.active, #page-collection.active) {
   --mist-line: rgba(220, 240, 220, 0.12);
   --mist-tile: rgba(230, 245, 230, 0.08);
   --mist-tile-edge: rgba(230, 245, 230, 0.14);
@@ -8237,20 +8238,20 @@ body:has(#home-pages[data-screen='focus']) .dock-divider {
     linear-gradient(170deg, #0e2c26, #133b32 45%, #18463a);
   color: var(--mist-ink);
 }
-#secondary-dialog:has(#page-wish.active) .dialog-heading .icon-button,
-#secondary-dialog:has(#page-wish.active) .page-switch button {
+#secondary-dialog:has(#page-wish.active, #page-collection.active) .dialog-heading .icon-button,
+#secondary-dialog:has(#page-wish.active, #page-collection.active) .page-switch button {
   color: var(--mist-ink);
 }
-#secondary-dialog.secondary-dialog:has(#page-wish.active) .page-switch {
+#secondary-dialog.secondary-dialog:has(#page-wish.active, #page-collection.active) .page-switch {
   background: rgba(14, 44, 38, 0.6);
 }
-#secondary-dialog:has(#page-wish.active) .page-switch button[aria-selected='true'] {
+#secondary-dialog:has(#page-wish.active, #page-collection.active) .page-switch button[aria-selected='true'] {
   border: 0;
   background: var(--wish-lime);
   color: #1f3a2b;
   box-shadow: inset 0 1px 0 #ffffffb3;
 }
-#secondary-dialog:has(#page-wish.active) .page-switch small {
+#secondary-dialog:has(#page-wish.active, #page-collection.active) .page-switch small {
   background: rgba(230, 245, 230, 0.14);
   color: inherit;
 }
@@ -8351,7 +8352,7 @@ body:has(#home-pages[data-screen='focus']) .dock-divider {
   color: var(--mist-ink-2);
 }
 /* the tab bar under the night sheet */
-body:has(#secondary-dialog[open] #page-wish.active) .screen-dock {
+body:has(#secondary-dialog[open] :is(#page-wish, #page-collection).active) .screen-dock {
   border-color: rgba(230, 245, 230, 0.16);
   background: linear-gradient(180deg, rgba(22, 60, 50, 0.72), rgba(12, 38, 32, 0.82));
   -webkit-backdrop-filter: blur(28px) saturate(170%);
@@ -8360,17 +8361,86 @@ body:has(#secondary-dialog[open] #page-wish.active) .screen-dock {
     inset 0 1px 0 rgba(230, 255, 230, 0.12),
     0 10px 30px rgba(0, 20, 14, 0.4);
 }
-body:has(#secondary-dialog[open] #page-wish.active) .screen-dock button:not(.selected) {
+body:has(#secondary-dialog[open] :is(#page-wish, #page-collection).active)
+  .screen-dock
+  button:not(.selected) {
   color: rgba(230, 242, 226, 0.82);
 }
-body:has(#secondary-dialog[open] #page-wish.active) .screen-dock button.selected,
-body:has(#secondary-dialog[open] #page-wish.active) .screen-dock button[aria-current='page'] {
+body:has(#secondary-dialog[open] :is(#page-wish, #page-collection).active) .screen-dock button.selected,
+body:has(#secondary-dialog[open] :is(#page-wish, #page-collection).active)
+  .screen-dock
+  button[aria-current='page'] {
   background: linear-gradient(180deg, #e3f0b8, #cfe39a);
   color: #1f3a2b;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.75),
     0 2px 12px rgba(200, 230, 150, 0.28);
 }
-body:has(#secondary-dialog[open] #page-wish.active) .dock-divider {
+body:has(#secondary-dialog[open] :is(#page-wish, #page-collection).active) .dock-divider {
   background: rgba(230, 245, 230, 0.16);
+}
+/* 奇物柜 on the night: the count between hairlines, lime for the chosen filter, dark glass tiles
+   whose art keeps its rarity colours; unfound pieces are faint light silhouettes */
+#secondary-dialog .cabinet-head {
+  margin-bottom: 14px;
+  padding: 14px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--mist-line);
+  border-radius: 0;
+  background: none;
+}
+#secondary-dialog .cabinet-progress circle {
+  stroke: rgba(230, 245, 230, 0.14);
+}
+#secondary-dialog .cabinet-progress #cabinet-ring {
+  stroke: var(--r-legendary);
+}
+#secondary-dialog .cabinet-progress #cabinet-count {
+  color: var(--mist-ink);
+}
+#secondary-dialog .cabinet-progress span,
+#secondary-dialog .cab-filter small,
+#secondary-dialog .cabinet-note {
+  color: var(--mist-ink-2);
+}
+#secondary-dialog .cab-filter {
+  color: var(--mist-ink);
+}
+#secondary-dialog:has(#page-collection.active) .cab-filter.selected,
+#secondary-dialog:has(#page-collection.active) .cab-filter[aria-selected='true'] {
+  border-color: transparent;
+  background: var(--wish-lime);
+  color: #1f3a2b;
+}
+#secondary-dialog:has(#page-collection.active) .cab-filter[aria-selected='true'] small {
+  color: #3f5a33;
+}
+#secondary-dialog .cabinet-grid .collectible {
+  overflow: hidden;
+}
+#secondary-dialog .cabinet-grid .collectible h3 {
+  color: var(--mist-ink);
+}
+#secondary-dialog .cabinet-grid .collectible p {
+  color: var(--mist-ink-2);
+}
+#secondary-dialog .cabinet-grid .collectible.unowned {
+  border-style: dashed;
+  background: none;
+}
+#secondary-dialog .cabinet-grid .collectible.unowned .item-art {
+  background: rgba(230, 245, 230, 0.05);
+}
+#secondary-dialog .cabinet-grid .collectible.unowned .item-art img {
+  filter: brightness(0) invert(1);
+  opacity: 0.16;
+}
+#secondary-dialog .cabinet-grid .collectible.unowned .item-stars {
+  color: rgba(230, 245, 230, 0.22);
+}
+#secondary-dialog .cabinet-grid .collectible[data-item]:hover {
+  box-shadow: 0 12px 24px rgba(0, 20, 14, 0.35);
+}
+#secondary-dialog .cabinet-head .secondary-button {
+  color: var(--mist-ink);
 }
