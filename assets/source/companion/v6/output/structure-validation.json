@@ -1,0 +1,245 @@
+{
+  "hands": [
+    {
+      "name": "hands_look__Continuous anatomical hand 0",
+      "vertices": 2422,
+      "faces": 4840,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.895664915312097e-05,
+      "customNormals": false,
+      "smoothFaces": 4840
+    },
+    {
+      "name": "hands_look__Continuous anatomical hand 1",
+      "vertices": 2400,
+      "faces": 4796,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.786710097578404e-05,
+      "customNormals": false,
+      "smoothFaces": 4796
+    },
+    {
+      "name": "hands_read__Continuous anatomical hand 0",
+      "vertices": 2463,
+      "faces": 4922,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.913017199142591e-05,
+      "customNormals": false,
+      "smoothFaces": 4922
+    },
+    {
+      "name": "hands_read__Continuous anatomical hand 0 anatomical left mirror",
+      "vertices": 2463,
+      "faces": 4922,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.913017199142591e-05,
+      "customNormals": false,
+      "smoothFaces": 4922
+    },
+    {
+      "name": "hands_tea__Continuous anatomical hand 0",
+      "vertices": 2337,
+      "faces": 4670,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.860602415937638e-05,
+      "customNormals": false,
+      "smoothFaces": 4670
+    },
+    {
+      "name": "hands_tea__Continuous anatomical hand 1",
+      "vertices": 2373,
+      "faces": 4742,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.756842551370869e-05,
+      "customNormals": false,
+      "smoothFaces": 4742
+    },
+    {
+      "name": "hands_turn__Continuous anatomical hand 0",
+      "vertices": 2463,
+      "faces": 4922,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.913017362394081e-05,
+      "customNormals": false,
+      "smoothFaces": 4922
+    },
+    {
+      "name": "hands_turn__Continuous anatomical hand 1",
+      "vertices": 2385,
+      "faces": 4766,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 7.796746966591696e-05,
+      "customNormals": false,
+      "smoothFaces": 4766
+    }
+  ],
+  "knit": [
+    {
+      "name": "upper_look__Continuous shoulder axilla cardigan",
+      "vertices": 15424,
+      "faces": 30762,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 0.0038503182032027005,
+      "customNormals": true,
+      "smoothFaces": 30762
+    },
+    {
+      "name": "upper_read__Continuous shoulder axilla cardigan",
+      "vertices": 15574,
+      "faces": 31070,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 0.003952566997734935,
+      "customNormals": true,
+      "smoothFaces": 31070
+    },
+    {
+      "name": "upper_tea__Continuous shoulder axilla cardigan",
+      "vertices": 16733,
+      "faces": 33376,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 0.004083631469221257,
+      "customNormals": true,
+      "smoothFaces": 33376
+    },
+    {
+      "name": "upper_turn__Continuous shoulder axilla cardigan",
+      "vertices": 16168,
+      "faces": 32251,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 0.004068188310915397,
+      "customNormals": true,
+      "smoothFaces": 32251
+    }
+  ],
+  "cuffs": [
+    {
+      "name": "upper_look__Open tailored cuff 0",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.2544331906375367e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    },
+    {
+      "name": "upper_look__Open tailored cuff 1",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.2544325350705846e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    },
+    {
+      "name": "upper_read__Open tailored cuff 0",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.254431903377639e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    },
+    {
+      "name": "upper_read__Open tailored cuff 1",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.2544319381709905e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    },
+    {
+      "name": "upper_tea__Open tailored cuff 0",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.254430388427151e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    },
+    {
+      "name": "upper_tea__Open tailored cuff 1",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.2544330700157095e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    },
+    {
+      "name": "upper_turn__Open tailored cuff 0",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.254431903377639e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    },
+    {
+      "name": "upper_turn__Open tailored cuff 1",
+      "vertices": 160,
+      "faces": 160,
+      "boundaryEdges": 0,
+      "nonmanifoldEdges": 0,
+      "nonfinite": 0,
+      "volume": 5.2544358214392146e-05,
+      "customNormals": false,
+      "smoothFaces": 160
+    }
+  ],
+  "protectedProportions": {
+    "headUniformScale": 0.95,
+    "standingLegScaleAboveAnkle": 1.1,
+    "ankleAnchor": 0.065,
+    "seatedKneeForwardOffset": 0.037
+  },
+  "referencePolicy": "Observed reference mesh screenshots only; no source meshes imported.",
+  "seatCoreContact": {
+    "sampling": "evaluated cloth within x +/- .24, forward <= .25",
+    "cushionTop": 0.42,
+    "minimumUnderside": 0.40087252855300903,
+    "maximumLapTop": 0.5411301255226135
+  },
+  "torsoHeightOffsets": {
+    "tea": 0.07950000000000006
+  },
+  "parts": 13
+}

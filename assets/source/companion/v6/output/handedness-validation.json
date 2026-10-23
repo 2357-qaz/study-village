@@ -1,0 +1,67 @@
+{
+  "expected": "Opposite chirality; mirrored finger ordering; palm normals unchanged; proper nail rotation matrices",
+  "hands": [
+    {
+      "pose": "read",
+      "anatomicalSide": "right",
+      "chirality": 1.0,
+      "thumbTransverseOffset": 0.02
+    },
+    {
+      "pose": "read",
+      "anatomicalSide": "left",
+      "chirality": -1.0,
+      "thumbTransverseOffset": -0.02
+    },
+    {
+      "pose": "turn",
+      "anatomicalSide": "right",
+      "chirality": 1.0,
+      "thumbTransverseOffset": 0.02
+    },
+    {
+      "pose": "turn",
+      "anatomicalSide": "left",
+      "chirality": -1.0,
+      "thumbTransverseOffset": -0.02
+    },
+    {
+      "pose": "look",
+      "anatomicalSide": "right",
+      "chirality": 1.0,
+      "thumbTransverseOffset": 0.02
+    },
+    {
+      "pose": "look",
+      "anatomicalSide": "left",
+      "chirality": -1.0,
+      "thumbTransverseOffset": -0.02
+    },
+    {
+      "pose": "tea",
+      "anatomicalSide": "right",
+      "chirality": 1.0,
+      "thumbTransverseOffset": 0.02
+    },
+    {
+      "pose": "tea",
+      "anatomicalSide": "left",
+      "chirality": -1.0,
+      "thumbTransverseOffset": -0.02
+    }
+  ],
+  "canonicalPalmsDown": [
+    {
+      "anatomicalSide": "right",
+      "wristX": -0.08,
+      "thumbOffsetX": 0.02,
+      "pointsInward": true
+    },
+    {
+      "anatomicalSide": "left",
+      "wristX": 0.08,
+      "thumbOffsetX": -0.02,
+      "pointsInward": true
+    }
+  ]
+}

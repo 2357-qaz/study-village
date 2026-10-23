@@ -1,0 +1,84 @@
+{
+  "asset": "study-village-companion",
+  "version": "V6",
+  "archivedAt": "2026-10-23",
+  "purpose": "asset-only archive; no live integration or deployment",
+  "repositoryBase": "a70f975e5820ab818b8deee47d769fb6505352d5",
+  "license": "Apache-2.0; see repository root LICENSE",
+  "thirdPartyGeometryIncluded": false,
+  "buildTool": "Blender 4.3.2",
+  "buildCommand": "blender --background --factory-startup --python src/build_companion.py",
+  "files": {
+    "ART-NOTES.md": {
+      "bytes": 5370,
+      "sha256": "e0495a30834052b11f43f1fd8749f6698f91de3b2ab093b473a0ee38e98238e6"
+    },
+    "README.md": {
+      "bytes": 3379,
+      "sha256": "d2e9dcba64be526d932c6a24a3677482b876e22ce08f031742cec1fda7e349e9"
+    },
+    "output/companion-stylized.bin": {
+      "bytes": 3954236,
+      "sha256": "d651b28b10b68696143e02d5db541e5ce006c523e64b07754fe1231726ade727"
+    },
+    "output/companion-stylized.json": {
+      "bytes": 6502,
+      "sha256": "fc0b30badc62bb57966129d8738ee253003108031c3023935fa58c21fe021f14"
+    },
+    "output/handedness-validation.json": {
+      "bytes": 1439,
+      "sha256": "2f98c65cb277ee6a6d34ae9afed15b48f4f8317803fa19e63e92565c06eb2f9a"
+    },
+    "output/structure-validation.json": {
+      "bytes": 6320,
+      "sha256": "62ff19f410fd210fc31372791c97fd055c3aad326bcbe8c6d4243589fda96f13"
+    },
+    "output/study-companion.blend.gz": {
+      "bytes": 6394291,
+      "sha256": "cc511e563e8226f3610240567cd7ac02d2b06aeb7ac9716667d374695896569c"
+    },
+    "output/study-companion.glb": {
+      "bytes": 2232000,
+      "sha256": "4ee7b2a1d08a9541178cac357afcbeded1e9148e7afc1ba67420bc4e038acdc1"
+    },
+    "output/v5-protection-validation.json": {
+      "bytes": 1193,
+      "sha256": "0eb43bbb04dd321b9b621956dcbe9fd5e4a40fcb2808bb7c118384019ebc285b"
+    },
+    "src/approved-v5-protected.json": {
+      "bytes": 1673,
+      "sha256": "2e37d5d5335944bb0e791ce785351bac94e2024337529b504992fd9b306ea99d"
+    },
+    "src/build_companion.py": {
+      "bytes": 47742,
+      "sha256": "542cd1f58926d5748303cb05c86d4ecae93f92cd966a7b4f4b112a99155b06c6"
+    },
+    "src/render_final.py": {
+      "bytes": 1478,
+      "sha256": "845289c9acedd29695d457a29bdef0590f9ddf67f58ca7c5acb2edbaf6b1a04b"
+    },
+    "src/render_review.py": {
+      "bytes": 2107,
+      "sha256": "f2bfb0c011e9555e6466c86d9fc1b889ed03f468bd0d7772e566c68b2044c0c7"
+    },
+    "src/render_side.py": {
+      "bytes": 359,
+      "sha256": "4a8cc43d21f3a66f5686a2a0622ae634a751e974dc58eb18358b6c7c3c1f7a55"
+    },
+    "src/validate_protected.py": {
+      "bytes": 1556,
+      "sha256": "033a8afcf8fdbae35defd2dc07fcf82821324c90e08905b2fb0ae0e527ec4320"
+    },
+    "src/validate_structure.py": {
+      "bytes": 2309,
+      "sha256": "87dce1d4bef7aeb7d644a18488a64c95ebaddb26d7c12fb9e840298e9e098842"
+    }
+  },
+  "compressedEditableSource": {
+    "path": "output/study-companion.blend.gz",
+    "originalPath": "output/study-companion.blend",
+    "bytes": 16990172,
+    "sha256": "272a93bd23e9349b02bd35c916eed1e74ae33ac208a1d0320ab7bcccc9cefb0a",
+    "compression": "gzip; lossless; mtime=0"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "baselineRuntimeSHA256": "c3fe27a0266b788550eb50e3c359a82627c1deedcdcf76f22abad7c8f8c8edfa",
+  "runtimeSHA256": "d651b28b10b68696143e02d5db541e5ce006c523e64b07754fe1231726ade727",
+  "sourceSHA256": "542cd1f58926d5748303cb05c86d4ecae93f92cd966a7b4f4b112a99155b06c6",
+  "headFaceHair": {
+    "head": {
+      "exactPositionNormalMaterialSet": true,
+      "hash": "ad4129299b149e4eebd2bccb92850ccdf01a0d2bc2adbccdadc0b1dc16488873"
+    },
+    "headOpen": {
+      "exactPositionNormalMaterialSet": true,
+      "hash": "068b683ddd6bfea17e05c5c6913a625037e3e4ac55444ba78defc34e4a215e63"
+    },
+    "hair": {
+      "exactPositionNormalMaterialSet": true,
+      "hash": "b6bcd0d639abfdd6713149c6d75b91935adeec83b38d15031a40af46de07e060"
+    }
+  },
+  "paletteUnchanged": true,
+  "proportions": {
+    "headUniformScale": 0.95,
+    "standingLegScaleAboveAnkle": 1.1,
+    "ankleAnchor": 0.065,
+    "seatedKneeForwardOffset": 0.037
+  },
+  "torsoHeightOffsets": {
+    "tea": 0.07950000000000006
+  },
+  "seatCoreContact": {
+    "sampling": "evaluated cloth within x +/- .24, forward <= .25",
+    "cushionTop": 0.42,
+    "minimumUnderside": 0.40087252855300903,
+    "maximumLapTop": 0.5411301255226135
+  }
+}
