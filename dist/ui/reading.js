@@ -135,6 +135,7 @@ function showPose() {
   pose = want;
   const [on, off] = faces[0].classList.contains('on') ? faces : [faces[1], faces[0]];
   off.onload = () => {
+    off.dataset.pose = want; // diagnostic: the image that actually finished loading
     off.classList.add('on');
     on.classList.remove('on');
   };
