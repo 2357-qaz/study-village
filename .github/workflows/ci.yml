@@ -25,7 +25,8 @@ jobs:
         run: npm test
 
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright 1.56.1 supports this pinned image, not Ubuntu 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
