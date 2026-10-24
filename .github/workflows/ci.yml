@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'claude/**'
+      - 'feat/companion-v10-camera'
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -46,3 +47,13 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+      - name: Keep V10 actual WebGL screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: companion-v10-webgl-evidence
+          path: |
+            test-results/**/v10-timer-reading.png
+            test-results/**/v10-timer-tea.png
+          if-no-files-found: warn
+          retention-days: 14

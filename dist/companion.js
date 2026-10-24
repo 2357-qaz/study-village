@@ -356,29 +356,46 @@ function sculpted(b, pose, parts) {
   const P = POSES[pose],
     g = name => b.geo(parts[name], 0xffffff, 0, 0, 0, SCULPT);
   g(P.legs === 'seated' ? 'lapSeated' : 'lowerStand');
-  b.at(0, P.torso.y, P.torso.z, {rx: P.torso.rx}, () => {
+  b.at(0, P.torso.y + (parts.manifest?.torsoHeightOffsets?.[pose] || 0), P.torso.z, {rx: P.torso.rx}, () => {
     g(`upper_${pose}`);
     g(`hands_${pose}`);
-    props(b, pose);
+    props(b, pose, parts.manifest);
     b.at(...NECK, {rx: P.head.tilt, ry: P.head.turn}, () => {
       g(P.head.open ? 'headOpen' : 'head');
       g('hair');
-      sculptedHeadDetails(b, P.head.open);
+      if (!parts.manifest?.includesHeadDetails) sculptedHeadDetails(b, P.head.open);
     });
   });
 }
+// Camera-authored pour contact. The shipped original retains its exact props.
+export function teaPropSettings(manifest) {
+  const painted = manifest?.teaPropStyle === 'camera-v7';
+  return painted
+    ? {position: [0.01, 0.285, 0.48], rz: 0.5, handleY: -0.05, spoutY: 0.015, alignedCup: true}
+    : {position: [0.05, 0.29, 0.53], rz: -0.55, handleY: 0, spoutY: 0.05, alignedCup: false};
+}
+// Nozzle endpoint in the actor frame, including the authored standing torso transform.
+export function teaSpoutLocal(manifest) {
+  const p = teaPropSettings(manifest);
+  return V(-0.11, p.spoutY, 0)
+    .applyAxisAngle(V(0, 0, 1), p.rz)
+    .add(V(...p.position))
+    .applyAxisAngle(V(1, 0, 0), POSES.tea.torso.rx)
+    .add(V(0, POSES.tea.torso.y + (manifest?.torsoHeightOffsets?.tea || 0), POSES.tea.torso.z));
+}
 // what she holds, in the torso frame
-function props(b, pose) {
+function props(b, pose, manifest = null) {
+  const pour = teaPropSettings(manifest);
   if (pose === 'tea')
-    b.at(0.05, 0.29, 0.53, {rz: -0.55}, () => {
+    b.at(...pour.position, {rz: pour.rz}, () => {
       E(b, C.pot, 0, 0, 0, 0.07, 0.06, 0.07, {mat: {smooth: 1, rough: 0.3}});
       E(b, C.pot, 0, 0.055, 0, 0.03, 0.012, 0.03, {mat: {smooth: 1, rough: 0.3}});
-      limb(b, C.pot, [-0.06, 0.0, 0], [-0.11, 0.05, 0], 0.012, {mat: {rough: 0.3}});
-      b.geo(torus(0.035, 0.008, PI), C.pot, 0.07, 0.0, 0, {rz: -H, mat: SMOOTH});
+      limb(b, C.pot, [-0.06, 0.0, 0], [-0.11, pour.spoutY, 0], 0.012, {mat: {rough: 0.3}});
+      b.geo(torus(0.035, 0.008, PI), C.pot, 0.07, pour.handleY, 0, {rz: -H, mat: SMOOTH});
       b.geo(torus(0.04, 0.004), C.ribbon, 0, 0.0, 0, {rx: H, mat: SMOOTH}); // a blue band
     });
   else if (pose === 'look')
-    book(b, -0.02, 0.115, 0.27, {rx: -0.12, ry: 0.15}); // resting on the sculpted lap
+    book(b, -0.02, manifest?.includesHeadDetails ? 0.175 : 0.115, 0.27, {rx: -0.12, ry: 0.15}); // resting on the sculpted lap
   else book(b, 0, 0.29, 0.36, {rx: -0.75}, pose === 'turn');
 }
 

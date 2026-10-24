@@ -3,7 +3,7 @@
 // top of it, using the projected positions this module returns.
 import * as THREE from './vendor/three.module.min.js';
 import {Builder, LiveSink, P, shade} from './models.js?v=5';
-import {companionModel} from './companion.js?v=2';
+import {companionModel, teaPropSettings, teaSpoutLocal} from './companion.js?v=2';
 import {loadSculpt} from './sculpt-loader.js?v=1';
 
 const PI = Math.PI,
@@ -550,16 +550,45 @@ const occluder = new THREE.MeshBasicMaterial({colorWrite: false});
 // The companion's sculpted parts; resolves to null (simple shapes are used) if they can't load.
 let sculpt = null;
 export async function loadCompanion() {
-  sculpt = await loadSculpt().catch(() => null);
+  const requested = new URLSearchParams(location.search).get('companion');
+  const variant = requested === 'v10' ? 'v10' : '';
+  sculpt = await loadSculpt('./assets/', variant).catch(error => {
+    console.error('Companion asset load failed', error);
+    return null;
+  });
   return !!sculpt;
 }
 function teaThings(b) {
   // the reader's cup and saucer on the desk, and a soft shadow at her feet
-  b.at(CUP.x, CUP.y, CUP.z, () => {
+  const aligned = teaPropSettings(sculpt?.manifest).alignedCup;
+  const nozzle = aligned
+    ? teaSpoutLocal(sculpt.manifest)
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), TEA.ry)
+        .add(new THREE.Vector3(TEA.x, 0, TEA.z))
+    : CUP;
+  b.at(nozzle.x, CUP.y, nozzle.z, () => {
     b.cyl(0.075, 0.07, 0.012, 0xeae4d6, 0, 0.006, 0, 20, {mat: {smooth: 1, rough: 0.35}});
-    b.cyl(0.045, 0.035, 0.06, 0xeae4d6, 0, 0.042, 0, 20, {mat: {smooth: 1, rough: 0.35}});
-    b.cyl(0.041, 0.041, 0.004, 0xb07a3c, 0, 0.066, 0, 20, {mat: {smooth: 1, rough: 0.2}});
+    if (aligned) {
+      // An open porcelain cup: separate outer/inner walls, rounded lip and recessed tea.
+      b.cyl(0.045, 0.035, 0.06, 0xeae4d6, 0, 0.045, 0, 40, {open: 1, mat: {smooth: 1, rough: 0.35}});
+      b.cyl(0.039, 0.029, 0.048, 0xded9ce, 0, 0.051, 0, 40, {
+        open: 1,
+        mat: {smooth: 1, rough: 0.4, double: 1}
+      });
+      b.tor(0.042, 0.003, 0xf5f0e5, 0, 0.075, 0, {rx: H, n: 8, m: 48, mat: {smooth: 1, rough: 0.3}});
+      b.cyl(0.038, 0.038, 0.002, 0x986235, 0, 0.061, 0, 40, {mat: {smooth: 1, rough: 0.24}});
+      b.tor(0.024, 0.005, 0xeae4d6, 0.05, 0.046, 0, {ry: H, n: 8, m: 32, mat: {smooth: 1, rough: 0.35}});
+    } else {
+      b.cyl(0.045, 0.035, 0.06, 0xeae4d6, 0, 0.042, 0, 20, {mat: {smooth: 1, rough: 0.35}});
+      b.cyl(0.041, 0.041, 0.004, 0xb07a3c, 0, 0.066, 0, 20, {mat: {smooth: 1, rough: 0.2}});
+    }
   });
+  if (aligned) {
+    const surface = CUP.y + 0.062;
+    b.cyl(0.0015, 0.0012, nozzle.y - surface, 0xb58650, nozzle.x, (nozzle.y + surface) / 2, nozzle.z, 8, {
+      mat: {smooth: 1, rough: 0.3}
+    });
+  }
 }
 // A transparent layer with her in the given pose, drawn over renderRoom's image for the same opts.
 // The room is still in the scene but only writes depth, so the armchair and desk hide her properly.

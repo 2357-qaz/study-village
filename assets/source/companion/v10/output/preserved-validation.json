@@ -1,0 +1,7 @@
+{
+  "noAdditiveEarHair": true,
+  "protectedObjects": 291,
+  "exactEvaluatedGeometryAndMaterials": true,
+  "excludes": "two face base meshes and deformed original back-hair sheets only",
+  "reference": "V8"
+}
