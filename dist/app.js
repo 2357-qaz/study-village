@@ -26,7 +26,7 @@ import {renderBackup} from './ui/save.js?v=14';
 import './offline.js?v=1';
 import {buildEntryState, onTile} from './ui/build.js?v=15';
 import './ui/story.js?v=5';
-import './ui/reading.js?v=7';
+import './ui/reading.js?v=8';
 window.addEventListener('storage', e => {
   if (e.key === KEY && e.newValue) {
     try {

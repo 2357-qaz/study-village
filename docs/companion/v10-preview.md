@@ -10,6 +10,6 @@ The new model preserves the existing fixed room camera and rigid-part pose contr
 
 Node tests validate both shipped and V10 buffer decoding, finite attributes, indices, all four authored poses, fallback procedural poses, color conversion and tea placement. These checks do not substitute for full collision or visual-quality inspection. Prepared Playwright tests cover the real timer flow, but were not run in the current environment.
 
-Visual validation is Blender-only. The supported cloud browser can load the app, but WebGL is disabled. Launching an independent Chromium was also blocked by socket permissions. No screenshot or visual acceptance of the actual rendered 3D timer is claimed.
+Historical local validation was Blender-only; subsequent CI #38 produced actual web reading/tea screenshots. See [the loading audit](v10-loading-audit.md) for evidence scope and the four-pose CI capture added by this branch. The following describes the earlier local environment: The supported cloud browser can load the app, but WebGL is disabled. Launching an independent Chromium was also blocked by socket permissions. No screenshot or visual acceptance of the actual rendered 3D timer is claimed.
 
 Publication on an independent branch does not change the live site or merge into main. The dedicated preview branch is included in the test workflow's push allowlist. Remote CI results must be checked for the exact published commit; local checks alone do not establish a remote CI pass.

@@ -1,0 +1,285 @@
+{
+  "scope": "Sculpted parts only; excludes procedural props, room, JS objects, images, framebuffers and transient buffers. GPU sizes are attributes if uploaded, not measured VRAM. Each pose is counted once, not shadow passes.",
+  "models": [
+    {
+      "stem": "companion",
+      "sha256": "98c6c3bf429b28f0c172f5af3d48aaafd4d6ea050a04210554e9e11be148974f",
+      "rawBytes": 1134116,
+      "gzipBytes": 977733,
+      "vertices": 50957,
+      "triangles": 104082,
+      "exactDuplicateVertices": 3,
+      "oldCPUBackingBytesAllDecoded": 2968568,
+      "optimizedCPUBackingBytesAllDecoded": 2357084,
+      "oldGPUAttributeBytesAllUsed": 2458944,
+      "optimizedGPUAttributeBytesAllUsed": 2000331,
+      "poses": {
+        "read": {
+          "vertices": 19738,
+          "triangles": 40018,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 950676,
+          "optimizedGPUAttributeBytes": 773034,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 1607828
+        },
+        "turn": {
+          "vertices": 19876,
+          "triangles": 40292,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 957288,
+          "optimizedGPUAttributeBytes": 778404,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 1611140
+        },
+        "look": {
+          "vertices": 19680,
+          "triangles": 40030,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 948660,
+          "optimizedGPUAttributeBytes": 771540,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 1606436
+        },
+        "tea": {
+          "vertices": 20795,
+          "triangles": 42176,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 1001676,
+          "optimizedGPUAttributeBytes": 814521,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 1633196
+        }
+      },
+      "parts": [
+        {
+          "name": "head",
+          "vertices": 4526,
+          "triangles": 9058,
+          "indexBytes": 54348,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "headOpen",
+          "vertices": 4537,
+          "triangles": 9088,
+          "indexBytes": 54528,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "hair",
+          "vertices": 3976,
+          "triangles": 7998,
+          "indexBytes": 47988,
+          "exactDuplicateVertices": 1
+        },
+        {
+          "name": "lapSeated",
+          "vertices": 4076,
+          "triangles": 8162,
+          "indexBytes": 48972,
+          "exactDuplicateVertices": 1
+        },
+        {
+          "name": "lowerStand",
+          "vertices": 4854,
+          "triangles": 9722,
+          "indexBytes": 58332,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "upper_read",
+          "vertices": 4965,
+          "triangles": 10414,
+          "indexBytes": 62484,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "hands_read",
+          "vertices": 2195,
+          "triangles": 4386,
+          "indexBytes": 26316,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "upper_turn",
+          "vertices": 5095,
+          "triangles": 10676,
+          "indexBytes": 64056,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "hands_turn",
+          "vertices": 2203,
+          "triangles": 4398,
+          "indexBytes": 26388,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "upper_look",
+          "vertices": 4871,
+          "triangles": 10344,
+          "indexBytes": 62064,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "hands_look",
+          "vertices": 2220,
+          "triangles": 4438,
+          "indexBytes": 26628,
+          "exactDuplicateVertices": 1
+        },
+        {
+          "name": "upper_tea",
+          "vertices": 5237,
+          "triangles": 11000,
+          "indexBytes": 66000,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "hands_tea",
+          "vertices": 2202,
+          "triangles": 4398,
+          "indexBytes": 26388,
+          "exactDuplicateVertices": 0
+        }
+      ]
+    },
+    {
+      "stem": "companion-v10",
+      "sha256": "30fcdc9c3c98ee759e76b8f2acb23c92b3c2fc670be76fb72a5930f5632dbef8",
+      "rawBytes": 12530916,
+      "gzipBytes": 5908689,
+      "vertices": 362342,
+      "triangles": 705560,
+      "exactDuplicateVertices": 448,
+      "oldCPUBackingBytesAllDecoded": 25575228,
+      "optimizedCPUBackingBytesAllDecoded": 21227124,
+      "oldGPUAttributeBytesAllUsed": 20864736,
+      "optimizedGPUAttributeBytesAllUsed": 17603658,
+      "poses": {
+        "read": {
+          "vertices": 105463,
+          "triangles": 204278,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 5912916,
+          "optimizedGPUAttributeBytes": 4963749,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 15062028
+        },
+        "turn": {
+          "vertices": 106150,
+          "triangles": 205652,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 5955072,
+          "optimizedGPUAttributeBytes": 4999722,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 15078516
+        },
+        "look": {
+          "vertices": 106108,
+          "triangles": 205508,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 5941200,
+          "optimizedGPUAttributeBytes": 4986228,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 15077508
+        },
+        "tea": {
+          "vertices": 105317,
+          "triangles": 203114,
+          "meshes": 5,
+          "oldGPUAttributeBytes": 5918556,
+          "optimizedGPUAttributeBytes": 4970703,
+          "optimizedCPUBackingBytesWhenOnlyThisPoseDecoded": 15058524
+        }
+      },
+      "parts": [
+        {
+          "name": "head",
+          "vertices": 5294,
+          "triangles": 8876,
+          "indexBytes": 53256,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "headOpen",
+          "vertices": 6236,
+          "triangles": 10700,
+          "indexBytes": 64200,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "hair",
+          "vertices": 12260,
+          "triangles": 22904,
+          "indexBytes": 137424,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "lapSeated",
+          "vertices": 6664,
+          "triangles": 13264,
+          "indexBytes": 79584,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "lowerStand",
+          "vertices": 5244,
+          "triangles": 9552,
+          "indexBytes": 57312,
+          "exactDuplicateVertices": 432
+        },
+        {
+          "name": "upper_read",
+          "vertices": 75823,
+          "triangles": 148430,
+          "indexBytes": 1781160,
+          "exactDuplicateVertices": 4
+        },
+        {
+          "name": "hands_read",
+          "vertices": 5422,
+          "triangles": 10804,
+          "indexBytes": 64824,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "upper_turn",
+          "vertices": 76588,
+          "triangles": 149960,
+          "indexBytes": 1799520,
+          "exactDuplicateVertices": 4
+        },
+        {
+          "name": "hands_turn",
+          "vertices": 5344,
+          "triangles": 10648,
+          "indexBytes": 63888,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "upper_look",
+          "vertices": 75630,
+          "triangles": 148044,
+          "indexBytes": 1776528,
+          "exactDuplicateVertices": 8
+        },
+        {
+          "name": "hands_look",
+          "vertices": 5318,
+          "triangles": 10596,
+          "indexBytes": 63576,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "upper_tea",
+          "vertices": 77313,
+          "triangles": 151410,
+          "indexBytes": 1816920,
+          "exactDuplicateVertices": 0
+        },
+        {
+          "name": "hands_tea",
+          "vertices": 5206,
+          "triangles": 10372,
+          "indexBytes": 62232,
+          "exactDuplicateVertices": 0
+        }
+      ]
+    }
+  ]
+}

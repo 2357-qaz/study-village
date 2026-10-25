@@ -51,6 +51,7 @@ function dreamsRead() {
 }
 
 async function paintRoom() {
+  if (!onFocus() || document.hidden) return;
   const w = room.clientWidth,
     h = room.clientHeight;
   if (!w || !h) return;
@@ -70,9 +71,13 @@ async function paintRoom() {
   if (key === lastKey) return;
   lastKey = key;
   try {
-    mod ??= await import('../reading-room.js?v=6');
-    sculptReady ??= mod.loadCompanion();
+    mod ??= await import('../reading-room.js?v=7');
+    if (!onFocus() || document.hidden) {
+      lastKey = '';
+      return;
+    }
     const r = mod.renderRoom(opts);
+    sculptReady ??= mod.loadCompanion(); // don't download a model when WebGL creation already failed
     if (key !== lastKey) return; // a newer size arrived meanwhile
     const [sx, sy] = r.points.shell,
       [cx, cy] = r.points.clock,
@@ -122,7 +127,7 @@ function poseNow(now = Date.now()) {
   return 'read';
 }
 function showPose() {
-  if (!mod || !lastOpts) return;
+  if (!mod || !lastOpts || !onFocus() || document.hidden) return;
   const want = poseNow();
   if (want === pose || Date.now() - poseFailedAt < 15000) return;
   let layer;
@@ -143,11 +148,13 @@ function showPose() {
 }
 // render the other poses while the page is idle, so switching later is instant
 function warmPoses() {
+  // Touch devices and data-saving connections decode/render poses only when displayed.
+  if (matchMedia('(pointer: coarse)').matches || navigator.connection?.saveData) return;
   const opts = lastOpts,
     queue = ['look', 'turn', 'tea'],
     idle = window.requestIdleCallback || (f => setTimeout(f, 400));
   const next = () => {
-    if (opts !== lastOpts || !queue.length) return;
+    if (opts !== lastOpts || !queue.length || !onFocus() || document.hidden) return;
     try {
       mod.renderCompanion(opts, queue.shift());
     } catch {}
@@ -240,6 +247,7 @@ function sync() {
   $('#wake-toggle').hidden = !('wakeLock' in navigator);
   tick();
   syncWake();
+  if (onFocus()) paintRoom();
 }
 
 function reveal() {
@@ -271,7 +279,7 @@ $('#wake-toggle').onclick = () => {
 };
 new MutationObserver(sync).observe(pager, {attributes: true, attributeFilter: ['data-screen']});
 new ResizeObserver(() => requestAnimationFrame(paintRoom)).observe(room);
-document.addEventListener('visibilitychange', syncWake);
+document.addEventListener('visibilitychange', sync);
 motion.addEventListener?.('change', tick);
 setInterval(tick, 1000);
 setInterval(paintRoom, 10 * 60 * 1000); // time of day and weather move on

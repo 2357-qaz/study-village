@@ -124,7 +124,7 @@
       ],
       "hi": [
         0.3025600016117096,
-        1.0,
+        1,
         0.23042413592338562
       ],
       "wide": false,
@@ -317,5 +317,10 @@
     "standingLegScaleAboveAnkle": 1.1,
     "ankleAnchor": 0.065,
     "seatedKneeForwardOffset": 0.037
+  },
+  "compressed": {
+    "file": "companion-v10.76959ad6cfcb0f23.bin.gz",
+    "bytes": 5908689,
+    "decodedBytes": 12530916
   }
 }

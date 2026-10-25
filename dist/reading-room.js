@@ -4,7 +4,7 @@
 import * as THREE from './vendor/three.module.min.js';
 import {Builder, LiveSink, P, shade} from './models.js?v=5';
 import {companionModel, teaPropSettings, teaSpoutLocal} from './companion.js?v=2';
-import {loadSculpt} from './sculpt-loader.js?v=1';
+import {loadPreferredSculpt} from './sculpt-loader.js?v=2';
 
 const PI = Math.PI,
   H = PI / 2;
@@ -552,10 +552,7 @@ let sculpt = null;
 export async function loadCompanion() {
   const requested = new URLSearchParams(location.search).get('companion');
   const variant = requested === 'v10' ? 'v10' : '';
-  sculpt = await loadSculpt('./assets/', variant).catch(error => {
-    console.error('Companion asset load failed', error);
-    return null;
-  });
+  sculpt = await loadPreferredSculpt('./assets/', variant);
   return !!sculpt;
 }
 function teaThings(b) {
@@ -645,4 +642,13 @@ export function renderCompanion(opts, pose) {
   return result;
 }
 // for tests: how many images are kept and what the renderer holds on the GPU
-export const debug = () => ({cache: cache.size, memory: renderer && {...renderer.info.memory}});
+export const debug = () => ({
+  cache: cache.size,
+  memory: renderer && {...renderer.info.memory},
+  companion: sculpt ? sculpt.manifest.generator || 'original' : 'procedural',
+  decodedParts: sculpt
+    ? Object.entries(Object.getOwnPropertyDescriptors(sculpt))
+        .filter(([, d]) => d.value?.isBufferGeometry)
+        .map(([name]) => name)
+    : []
+});
