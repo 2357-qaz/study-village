@@ -7,7 +7,7 @@ on:
       - 'claude/**'
       - 'feat/companion-v10-camera'
   pull_request:
-    branches: [main]
+    branches: [main, 'feat/companion-v10-camera']
   workflow_dispatch:
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
       - run: npm ci
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Render V10 reading and tea first
+      - name: Render V10 four poses first
         run: npm run test:e2e -- tests/e2e/companion-v10.spec.mjs --workers=1
       - name: Keep V10 actual WebGL screenshots
         if: always()
@@ -45,8 +45,8 @@ jobs:
         with:
           name: companion-v10-webgl-evidence
           path: |
-            test-results/**/v10-timer-reading.png
-            test-results/**/v10-timer-tea.png
+            test-results/**/v10-timer-*.png
+            test-results/**/v10-render-metadata.json
           if-no-files-found: warn
           retention-days: 14
       - name: Keep V10 failure report

@@ -1,7 +1,12 @@
 import {test, expect} from '@playwright/test';
+import fs from 'node:fs/promises';
 import {prefs, dock} from './helpers.mjs';
 
-test('V10 real WebGL timer renders reading and completed-timer tea', async ({page}, info) => {
+const v10Manifest = JSON.parse(
+  await fs.readFile(new URL('../../dist/assets/companion-v10.json', import.meta.url))
+);
+
+test('V10 real WebGL timer renders read, look, turn and completed-timer tea', async ({page}, info) => {
   const now = Date.UTC(2026, 9, 24, 8);
   await page.clock.setFixedTime(now);
   await prefs(page);
@@ -9,7 +14,7 @@ test('V10 real WebGL timer renders reading and completed-timer tea', async ({pag
     loaded = new Set();
   page.on('pageerror', e => errors.push(e.message));
   page.on('response', r => {
-    if (/companion-v10\.(json|bin)/.test(r.url()) && r.ok()) loaded.add(new URL(r.url()).pathname);
+    if (/companion-v10[.]/.test(r.url()) && r.ok()) loaded.add(new URL(r.url()).pathname);
   });
   await page.goto('/?companion=v10&hour=16');
   expect(
@@ -25,10 +30,18 @@ test('V10 real WebGL timer renders reading and completed-timer tea', async ({pag
   await expect(page.locator('#reading-room')).toHaveClass(/ready/, {timeout: 90_000});
   await expect
     .poll(() => [...loaded].sort())
-    .toEqual(['/assets/companion-v10.bin', '/assets/companion-v10.json']);
+    .toEqual([`/assets/${v10Manifest.compressed.file}`, '/assets/companion-v10.json'].sort());
   await expect(page.locator('.companion-img.on')).toHaveCount(1);
   await page.locator('#start-button').click();
   await expect(page.locator('#focus-status')).toHaveText('专注进行中');
+  const capture = async pose => {
+    await expect(page.locator('.companion-img.on')).toHaveAttribute('data-pose', pose);
+    await expect(page.locator('.companion-img.on')).toHaveCSS('opacity', '1');
+    const path = info.outputPath(`v10-timer-${pose}.png`);
+    await page.screenshot({path});
+    await info.attach(`V10 actual timer ${pose}`, {path, contentType: 'image/png'});
+  };
+  await capture('look');
   // Date.now() is fixed: advance past the 3.5s greeting so this is really reading.
   await page.clock.setFixedTime(now + 5000);
   await expect(page.locator('.companion-img.on')).toHaveAttribute('data-pose', 'read');
@@ -47,17 +60,20 @@ test('V10 real WebGL timer renders reading and completed-timer tea', async ({pag
       return count;
     });
   await expect.poll(visiblePixels).toBeGreaterThan(100);
-  const manifest = await page.evaluate(async () => {
-    const {loadSculpt} = await import('./sculpt-loader.js?v=1');
-    return (await loadSculpt('./assets/', 'v10')).manifest;
+  const active = await page.evaluate(async () => {
+    const {debug} = await import('./reading-room.js?v=7');
+    return debug();
   });
-  expect(manifest.generator).toBe('blender-v10-curved-rear-hair-chin');
-  expect(manifest.teaPropStyle).toBe('camera-v7');
+  expect(active.companion).toBe('blender-v10-curved-rear-hair-chin');
   await expect(page.locator('#toast')).not.toHaveClass(/visible/);
   await expect(page.locator('#toast')).toHaveCSS('opacity', '0');
   const readPath = info.outputPath('v10-timer-reading.png');
   await page.screenshot({path: readPath});
   await info.attach('V10 actual timer reading', {path: readPath, contentType: 'image/png'});
+  // The normal behavior schedules page turning 50–110 seconds after starting.
+  await page.clock.setFixedTime(now + 120000);
+  await capture('turn');
+  await expect.poll(visiblePixels).toBeGreaterThan(100);
   await page.clock.setFixedTime(now + 31 * 60000);
   await expect(page.locator('#focus-status')).toHaveText('等待打卡');
   await expect(page.locator('.companion-img.on')).toHaveAttribute('data-pose', 'tea');
@@ -68,5 +84,16 @@ test('V10 real WebGL timer renders reading and completed-timer tea', async ({pag
   const teaPath = info.outputPath('v10-timer-tea.png');
   await page.screenshot({path: teaPath});
   await info.attach('V10 actual timer tea', {path: teaPath, contentType: 'image/png'});
+  const metadata = await page.evaluate(async () => {
+    const {debug} = await import('./reading-room.js?v=7');
+    return {
+      userAgent: navigator.userAgent,
+      viewport: [innerWidth, innerHeight],
+      devicePixelRatio,
+      backend: 'CI configuration: Chromium / SwiftShader (software, not iPhone Safari)',
+      ...debug()
+    };
+  });
+  await fs.writeFile(info.outputPath('v10-render-metadata.json'), JSON.stringify(metadata, null, 2));
   expect(errors).toEqual([]);
 });

@@ -39,6 +39,11 @@ async function cached(request) {
   );
 }
 async function respond(request, event) {
+  // Only content-addressed companion payloads are immutable. Mutable code/manifests stay network-first.
+  if (/\/assets\/companion-v10\.[a-f0-9]{16}\.bin\.gz$/.test(new URL(request.url).pathname)) {
+    const hit = await cached(request).catch(() => undefined);
+    if (hit) return hit;
+  }
   const network = fromNetwork(request, event);
   network.catch(() => {}); // avoid unhandled rejection when the cache won the race
   try {
